@@ -7,7 +7,8 @@ Design tokens, web components, and CSS generation.
 - `tokens/design-tokens.json` — primitive and semantic design tokens (color, spacing, typography, etc.)
 - `components/*.js` — `sp-*` web components (app shell, sidebar, tabs, buttons, etc.)
 - `src/design_kit/token_css.py` — generates layered CSS (`reset`, `tokens`, `defaults`, `utilities`) from the token JSON
-- `planning/` — design system planning docs
+- `docs/reference/` — visual language principles and token application guide
+- `docs/explanations/` — design system architecture and rationale
 
 ## Setup
 
