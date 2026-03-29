@@ -13,3 +13,4 @@ export { SPBreadcrumb } from './sp-breadcrumb.js';
 export { SPPageNav } from './sp-page-nav.js';
 export { SPThemeToggle } from './sp-theme-toggle.js';
 export { SPSegmentedToggle } from './sp-segmented-toggle.js';
+export { SPModal } from './sp-modal.js';
