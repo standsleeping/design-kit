@@ -44,7 +44,7 @@ SPButton.componentStyles.replaceSync(`
     font-weight: var(--font-weight-medium);
     line-height: var(--font-line-height-base);
     color: var(--color-text);
-    background: var(--color-white);
+    background: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     cursor: pointer;
@@ -52,8 +52,8 @@ SPButton.componentStyles.replaceSync(`
   }
 
   .btn:hover {
-    background: var(--color-stone-100);
-    border-color: var(--color-stone-400);
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-400);
   }
 
   .btn:focus-visible {

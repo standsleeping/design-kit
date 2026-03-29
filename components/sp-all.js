@@ -7,3 +7,8 @@ export { SPContainer } from './sp-container.js';
 export { SPAppShell } from './sp-app-shell.js';
 export { SPSidebar } from './sp-sidebar.js';
 export { SPBottomTabBar } from './sp-bottom-tab-bar.js';
+export { SPCodeBlock } from './sp-code-block.js';
+export { SPToc } from './sp-toc.js';
+export { SPBreadcrumb } from './sp-breadcrumb.js';
+export { SPPageNav } from './sp-page-nav.js';
+export { SPThemeToggle } from './sp-theme-toggle.js';
