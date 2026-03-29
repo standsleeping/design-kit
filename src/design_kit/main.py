@@ -24,7 +24,7 @@ def main(args: list[str] | None = None) -> int:
             )
         else:
             print(
-                "usage: design-kit <command>\n\ncommands:\n  build  Generate tokens.css and preview.html"
+                "usage: design-kit <command>\n\ncommands:\n  build  Generate tokens.css, preview.html, and components.html"
             )
         return 0
     except Exception as e:
