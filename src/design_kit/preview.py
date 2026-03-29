@@ -27,12 +27,14 @@ def generate_preview_html() -> str:
         _section_tab_bar(),
         _section_segmented_toggle(),
         _section_collapsible(),
+        _section_modal(),
         _section_code_block(),
         _section_breadcrumb(),
         _section_page_nav(),
         _section_toc(),
     ]
     main_content = "\n".join(sections)
+    modal_instances = _modal_instances()
 
     return f"""\
 <!DOCTYPE html>
@@ -45,10 +47,14 @@ def generate_preview_html() -> str:
   <script type="module" src="components/sp-all.js"></script>
   <style>
     .section {{
-      padding: var(--spacing-2xl) var(--spacing-2xl) var(--spacing-xl);
+      padding: var(--spacing-2xl) 0 var(--spacing-xl);
     }}
     .section + .section {{
       border-top: 1px solid var(--color-gray-200);
+    }}
+    .section > * {{
+      padding-left: var(--spacing-2xl);
+      padding-right: var(--spacing-2xl);
     }}
     .section-heading {{
       font-family: var(--typography-mono);
@@ -126,7 +132,8 @@ def generate_preview_html() -> str:
       flex-wrap: wrap;
       align-items: center;
       gap: var(--spacing-md);
-      padding: var(--spacing-lg) 0;
+      padding-top: var(--spacing-lg);
+      padding-bottom: var(--spacing-lg);
     }}
     .demo-label {{
       font-family: var(--typography-mono);
@@ -135,7 +142,8 @@ def generate_preview_html() -> str:
       width: 100%;
     }}
     .demo-block {{
-      padding: var(--spacing-lg) 0;
+      padding-top: var(--spacing-lg);
+      padding-bottom: var(--spacing-lg);
     }}
     .size-sample {{
       display: flex;
@@ -264,6 +272,9 @@ def generate_preview_html() -> str:
   {right_toc}
 
 </sp-app-shell>
+
+{modal_instances}
+
 </body>
 </html>
 """
@@ -303,6 +314,7 @@ def _sidebar() -> str:
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Patterns</div>
+      <a class="nav-link" href="#modal">Modal</a>
       <a class="nav-link" href="#code-block">Code Block</a>
       <a class="nav-link" href="#breadcrumb">Breadcrumb</a>
       <a class="nav-link" href="#page-nav">Page Nav</a>
@@ -326,6 +338,7 @@ _SECTIONS: list[dict[str, str | int]] = [
     {"id": "tab-bar", "label": "Tab Bar", "level": 0},
     {"id": "segmented-toggle", "label": "Segmented Toggle", "level": 1},
     {"id": "collapsible", "label": "Collapsible", "level": 0},
+    {"id": "modal", "label": "Modal", "level": 0},
     {"id": "code-block", "label": "Code Block", "level": 0},
     {"id": "breadcrumb", "label": "Breadcrumb", "level": 1},
     {"id": "page-nav", "label": "Page Nav", "level": 1},
@@ -805,6 +818,142 @@ color: var(--color-text-muted);">
         </sp-collapsible-section>
       </div>
     </div>"""
+
+
+def _section_modal() -> str:
+    return f"""\
+    <div class="section">
+      {_heading("modal", "Modal")}
+
+      <div class="subsection">
+        <div class="subsection-heading">Draggable Floating Panel</div>
+        <div class="demo-label">Click "Open" to launch. Drag the header to reposition. Close with the \u2715 button or Escape key.</div>
+        <div class="component-demo">
+          <sp-button onclick="document.getElementById('demo-modal-center').open()">Open Center</sp-button>
+          <sp-button onclick="document.getElementById('demo-modal-corner').open()">Open Corner</sp-button>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-heading">Edge Cases</div>
+        <div class="demo-label">Long title, empty content, overflow, and top-right position.</div>
+        <div class="component-demo">
+          <sp-button onclick="document.getElementById('demo-modal-long-title').open()">Long Title</sp-button>
+          <sp-button onclick="document.getElementById('demo-modal-empty').open()">Empty</sp-button>
+          <sp-button onclick="document.getElementById('demo-modal-overflow').open()">Overflow</sp-button>
+          <sp-button onclick="document.getElementById('demo-modal-top-right').open()">Top Right</sp-button>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-heading">Click to Inspect</div>
+        <div class="demo-label">Click a row to open a detail panel. Each click updates the same modal with new content.</div>
+        <div class="data-table" style="margin-top: var(--spacing-md);">
+          <table>
+            <thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+            <tbody>
+              <tr style="cursor: pointer;" \
+onclick="window._showTokenDetail('--spacing-xs', '0.125rem', \
+'Tightest spacing; used for gaps between inline elements like icon and label.')">
+                <td><code>--spacing-xs</code></td><td>0.125rem</td><td>Inline gaps</td></tr>
+              <tr style="cursor: pointer;" \
+onclick="window._showTokenDetail('--spacing-md', '0.5rem', \
+'Standard inner padding for compact components like buttons and badges.')">
+                <td><code>--spacing-md</code></td><td>0.5rem</td><td>Component padding</td></tr>
+              <tr style="cursor: pointer;" \
+onclick="window._showTokenDetail('--spacing-xl', '1rem', \
+'Primary spacing between sibling sections and form groups.')">
+                <td><code>--spacing-xl</code></td><td>1rem</td><td>Section gaps</td></tr>
+              <tr style="cursor: pointer;" \
+onclick="window._showTokenDetail('--spacing-3xl', '2rem', \
+'Large spacing for major layout divisions and page-level padding.')">
+                <td><code>--spacing-3xl</code></td><td>2rem</td><td>Layout padding</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>"""
+
+
+def _modal_instances() -> str:
+    """Modal instances and script, placed at end of body to avoid parser issues."""
+    return """\
+    <sp-modal id="demo-modal-center" title="Center Modal" position="center" width="360">
+      <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); \
+color: var(--color-text-muted); margin: 0;">
+        A draggable floating panel. Content beneath remains fully visible and interactive.
+        Drag the header to reposition; press Escape or the close button to dismiss.
+      </p>
+    </sp-modal>
+
+    <sp-modal id="demo-modal-corner" title="Corner Modal" position="bottom-right" width="320">
+      <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); \
+color: var(--color-text-muted); margin: 0 0 var(--spacing-md) 0;">
+        Positioned at the bottom-right corner, like the detail boxes in comphost.
+      </p>
+      <sp-button onclick="document.getElementById('demo-modal-corner').close()">Done</sp-button>
+    </sp-modal>
+
+    <sp-modal id="demo-modal-detail" title="Token Detail" position="bottom-right" width="320">
+      <div id="demo-modal-detail-body" style="font-family: var(--typography-mono); font-size: var(--font-size-sm);">
+      </div>
+    </sp-modal>
+
+    <sp-modal id="demo-modal-long-title" title="This Title Is Intentionally Very Long to Test Truncation Behavior in the Modal Header" position="center" width="320">
+      <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 0;">
+        The title should truncate with an ellipsis rather than wrapping or overflowing the header.
+      </p>
+    </sp-modal>
+
+    <sp-modal id="demo-modal-empty" title="Empty Content" position="center" width="300">
+    </sp-modal>
+
+    <sp-modal id="demo-modal-overflow" title="Scrollable Content" position="center" width="360">
+      <div style="font-family: var(--typography-mono); font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        <p style="margin: 0 0 var(--spacing-md) 0;">This modal has enough content to exceed the max-height constraint, triggering internal scrolling.</p>
+        <p style="margin: 0 0 var(--spacing-md) 0;">The modal is capped at 80vh. When content exceeds that, the content area scrolls while the header stays fixed.</p>
+        <p style="margin: 0 0 var(--spacing-md) 0;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <p style="margin: 0 0 var(--spacing-md) 0;">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p style="margin: 0 0 var(--spacing-md) 0;">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+        <p style="margin: 0 0 var(--spacing-md) 0;">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p style="margin: 0 0 var(--spacing-md) 0;">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
+        <p style="margin: 0;">Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores.</p>
+      </div>
+    </sp-modal>
+
+    <sp-modal id="demo-modal-top-right" title="Top Right" position="top-right" width="280">
+      <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 0;">
+        Anchored to the top-right corner. Useful for notifications or status panels.
+      </p>
+    </sp-modal>
+
+    <script>
+      window._showTokenDetail = function(token, value, desc) {
+        const modal = document.getElementById('demo-modal-detail');
+        const body = document.getElementById('demo-modal-detail-body');
+        body.innerHTML =
+          '<div style="margin-bottom: var(--spacing-md);">' +
+            '<span style="color: var(--color-text-muted);">Token</span><br>' +
+            '<code>' + token + '</code>' +
+          '</div>' +
+          '<div style="margin-bottom: var(--spacing-md);">' +
+            '<span style="color: var(--color-text-muted);">Value</span><br>' +
+            '<span style="color: var(--color-text);">' + value + '</span>' +
+          '</div>' +
+          '<div style="margin-bottom: var(--spacing-md);">' +
+            '<div style="height: 20px; background: var(--color-gray-300); ' +
+              'border-radius: var(--radius-sm); width: ' + value + '; min-width: 2px;"></div>' +
+          '</div>' +
+          '<div>' +
+            '<span style="color: var(--color-text-muted);">Usage</span><br>' +
+            '<span style="color: var(--color-text);">' + desc + '</span>' +
+          '</div>';
+        modal.setAttribute('title', token);
+        if (!modal.hasAttribute('open')) {
+          modal.open();
+        }
+      };
+    </script>"""
 
 
 def _section_code_block() -> str:
