@@ -1,6 +1,8 @@
 import logging
 import sys
+from pathlib import Path
 
+from design_kit.build import build
 from design_kit.cli import parse_args
 from design_kit.logging import configure_logging, get_logger
 
@@ -15,7 +17,15 @@ def main(args: list[str] | None = None) -> int:
     configure_logging(level=log_level)
 
     try:
-        logger.info("design-kit: no command specified")
+        if parsed_args.command == "build":
+            build(
+                tokens_path=Path(parsed_args.tokens_path),
+                output_dir=Path(parsed_args.output_dir),
+            )
+        else:
+            print(
+                "usage: design-kit <command>\n\ncommands:\n  build  Generate tokens.css and preview.html"
+            )
         return 0
     except Exception as e:
         logger.error(f"Error during execution: {e}")
