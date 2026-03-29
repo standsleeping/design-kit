@@ -1,5 +1,7 @@
 # Visual Language
 
+This document describes the aesthetic choices specific to design-kit. It builds on the universal visual design principles in [system-principles](https://github.com/standsleeping/system-principles) (TOKEN_DRIVEN_DESIGN, COLOR_USAGE, ONE_SIGNAL_PER_MEANING, DATA_INK_RATIO, VISUAL_ENCODING, SUBORDINATE_VISUALIZATION, SIMPLIFICATION_PATTERNS, FOCUS_STATES, RESPONSIVE_COMPONENTS, and the layout/ui-debugging groups). Those principles apply to any frontend project; the choices below apply to projects using this design system.
+
 ## Identity
 
 Data-forward interfaces that feel like well-designed developer tools: an IDE, a Bloomberg terminal, a thoughtfully formatted CLI output. Monospace typography carries structure. Greyscale carries hierarchy. Color is scarce and therefore meaningful. The aesthetic is modern and minimal, not nostalgically retro.
@@ -9,6 +11,8 @@ Data-forward interfaces that feel like well-designed developer tools: an IDE, a 
 ### 1. Monospace is the default
 
 The primary typeface is monospace. Proportional fonts are the exception, used only where monospace actively hinders readability (long prose paragraphs). Headings, labels, data, navigation, and UI chrome are all monospace. This creates natural grid alignment without effort.
+
+Monospace is also a branding device. When headings, navigation, identity blocks, and data all share the same typographic voice, the typeface itself becomes the brand signature. A stacked monospace identity block (product name, organization, version or year) reads as a mark without requiring a logo. The monospace grid unifies every surface of the product into a single visual identity.
 
 ### 2. Greyscale carries hierarchy
 
@@ -20,15 +24,23 @@ Color appears only to encode meaning: status (fresh/stale/error), interactive af
 
 ### 4. Strip decoration, not structure
 
-Semantic structure serves comprehension: tables for tabular data, column headers for labeling, grouped sections for categories. These are not decoration; removing them loses information. What is decorative: card borders drawn around content, rounded-corner panels, drop shadow depth, boxes for visual grouping. Grouping is achieved through proximity, shared indentation, shared background shade, or a single structural border (one side only: left for hierarchy, bottom for sequence). If removing a border changes nothing about comprehension, remove it. If removing a table header or a section grouping makes data harder to scan, it was structural.
+Semantic structure serves comprehension: tables for tabular data, column headers for labeling, grouped sections for categories. These are not decoration; removing them loses information. What is decorative: card borders drawn around content, rounded-corner panels, drop shadow depth, boxes for visual grouping. Grouping is achieved through proximity, shared indentation, shared background shade, or a single structural border (one side only: left for hierarchy, bottom for sequence). Prefer single-side borders over full boxes. Avoid rounded corners on small elements (badges, inline code); the monospace grid favors sharp geometry. If removing a border changes nothing about comprehension, remove it. If removing a table header or a section grouping makes data harder to scan, it was structural.
+
+**ASCII structural ornament.** Plaintext characters can serve as structural devices within the monospace grid. Dot leaders align a label to a value across a wide column. Bracket-delimited labels (`[ ACTION ]`) mark interactive elements or section roles. Pipe-delimited lists (`Manual | Status | Pricing`) present inline navigation. Horizontal rules from repeated characters (`------`, `~~~`) separate sections at a visible but lightweight level. These are not decoration because they carry meaning: containment, separation, alignment. They belong to the monospace grid and reinforce the terminal aesthetic. The test remains the same: if removing the character sequence loses structural information, it is justified.
 
 ### 5. Density over whitespace
 
 Favor compact presentation. Padding is tight. Line height is close. More information visible at once is better than fewer items with generous breathing room. The interface rewards scanning, not scrolling. This does not mean cramped; spacing is consistent and deliberate, just minimal. Spacing carries hierarchy: the gap between sections should be visibly larger than the gap between rows within a section. Tight inside, clear separation between.
 
+**Transparent by default.** Badges, labels, and inline text elements have transparent backgrounds with no padding or border-radius. Reserve background color for major container surfaces (see Background shading below). Small elements should not compete for attention; let the content hierarchy do the work.
+
 ### 6. Typography is structure
 
-Weight, size, and shade create hierarchy without color or decoration. Use normal title or sentence casing; forced lowercase and forced uppercase are both affectations. Section labels are small and muted. Data values are regular weight. Emphasis uses weight (medium/semibold), never italic, never underline (except links). The font size range is narrow; hierarchy comes from weight and color more than from dramatic size differences.
+Weight, size, and shade create hierarchy without color or decoration. Section labels are small and muted. Data values are regular weight. Emphasis uses weight (medium/semibold), never italic, never underline (except links). The font size range is narrow; hierarchy comes from weight and color more than from dramatic size differences.
+
+**Case treatment.** Normal title or sentence casing is the default for body text and most labels. Uppercase with letter-spacing is acceptable for headings and section labels when it reinforces the monospace/terminal identity; it signals structural landmarks in a page of otherwise quiet text. Do not use forced lowercase as an affectation.
+
+**Rendered heading markers.** The `#` and `##` characters from markdown can be rendered literally as structural prefixes alongside heading text. This treats them as visible typographic elements (not hidden semantic markup), reinforcing the plaintext aesthetic. Use this treatment selectively; it works best in editorial or changelog contexts where the raw-document feel is intentional.
 
 ### 7. Dividers reflect hierarchy
 
@@ -36,7 +48,43 @@ Borders and rules carry hierarchy just like text. A section boundary is a heavie
 
 ### 8. Let the data lead
 
-Tables, numbers, and values are first-class. Column headers exist when needed but are understated (muted, lightweight). Data rows have no row-level decoration; the grid alignment of monospace text provides implicit structure. Right-align numbers. Use fixed-width formatting so values scan vertically. Order columns by importance: primary data (values, dates, counts) before metadata (frequency, classification, source). Drop columns whose information is already communicated by context; if rows are grouped by category, a category column within the table is noise.
+Tables, numbers, and values are first-class. Column headers exist when needed but are understated (muted, lightweight). Data rows have no row-level decoration; the grid alignment of monospace text provides implicit structure. Right-align numbers. Use fixed-width formatting so values scan vertically. Order columns by importance: primary data (values, dates, counts) before metadata (frequency, classification, source). Drop columns whose information is already communicated by context; if rows are grouped by category, a category column within the table is noise. Inline visualizations (sparklines, mini charts) sit alongside data in the table; they supplement the numbers, not replace them. Charts are subordinate to the table structure, not standalone elements.
+
+**Demote metadata.** Technical identifiers, internal codes, and timestamps are for the system, not the reader. Make them small, light, and peripheral. If metadata appears at the same visual weight as content, it competes for attention it hasn't earned.
+
+### 9. Dual visual register
+
+A design system can operate with two coherent visual languages applied to different contexts. One register is raw and editorial: full monospace typography, minimal chrome, plaintext structural ornament, content as interface. This register suits marketing pages, changelogs, landing pages, and anywhere the product voice should feel direct and unmediated. The other register is structured and conventional: multi-column layouts, proportional body text, navigational sidebars, and standard documentation patterns. This register suits reference documentation, API guides, and long-form technical content.
+
+The two registers share foundational tokens (typeface families, color palette, spacing scale, border treatments) and key identity markers (monospace headings, uppercase section labels, restrained color, terminal-inflected ornament). They diverge in density, layout, and the ratio of monospace to proportional text. Both must feel like the same product. If a user moves from a changelog page to a reference page, the transition should feel like changing rooms in the same building, not visiting a different site.
+
+### 10. Interactive elements are understated
+
+Interactive affordances (search bars, theme toggles, collapsible sections, copy buttons, code block toolbars) must respect the monospace/greyscale discipline. They should never compete with content for attention.
+
+Prefer icon-only controls where the action is universally understood (clipboard icon for copy, magnifying glass for search, chevron for expand/collapse). Show secondary actions on hover or focus rather than permanently. Search inputs use a simple text field with a keyboard-shortcut hint (`Cmd+K`) rather than a prominent styled bar. Theme toggles (light/dark/system) are small, peripheral controls placed in headers or footers. Code block toolbars (copy, additional actions) sit in the top corner of the block and use muted icons that become visible on hover.
+
+All interactive elements use the same stone palette as surrounding chrome. The only color exception is focus rings and active-state indicators, which use the standard interactive color (blue-600) for accessibility.
+
+## Content Patterns for Developer Documentation
+
+These are structural patterns for presenting technical content. They describe information architecture, not visual styling; the principles above govern how they look.
+
+### Tabbed code blocks
+
+When the same operation can be expressed in multiple languages or tools, present them in a tabbed container. Tabs sit directly above the code block. The active tab is visually connected to the block below it (no border between them); inactive tabs are muted. Each tab switches the code content without changing the surrounding prose. Common tab sets: language variants (TypeScript / Python / Go / cURL), environment variants (development / production), or tool variants (SDK / HTTP).
+
+### API parameter documentation
+
+Document each parameter as a distinct entry with a consistent structure: parameter name in monospace (bold or semibold), followed by a type badge (`string`, `object`, `boolean`), followed by a `required` tag where applicable, followed by a description. The name, type, and tag sit on one line or visual row; the description follows immediately below or inline. Group parameters by context (path parameters, query parameters, request body fields). Nested object fields are indented under their parent.
+
+### Progressive configuration build-up
+
+Introduce a concept, then show its configuration, then demonstrate usage. This three-beat pattern (concept, config, action) prevents the reader from encountering configuration without context or examples without setup. Each beat can be a short paragraph followed by a code block. The sequence builds confidence: the reader understands why before encountering how.
+
+### Numbered step sequences
+
+Multi-step procedures use numbered lists where order matters. Each step is a single action; compound steps are broken apart. Steps can contain code blocks, and each code block shows only what that step adds or changes. Avoid presenting a complete configuration at step one; build it up across steps so the reader can follow the accumulation.
 
 ## Token Application Guide
 
@@ -57,6 +105,8 @@ Tables, numbers, and values are first-class. Column headers exist when needed bu
 | Interactive focus | Focus ring (blue-600, standard accessibility pattern) |
 | Adjacent surfaces of different shade | Border at the boundary for clean contrast |
 | Navigation | None; text links with spacing |
+| Fieldset-style bordered sections | Thin border (1px, stone-300) around content; heading label breaks the top edge, creating a titled container. Use sparingly for grouping related controls or pricing tiers. |
+| Changelog metadata block | Bottom rule (stone-300) separating the metadata header (date, author, feature labels) from the entry body |
 
 ### Background shading
 
@@ -79,6 +129,7 @@ Different surfaces use different shades. Where two shades meet, a border creates
 | Stale / warning | amber-700 | Status dots, badges |
 | Error / critical | red-700 | Status dots, badges |
 | Interactive / link | blue-600 | Links, focus rings |
+| Required tag | red-700 | API parameter "required" indicator |
 | Everything else | stone palette | All chrome, text, backgrounds |
 
 ### Spacing defaults
@@ -91,3 +142,30 @@ Tight by default. Use the lower end of the spacing scale for internal padding (x
 | Section gap | lg to xl (0.75-1rem) |
 | Page margin | 2xl (1.5rem) |
 | Between label and content | xs to sm (0.125-0.25rem) |
+
+### Structural ornament patterns
+
+These plaintext devices replace graphical decoration within the monospace grid.
+
+| Pattern | Usage | Example |
+|---------|-------|---------|
+| Dot leaders | Align a left-hand label to a right-hand value across a wide measure | `2026-03-15  Added webhook support ............ jdoe` |
+| Bracket-delimited labels | Mark interactive elements, call-to-action links, or section roles | `[ VIEW DOCS ]`, `[ REQUIRED ]` |
+| Pipe-delimited lists | Inline navigation or compact horizontal lists | `Manual | Status | Pricing | Terms` |
+| Horizontal rules | Section separation; character choice signals weight | `------` (light), `======` (heavy), `~~~` (soft) |
+| Asterisk bullets | List items in editorial/changelog contexts | `* Added repository mirroring` |
+| Rendered heading markers | Visible `#` or `##` prefixes on headings in editorial contexts | `## Changelog` rendered with literal `##` |
+
+### Data visualization
+
+Inline charts follow the same greyscale discipline as the rest of the interface. They are small, dense, and embedded in context (inside a table cell, next to a value) rather than presented as standalone elements.
+
+| Element | Treatment |
+|---------|-----------|
+| Line/stroke | stone-500, 1px |
+| Data points | stone-500, small circles (r=1.5) |
+| Filled area | stone-200 (lighter shade beneath the line) |
+| Axes, gridlines, labels | Absent; the surrounding table provides context |
+| Size | Compact; sized to fit within a table row (e.g., 120x24px) |
+
+Charts use no color unless encoding semantic meaning (e.g., a red segment for a threshold breach). The default chart is entirely greyscale. Prefer server-rendered inline SVG over client-side charting libraries; it keeps the page dependency-free and renders instantly.
