@@ -131,15 +131,10 @@ export class SPToc extends SPElement {
 SPToc.componentStyles.replaceSync(`
   :host {
     display: block;
-    position: sticky;
-    top: var(--spacing-xl, 1rem);
-    max-height: calc(100vh - var(--spacing-3xl, 2rem));
-    overflow-y: auto;
-    width: var(--layout-toc-width, 200px);
   }
 
   .toc {
-    padding: var(--spacing-md) 0;
+    padding: var(--spacing-xl) var(--spacing-lg);
   }
 
   .toc-label {

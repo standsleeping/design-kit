@@ -143,7 +143,9 @@ SPSidebar.componentStyles.replaceSync(`
 
   .sidebar-main {
     flex: 1;
+    overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-width: none;
     min-height: 0;
   }
 

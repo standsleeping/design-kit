@@ -129,9 +129,13 @@ DEFAULTS_LAYER = """\
   pre { background: var(--color-code-bg); padding: var(--spacing-xl); overflow-x: auto; border-radius: var(--radius-md); line-height: var(--font-line-height-base); }
   pre code { background: none; padding: 0; }
   blockquote { padding: var(--spacing-lg) var(--spacing-xl); border-left: 4px solid var(--color-gray-400); background: var(--color-code-bg); font-style: italic; }
-  table { border-collapse: collapse; width: 100%; }
+  table { border-collapse: collapse; width: 100%; font-size: var(--font-size-sm); }
   th, td { padding: var(--spacing-sm) var(--spacing-lg); text-align: left; border-bottom: 1px solid var(--color-border); }
-  th { font-family: var(--typography-heading); font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); }
+  th { font-family: var(--typography-heading); font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); border-bottom-width: var(--border-width-medium); border-bottom-color: var(--color-gray-400); }
+  caption { font-family: var(--typography-heading); font-size: var(--font-size-sm); color: var(--color-text-muted); text-align: left; padding-bottom: var(--spacing-md); }
+  .content-table th { position: sticky; top: 0; background: var(--color-bg); z-index: var(--z-sticky); }
+  .data-table { overflow-x: auto; }
+  @media (max-width: 600px) { th, td { padding: var(--spacing-xs); font-size: var(--font-size-xs); } }
   .heading-anchor { color: inherit; text-decoration: none; font-weight: inherit; }
   .heading-anchor:hover { text-decoration: none; }
   .heading-anchor::after { content: " #"; color: transparent; font-weight: var(--font-weight-regular); transition: color 0.15s ease; }

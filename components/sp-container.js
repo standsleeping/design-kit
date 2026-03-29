@@ -45,7 +45,7 @@ SPContainer.componentStyles.replaceSync(`
   }
 
   .container-standard {
-    padding: var(--spacing-xl) var(--spacing-2xl);
+    padding: var(--spacing-xl) 0;
     gap: var(--spacing-xl);
   }
 

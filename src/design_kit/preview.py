@@ -21,9 +21,11 @@ def generate_preview_html() -> str:
         _section_typography(),
         _section_spacing(),
         _section_borders(),
+        _section_tables(),
         _section_buttons(),
         _section_icon_buttons(),
         _section_tab_bar(),
+        _section_segmented_toggle(),
         _section_collapsible(),
         _section_code_block(),
         _section_breadcrumb(),
@@ -289,12 +291,14 @@ def _sidebar() -> str:
       <a class="nav-link" href="#typography">Typography</a>
       <a class="nav-link" href="#spacing">Spacing</a>
       <a class="nav-link" href="#borders">Borders</a>
+      <a class="nav-link" href="#tables">Tables</a>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Components</div>
       <a class="nav-link" href="#buttons">Buttons</a>
       <a class="nav-link" href="#icon-buttons">Icon Buttons</a>
       <a class="nav-link" href="#tab-bar">Tab Bar</a>
+      <a class="nav-link" href="#segmented-toggle">Segmented Toggle</a>
       <a class="nav-link" href="#collapsible">Collapsible Section</a>
     </div>
     <div class="nav-section">
@@ -316,9 +320,11 @@ _SECTIONS: list[dict[str, str | int]] = [
     {"id": "typography", "label": "Typography", "level": 0},
     {"id": "spacing", "label": "Spacing Scale", "level": 0},
     {"id": "borders", "label": "Borders", "level": 0},
+    {"id": "tables", "label": "Tables", "level": 0},
     {"id": "buttons", "label": "Buttons", "level": 0},
     {"id": "icon-buttons", "label": "Icon Buttons", "level": 1},
     {"id": "tab-bar", "label": "Tab Bar", "level": 0},
+    {"id": "segmented-toggle", "label": "Segmented Toggle", "level": 1},
     {"id": "collapsible", "label": "Collapsible", "level": 0},
     {"id": "code-block", "label": "Code Block", "level": 0},
     {"id": "breadcrumb", "label": "Breadcrumb", "level": 1},
@@ -633,6 +639,48 @@ def _section_borders() -> str:
     </div>"""
 
 
+def _section_tables() -> str:
+    return f"""\
+    <div class="section">
+      {_heading("tables", "Tables")}
+
+      <div class="subsection">
+        <div class="subsection-heading">Content Table</div>
+        <div class="demo-label">Sticky headers, no horizontal scroll. For tables embedded in prose. Headers stick when the page scrolls.</div>
+        <div class="content-table" style="margin-top: var(--spacing-md);">
+          <table>
+            <caption>Design token categories</caption>
+            <thead><tr><th>Category</th><th>Purpose</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td>Color</td><td>Visual identity</td><td><code>--color-gray-500</code></td></tr>
+              <tr><td>Spacing</td><td>Consistent rhythm</td><td><code>--spacing-lg</code></td></tr>
+              <tr><td>Radius</td><td>Corner rounding</td><td><code>--radius-md</code></td></tr>
+              <tr><td>Typography</td><td>Font stacks</td><td><code>--typography-mono</code></td></tr>
+              <tr><td>Shadow</td><td>Depth cues</td><td><code>--shadow-sm</code></td></tr>
+              <tr><td>Motion</td><td>Transitions</td><td><code>--motion-duration-fast</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-heading">Data Table</div>
+        <div class="demo-label">Horizontal scroll wrapper. For wide tables with many columns.</div>
+        <div class="data-table" style="margin-top: var(--spacing-md);">
+          <table>
+            <thead><tr><th>Component</th><th>Category</th><th>Props</th><th>Events</th><th>Slots</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>sp-button</td><td>Actions</td><td>variant, disabled, type</td><td>\u2014</td><td>default</td><td>Stable</td></tr>
+              <tr><td>sp-tab-bar</td><td>Navigation</td><td>active</td><td>sp-tab-change</td><td>sp-tab children</td><td>Stable</td></tr>
+              <tr><td>sp-segmented-toggle</td><td>Controls</td><td>active</td><td>sp-toggle-change</td><td>sp-option children</td><td>New</td></tr>
+              <tr><td>sp-collapsible-section</td><td>Layout</td><td>title, expanded, count</td><td>\u2014</td><td>default</td><td>Stable</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>"""
+
+
 def _section_buttons() -> str:
     return f"""\
     <div class="section">
@@ -685,6 +733,46 @@ def _section_tab_bar() -> str:
           <sp-tab id="examples" label="Examples"></sp-tab>
           <sp-tab id="changelog" label="Changelog"></sp-tab>
         </sp-tab-bar>
+      </div>
+    </div>"""
+
+
+def _section_segmented_toggle() -> str:
+    return f"""\
+    <div class="section">
+      {_heading("segmented-toggle", "Segmented Toggle")}
+
+      <div class="subsection">
+        <div class="subsection-heading">Two Options</div>
+        <div class="component-demo">
+          <sp-segmented-toggle active="claude-code">
+            <sp-option id="claude-code" label="Claude Code"></sp-option>
+            <sp-option id="cursor" label="Cursor"></sp-option>
+          </sp-segmented-toggle>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-heading">Three Options</div>
+        <div class="component-demo">
+          <sp-segmented-toggle active="months">
+            <sp-option id="months" label="Months"></sp-option>
+            <sp-option id="weeks" label="Weeks"></sp-option>
+            <sp-option id="days" label="Days"></sp-option>
+          </sp-segmented-toggle>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-heading">Four Options</div>
+        <div class="component-demo">
+          <sp-segmented-toggle active="all">
+            <sp-option id="all" label="All"></sp-option>
+            <sp-option id="now" label="Now"></sp-option>
+            <sp-option id="next" label="Next"></sp-option>
+            <sp-option id="later" label="Later"></sp-option>
+          </sp-segmented-toggle>
+        </div>
       </div>
     </div>"""
 
