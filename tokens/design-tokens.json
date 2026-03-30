@@ -158,7 +158,7 @@
     "color": {
       "bg": "{color.gray.50}",
       "text": "{color.gray.700}",
-      "text-muted": "{color.gray.400}",
+      "text-muted": "{color.gray.500}",
       "link": "{color.purple.500}",
       "border": "{color.gray.200}",
       "code-bg": "{color.gray.100}",
@@ -170,9 +170,9 @@
       "selected-bg": "{color.gray.100}",
       "syntax-keyword": "{color.purple.500}",
       "syntax-string": "{color.gray.700}",
-      "syntax-comment": "{color.gray.400}",
+      "syntax-comment": "{color.gray.500}",
       "syntax-function": "{color.purple.500}",
-      "syntax-punctuation": "{color.gray.400}",
+      "syntax-punctuation": "{color.gray.500}",
       "accent-bg": "{color.purple.100}",
       "accent-bg-hover": "{color.purple.200}",
       "success": "{color.green.500}"
