@@ -85,7 +85,7 @@ SPSearchInput.componentStyles.replaceSync(`
     width: 100%;
     min-width: 120px;
     font-family: var(--typography-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     line-height: var(--font-line-height-base);
     color: var(--color-text);
     background: transparent;

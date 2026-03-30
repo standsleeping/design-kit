@@ -60,7 +60,7 @@ SPMenuItem.componentStyles.replaceSync(`
     background: transparent;
     color: var(--color-text-muted);
     font-family: var(--typography-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     text-align: left;
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;

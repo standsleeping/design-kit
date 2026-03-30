@@ -100,7 +100,7 @@ SPTextInput.componentStyles.replaceSync(`
     width: 100%;
     min-width: 120px;
     font-family: var(--typography-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text);
     background: var(--color-bg);
     border: 1px solid var(--color-border);

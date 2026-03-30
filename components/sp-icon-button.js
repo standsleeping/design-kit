@@ -67,7 +67,7 @@ SPIconButton.componentStyles.replaceSync(`
   .icon-btn-sm {
     width: 24px;
     height: 24px;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     border-radius: var(--radius-sm);
   }
 
@@ -76,7 +76,7 @@ SPIconButton.componentStyles.replaceSync(`
   .icon-btn-default {
     width: 32px;
     height: 32px;
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     border-radius: var(--radius-md);
   }
 
@@ -85,7 +85,7 @@ SPIconButton.componentStyles.replaceSync(`
   .icon-btn-touch {
     width: 40px;
     height: 40px;
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
     border-radius: var(--radius-md);
   }
 

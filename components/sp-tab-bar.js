@@ -109,7 +109,7 @@ SPTabBar.componentStyles.replaceSync(`
 
   .tab {
     padding: var(--spacing-xs) 0;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     font-family: var(--typography-mono);
     color: var(--color-text-muted);
     background: transparent;
@@ -137,7 +137,7 @@ SPTabBar.componentStyles.replaceSync(`
 
   .separator {
     color: var(--color-gray-300);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     user-select: none;
   }
 `);

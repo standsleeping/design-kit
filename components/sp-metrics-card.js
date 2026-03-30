@@ -71,7 +71,7 @@ SPMetricsCard.componentStyles.replaceSync(`
     border-radius: var(--radius-sm);
     background: var(--color-bg);
     font-family: var(--typography-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text);
   }
 

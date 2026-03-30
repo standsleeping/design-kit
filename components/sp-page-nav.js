@@ -100,7 +100,7 @@ SPPageNav.componentStyles.replaceSync(`
 
   .label {
     font-family: var(--typography-mono);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text);
     transition: color 0.15s ease;

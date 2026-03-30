@@ -268,7 +268,7 @@ SPModal.componentStyles.replaceSync(`
 
   .modal-title {
     font-family: var(--typography-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text);
     overflow: hidden;
@@ -283,7 +283,7 @@ SPModal.componentStyles.replaceSync(`
     width: 24px;
     height: 24px;
     padding: 0;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     background: none;
     border: none;

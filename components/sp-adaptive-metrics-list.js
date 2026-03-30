@@ -293,7 +293,7 @@ SPAdaptiveMetricsList.componentStyles.replaceSync(`
     overflow: hidden;
     background: var(--color-bg);
     font-family: var(--typography-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
   }
 
   .aml-header {

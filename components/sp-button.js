@@ -40,7 +40,7 @@ SPButton.componentStyles.replaceSync(`
     gap: var(--spacing-sm);
     padding: var(--spacing-md) var(--spacing-xl);
     font-family: var(--typography-body);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     line-height: var(--font-line-height-base);
     color: var(--color-text);

@@ -55,7 +55,7 @@ def generate_components_preview_html() -> str:
     .viewer-name {
       margin: 0 0 var(--spacing-xs) 0;
       font-family: var(--typography-mono);
-      font-size: var(--font-size-lg);
+      font-size: var(--font-size-base);
       color: var(--color-text);
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
@@ -63,7 +63,7 @@ def generate_components_preview_html() -> str:
     .viewer-desc {
       margin: 0 0 var(--spacing-lg) 0;
       font-family: var(--typography-mono);
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-xs);
       color: var(--color-text-muted);
     }
     #component-list {
@@ -79,7 +79,7 @@ def generate_components_preview_html() -> str:
       color: var(--color-text-muted);
       text-align: left;
       font-family: var(--typography-mono);
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-xs);
       padding: var(--spacing-sm) var(--spacing-md);
       cursor: pointer;
     }

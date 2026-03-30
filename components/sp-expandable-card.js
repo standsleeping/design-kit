@@ -151,7 +151,7 @@ SPExpandableCard.componentStyles.replaceSync(`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);

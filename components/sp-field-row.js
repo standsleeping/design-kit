@@ -55,7 +55,7 @@ SPFieldRow.componentStyles.replaceSync(`
   .field-row-label {
     color: var(--color-text-muted);
     font-family: var(--typography-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

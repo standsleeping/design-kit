@@ -99,7 +99,7 @@ SPBottomTabBar.componentStyles.replaceSync(`
     min-height: 44px;
     padding: var(--spacing-sm) var(--spacing-md);
     font-family: var(--typography-body);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     background: transparent;
