@@ -100,7 +100,7 @@ SPSearchInput.componentStyles.replaceSync(`
   }
 
   .search-input:hover {
-    border-color: var(--color-gray-300);
+    border-color: var(--color-text-muted);
   }
 
   .search-input:focus-visible {

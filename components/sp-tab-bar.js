@@ -121,7 +121,7 @@ SPTabBar.componentStyles.replaceSync(`
   }
 
   .tab:hover {
-    color: var(--color-gray-600);
+    color: var(--color-text);
   }
 
   .tab:focus-visible {
@@ -136,7 +136,7 @@ SPTabBar.componentStyles.replaceSync(`
   }
 
   .separator {
-    color: var(--color-gray-300);
+    color: var(--color-text-muted);
     font-size: var(--font-size-xs);
     user-select: none;
   }

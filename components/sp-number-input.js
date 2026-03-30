@@ -122,7 +122,7 @@ SPNumberInput.componentStyles.replaceSync(`
   }
 
   .number-input:hover {
-    border-color: var(--color-gray-300);
+    border-color: var(--color-text-muted);
   }
 
   .number-input:focus-visible {

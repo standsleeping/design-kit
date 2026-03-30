@@ -52,8 +52,8 @@ SPButton.componentStyles.replaceSync(`
   }
 
   .btn:hover {
-    background: var(--color-gray-100);
-    border-color: var(--color-gray-400);
+    background: var(--color-hover-bg);
+    border-color: var(--color-border);
   }
 
   .btn:focus-visible {

@@ -118,7 +118,7 @@ SPSelect.componentStyles.replaceSync(`
   }
 
   .select:hover {
-    border-color: var(--color-gray-300);
+    border-color: var(--color-text-muted);
   }
 
   .select:focus-visible {

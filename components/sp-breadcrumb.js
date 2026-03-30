@@ -68,7 +68,7 @@ SPBreadcrumb.componentStyles.replaceSync(`
   }
 
   a.crumb:hover {
-    color: var(--color-gray-600);
+    color: var(--color-text);
   }
 
   a.crumb:focus-visible {
@@ -83,7 +83,7 @@ SPBreadcrumb.componentStyles.replaceSync(`
   .separator {
     font-family: var(--typography-mono);
     font-size: var(--font-size-xs);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     user-select: none;
   }
 

@@ -76,7 +76,7 @@ SPCollapsibleSection.componentStyles.replaceSync(`
   }
 
   .header:hover {
-    background: var(--color-gray-100);
+    background: var(--color-hover-bg);
   }
 
   .header:focus-visible {

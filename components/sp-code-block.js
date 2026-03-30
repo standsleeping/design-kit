@@ -159,7 +159,7 @@ SPCodeBlock.componentStyles.replaceSync(`
   }
 
   .lang-tab:hover {
-    color: var(--color-gray-600);
+    color: var(--color-text);
   }
 
   .lang-tab:focus-visible {
@@ -174,7 +174,7 @@ SPCodeBlock.componentStyles.replaceSync(`
   }
 
   .separator {
-    color: var(--color-gray-300);
+    color: var(--color-text-muted);
     font-size: var(--font-size-xs);
     user-select: none;
   }
@@ -201,7 +201,7 @@ SPCodeBlock.componentStyles.replaceSync(`
 
   .copy-btn:hover {
     color: var(--color-text);
-    border-color: var(--color-gray-400);
+    border-color: var(--color-text-muted);
   }
 
   .copy-btn:focus-visible {

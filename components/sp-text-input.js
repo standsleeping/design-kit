@@ -114,7 +114,7 @@ SPTextInput.componentStyles.replaceSync(`
   }
 
   .text-input:hover {
-    border-color: var(--color-gray-300);
+    border-color: var(--color-text-muted);
   }
 
   .text-input:focus-visible {

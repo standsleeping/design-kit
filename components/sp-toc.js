@@ -190,7 +190,7 @@ SPToc.componentStyles.replaceSync(`
   }
 
   .toc-link:hover {
-    color: var(--color-gray-600);
+    color: var(--color-text);
   }
 
   .toc-link:focus-visible {

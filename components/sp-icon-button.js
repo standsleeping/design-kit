@@ -47,11 +47,11 @@ SPIconButton.componentStyles.replaceSync(`
   }
 
   .icon-btn:hover {
-    background: var(--color-gray-100);
+    background: var(--color-hover-bg);
   }
 
   .icon-btn:active {
-    background: var(--color-gray-200);
+    background: var(--color-active-bg);
   }
 
   .icon-btn:focus-visible {
@@ -71,7 +71,7 @@ SPIconButton.componentStyles.replaceSync(`
     border-radius: var(--radius-sm);
   }
 
-  .icon-btn-sm:hover { color: var(--color-gray-600); }
+  .icon-btn-sm:hover { color: var(--color-text); }
 
   .icon-btn-default {
     width: 32px;
@@ -80,7 +80,7 @@ SPIconButton.componentStyles.replaceSync(`
     border-radius: var(--radius-md);
   }
 
-  .icon-btn-default:hover { color: var(--color-gray-700); }
+  .icon-btn-default:hover { color: var(--color-text); }
 
   .icon-btn-touch {
     width: 40px;
@@ -89,7 +89,7 @@ SPIconButton.componentStyles.replaceSync(`
     border-radius: var(--radius-md);
   }
 
-  .icon-btn-touch:hover { color: var(--color-gray-700); }
+  .icon-btn-touch:hover { color: var(--color-text); }
 `);
 
 customElements.define('sp-icon-button', SPIconButton);
