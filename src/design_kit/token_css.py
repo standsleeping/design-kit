@@ -57,7 +57,7 @@ def _build_tokens_layer(
     dark_overrides: list[tuple[str, str]] | None = None,
 ) -> str:
     """Build the @layer tokens block with :root custom properties."""
-    lines = ["@layer tokens {", "  :root {"]
+    lines = ["@layer tokens {", "  :root {", "    color-scheme: light;"]
 
     current_category = ""
     for name, value in primitives:
@@ -82,6 +82,7 @@ def _build_tokens_layer(
         lines.append("")
         lines.append("  @media (prefers-color-scheme: dark) {")
         lines.append("    :root {")
+        lines.append("      color-scheme: dark;")
         for name, value in dark_overrides:
             lines.append(f"      --{name}: {value};")
         lines.append("    }")
@@ -90,6 +91,7 @@ def _build_tokens_layer(
         # Manual dark toggle
         lines.append("")
         lines.append('  [data-theme="dark"] {')
+        lines.append("    color-scheme: dark;")
         for name, value in dark_overrides:
             lines.append(f"    --{name}: {value};")
         lines.append("  }")
@@ -97,6 +99,7 @@ def _build_tokens_layer(
         # Manual light toggle (overrides system dark preference)
         lines.append("")
         lines.append('  [data-theme="light"] {')
+        lines.append("    color-scheme: light;")
         for name, value in semantics:
             lines.append(f"    --{name}: {value};")
         lines.append("  }")

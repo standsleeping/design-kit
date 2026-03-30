@@ -147,7 +147,7 @@ SPCodeBlock.componentStyles.replaceSync(`
 
   .lang-tab {
     padding: var(--spacing-xs) 0;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     font-family: var(--typography-mono);
     color: var(--color-text-muted);
     background: transparent;
@@ -175,7 +175,7 @@ SPCodeBlock.componentStyles.replaceSync(`
 
   .separator {
     color: var(--color-gray-300);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     user-select: none;
   }
 
@@ -191,7 +191,7 @@ SPCodeBlock.componentStyles.replaceSync(`
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     background: transparent;
-    border: 1px solid var(--color-gray-300);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-sm, 2px);
     padding: var(--spacing-xs) var(--spacing-md);
     cursor: pointer;
@@ -210,8 +210,8 @@ SPCodeBlock.componentStyles.replaceSync(`
   }
 
   .copy-btn.copied {
-    color: var(--color-green-700, #166534);
-    border-color: var(--color-green-700, #166534);
+    color: var(--color-success);
+    border-color: var(--color-success);
   }
 
   .code-pre {
@@ -219,7 +219,7 @@ SPCodeBlock.componentStyles.replaceSync(`
     padding: var(--spacing-lg) var(--spacing-xl);
     overflow-x: auto;
     font-family: var(--typography-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     line-height: var(--font-line-height-relaxed);
     color: var(--color-text);
   }

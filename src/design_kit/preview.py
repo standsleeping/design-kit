@@ -50,7 +50,7 @@ def generate_preview_html() -> str:
       padding: var(--spacing-2xl) 0 var(--spacing-xl);
     }}
     .section + .section {{
-      border-top: 1px solid var(--color-gray-200);
+      border-top: 1px solid var(--color-border);
     }}
     .section > * {{
       padding-left: var(--spacing-2xl);
@@ -58,11 +58,11 @@ def generate_preview_html() -> str:
     }}
     .section-heading {{
       font-family: var(--typography-mono);
-      font-size: var(--font-size-xl);
+      font-size: var(--font-size-lg);
       font-weight: var(--font-weight-bold);
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
-      color: var(--color-gray-700);
+      color: var(--color-text);
       margin-bottom: var(--spacing-xl);
     }}
     .subsection {{
@@ -70,34 +70,35 @@ def generate_preview_html() -> str:
     }}
     .subsection-heading {{
       font-family: var(--typography-mono);
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-xs);
       font-weight: var(--font-weight-semibold);
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-bottom: var(--spacing-md);
     }}
     .swatch-grid {{
       display: flex;
       flex-wrap: wrap;
-      gap: var(--spacing-sm);
+      gap: var(--spacing-sm) var(--spacing-md);
     }}
     .swatch {{
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: stretch;
       gap: var(--spacing-xs);
+      min-width: 40px;
     }}
     .swatch-color {{
-      width: 48px;
       height: 32px;
       border-radius: var(--radius-sm);
-      border: 1px solid var(--color-gray-200);
+      border: 1px solid rgba(128, 128, 128, 0.3);
     }}
     .swatch-label {{
       font-family: var(--typography-mono);
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
+      text-align: center;
     }}
     .type-sample {{
       padding: var(--spacing-sm) 0;
@@ -167,9 +168,9 @@ def generate_preview_html() -> str:
     }}
     .header-title {{
       font-family: var(--typography-mono);
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-xs);
       font-weight: var(--font-weight-semibold);
-      color: var(--color-gray-600);
+      color: var(--color-text);
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
     }}
@@ -184,11 +185,11 @@ def generate_preview_html() -> str:
     }}
     .sidebar-brand {{
       font-family: var(--typography-mono);
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-xs);
       font-weight: var(--font-weight-bold);
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wider);
-      color: var(--color-gray-700);
+      color: var(--color-text);
     }}
     .sidebar-version {{
       font-family: var(--typography-mono);
@@ -211,13 +212,13 @@ def generate_preview_html() -> str:
       display: block;
       font-family: var(--typography-mono);
       font-size: var(--font-size-xs);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       text-decoration: none;
       padding: var(--spacing-xs) var(--spacing-lg) var(--spacing-xs) var(--spacing-2xl);
     }}
     .nav-link:hover {{
-      color: var(--color-gray-700);
-      background: var(--color-gray-100);
+      color: var(--color-text);
+      background: var(--color-hover-bg);
       text-decoration: none;
     }}
     .sidebar-footer-block {{
@@ -233,7 +234,7 @@ def generate_preview_html() -> str:
       letter-spacing: var(--font-letter-spacing-wide);
     }}
     .sidebar-footer-link:hover {{
-      color: var(--color-gray-700);
+      color: var(--color-text);
       text-decoration: none;
     }}
     .heading-demo {{
@@ -488,18 +489,12 @@ def _section_colors() -> str:
         _color_family_swatches(name, shades) for name, shades in families
     )
 
+    syntax_names = ["keyword", "string", "comment", "function", "punctuation"]
     syntax_swatches = ""
-    syntax_colors = [
-        ("keyword", "#303B85"),
-        ("string", "#3C5F00"),
-        ("comment", "#9F9CA2"),
-        ("function", "#8300CA"),
-        ("punctuation", "#57545A"),
-    ]
-    for name, hex_val in syntax_colors:
+    for name in syntax_names:
         syntax_swatches += f"""\
       <div class="swatch">
-        <div class="swatch-color" style="background: {hex_val};"></div>
+        <div class="swatch-color" style="background: var(--color-syntax-{name});"></div>
         <span class="swatch-label">{name}</span>
       </div>
 """
@@ -520,14 +515,14 @@ def _section_colors() -> str:
 
 def _section_typography() -> str:
     sizes = [
-        ("xs", "0.6875rem"),
-        ("sm", "0.75rem"),
-        ("base", "0.8125rem"),
-        ("md", "0.875rem"),
-        ("lg", "1rem"),
-        ("xl", "1.125rem"),
-        ("2xl", "1.25rem"),
-        ("3xl", "1.5rem"),
+        ("2xs", "0.625rem"),
+        ("xs", "0.75rem"),
+        ("sm", "0.875rem"),
+        ("base", "1rem"),
+        ("lg", "1.125rem"),
+        ("xl", "1.25rem"),
+        ("2xl", "1.5rem"),
+        ("3xl", "2rem"),
     ]
     size_rows = ""
     for name, value in sizes:
@@ -548,13 +543,13 @@ def _section_typography() -> str:
         <div class="subsection-heading">Font Families</div>
         <div class="type-sample">
           <div class="type-meta">mono (IBM Plex Mono): default for UI</div>
-          <div style="font-family: var(--typography-mono); font-size: var(--font-size-base);">
+          <div style="font-family: var(--typography-mono); font-size: var(--font-size-sm);">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789
           </div>
         </div>
         <div class="type-sample">
           <div class="type-meta">sans (IBM Plex Sans): long prose</div>
-          <div style="font-family: var(--typography-body); font-size: var(--font-size-base);">
+          <div style="font-family: var(--typography-body); font-size: var(--font-size-sm);">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789
           </div>
         </div>
@@ -798,11 +793,11 @@ def _section_collapsible() -> str:
       <div class="demo-block">
         <sp-collapsible-section title="Expanded Section" expanded count="3">
           <div style="padding: var(--spacing-md) var(--spacing-lg);">
-            <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); \
+            <p style="font-family: var(--typography-mono); font-size: var(--font-size-xs); \
 color: var(--color-text-muted); margin-bottom: var(--spacing-sm);">
               Content inside a collapsible section. Click the header to toggle.
             </p>
-            <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); \
+            <p style="font-family: var(--typography-mono); font-size: var(--font-size-xs); \
 color: var(--color-text-muted);">
               Sections have sticky headers and optional item counts.
             </p>
@@ -811,7 +806,7 @@ color: var(--color-text-muted);">
 
         <sp-collapsible-section title="Collapsed Section" count="7">
           <div style="padding: var(--spacing-md) var(--spacing-lg);">
-            <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm);">
+            <p style="font-family: var(--typography-mono); font-size: var(--font-size-xs);">
               This content is hidden until expanded.
             </p>
           </div>
@@ -879,7 +874,7 @@ def _modal_instances() -> str:
     """Modal instances and script, placed at end of body to avoid parser issues."""
     return """\
     <sp-modal id="demo-modal-center" title="Center Modal" position="center" width="360">
-      <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); \
+      <p style="font-family: var(--typography-mono); font-size: var(--font-size-xs); \
 color: var(--color-text-muted); margin: 0;">
         A draggable floating panel. Content beneath remains fully visible and interactive.
         Drag the header to reposition; press Escape or the close button to dismiss.
@@ -887,7 +882,7 @@ color: var(--color-text-muted); margin: 0;">
     </sp-modal>
 
     <sp-modal id="demo-modal-corner" title="Corner Modal" position="bottom-right" width="320">
-      <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); \
+      <p style="font-family: var(--typography-mono); font-size: var(--font-size-xs); \
 color: var(--color-text-muted); margin: 0 0 var(--spacing-md) 0;">
         Positioned at the bottom-right corner, like the detail boxes in comphost.
       </p>
@@ -895,12 +890,12 @@ color: var(--color-text-muted); margin: 0 0 var(--spacing-md) 0;">
     </sp-modal>
 
     <sp-modal id="demo-modal-detail" title="Token Detail" position="bottom-right" width="320">
-      <div id="demo-modal-detail-body" style="font-family: var(--typography-mono); font-size: var(--font-size-sm);">
+      <div id="demo-modal-detail-body" style="font-family: var(--typography-mono); font-size: var(--font-size-xs);">
       </div>
     </sp-modal>
 
     <sp-modal id="demo-modal-long-title" title="This Title Is Intentionally Very Long to Test Truncation Behavior in the Modal Header" position="center" width="320">
-      <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 0;">
+      <p style="font-family: var(--typography-mono); font-size: var(--font-size-xs); color: var(--color-text-muted); margin: 0;">
         The title should truncate with an ellipsis rather than wrapping or overflowing the header.
       </p>
     </sp-modal>
@@ -909,7 +904,7 @@ color: var(--color-text-muted); margin: 0 0 var(--spacing-md) 0;">
     </sp-modal>
 
     <sp-modal id="demo-modal-overflow" title="Scrollable Content" position="center" width="360">
-      <div style="font-family: var(--typography-mono); font-size: var(--font-size-sm); color: var(--color-text-muted);">
+      <div style="font-family: var(--typography-mono); font-size: var(--font-size-xs); color: var(--color-text-muted);">
         <p style="margin: 0 0 var(--spacing-md) 0;">This modal has enough content to exceed the max-height constraint, triggering internal scrolling.</p>
         <p style="margin: 0 0 var(--spacing-md) 0;">The modal is capped at 80vh. When content exceeds that, the content area scrolls while the header stays fixed.</p>
         <p style="margin: 0 0 var(--spacing-md) 0;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
@@ -922,7 +917,7 @@ color: var(--color-text-muted); margin: 0 0 var(--spacing-md) 0;">
     </sp-modal>
 
     <sp-modal id="demo-modal-top-right" title="Top Right" position="top-right" width="280">
-      <p style="font-family: var(--typography-mono); font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 0;">
+      <p style="font-family: var(--typography-mono); font-size: var(--font-size-xs); color: var(--color-text-muted); margin: 0;">
         Anchored to the top-right corner. Useful for notifications or status panels.
       </p>
     </sp-modal>

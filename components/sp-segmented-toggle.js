@@ -120,7 +120,7 @@ SPSegmentedToggle.componentStyles.replaceSync(`
 
   .seg-btn {
     padding: var(--spacing-sm) var(--spacing-lg);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     font-family: var(--typography-mono);
     border: 1px solid var(--color-border);
     border-right: none;
@@ -147,13 +147,13 @@ SPSegmentedToggle.componentStyles.replaceSync(`
   }
 
   .seg-btn.active {
-    background: var(--color-purple-100);
+    background: var(--color-accent-bg);
     color: var(--color-link);
     font-weight: var(--font-weight-medium);
   }
 
   .seg-btn.active:hover {
-    background: var(--color-purple-200);
+    background: var(--color-accent-bg-hover);
   }
 
   .seg-btn:focus-visible {
