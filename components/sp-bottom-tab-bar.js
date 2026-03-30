@@ -14,6 +14,31 @@ export class SPBottomTabBar extends SPElement {
   static variants = [];
   static componentStyles = new CSSStyleSheet();
 
+  connectedCallback() {
+    this.render();
+  }
+
+  attributeChangedCallback(name, oldVal, newVal) {
+    if (oldVal === newVal) return;
+
+    if (name !== 'active') {
+      this.render();
+      return;
+    }
+
+    const tabs = this.shadowRoot?.querySelectorAll('.tab');
+    if (!tabs || tabs.length === 0) {
+      this.render();
+      return;
+    }
+
+    tabs.forEach((btn) => {
+      const isActive = btn.dataset.tab === (newVal ?? '');
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', String(isActive));
+    });
+  }
+
   render() {
     const active = this.prop('active');
     const tabs = Array.from(this.querySelectorAll('sp-tab'));

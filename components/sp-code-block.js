@@ -15,6 +15,35 @@ export class SPCodeBlock extends SPElement {
   static variants = [];
   static componentStyles = new CSSStyleSheet();
 
+  connectedCallback() {
+    this.render();
+  }
+
+  attributeChangedCallback(name, oldVal, newVal) {
+    if (oldVal === newVal) return;
+
+    if (name === 'active-language') {
+      const tabs = this.shadowRoot?.querySelectorAll('.lang-tab');
+      if (!tabs || tabs.length === 0) {
+        this.render();
+        return;
+      }
+      tabs.forEach((btn) => {
+        const isActive = btn.dataset.lang === (newVal ?? '');
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', String(isActive));
+      });
+      return;
+    }
+
+    if (name === 'languages') {
+      this.render();
+      return;
+    }
+
+    this.render();
+  }
+
   render() {
     const languagesAttr = this.prop('languages');
     const languages = languagesAttr

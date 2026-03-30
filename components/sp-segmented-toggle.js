@@ -51,6 +51,31 @@ export class SPSegmentedToggle extends SPElement {
 
   static componentStyles = new CSSStyleSheet();
 
+  connectedCallback() {
+    this.render();
+  }
+
+  attributeChangedCallback(name, oldVal, newVal) {
+    if (oldVal === newVal) return;
+
+    if (name !== 'active') {
+      this.render();
+      return;
+    }
+
+    const buttons = this.shadowRoot?.querySelectorAll('.seg-btn');
+    if (!buttons || buttons.length === 0) {
+      this.render();
+      return;
+    }
+
+    buttons.forEach((btn) => {
+      const isActive = btn.dataset.option === (newVal ?? '');
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-checked', String(isActive));
+    });
+  }
+
   render() {
     const active = this.prop('active');
     const options = Array.from(this.querySelectorAll('sp-option'));
