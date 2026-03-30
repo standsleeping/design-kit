@@ -119,9 +119,9 @@ DEFAULTS_LAYER = """\
 @layer defaults {
   body { font-family: var(--typography-body); color: var(--color-text); background: var(--color-bg); line-height: var(--font-line-height-relaxed); }
   h1, h2, h3, h4, h5, h6 { font-family: var(--typography-mono); line-height: var(--font-line-height-tight); text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); }
-  h1 { font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); }
-  h2 { font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); }
-  h3 { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
+  h1 { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); }
+  h2 { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
+  h3 { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); }
   a { color: var(--color-link); font-weight: var(--font-weight-semibold); text-decoration: none; }
   a:hover { text-decoration: underline; }
   a:focus { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
@@ -129,10 +129,10 @@ DEFAULTS_LAYER = """\
   pre { background: var(--color-code-bg); padding: var(--spacing-xl); overflow-x: auto; border-radius: var(--radius-md); line-height: var(--font-line-height-base); }
   pre code { background: none; padding: 0; }
   blockquote { padding: var(--spacing-lg) var(--spacing-xl); border-left: 4px solid var(--color-gray-400); background: var(--color-code-bg); font-style: italic; }
-  table { border-collapse: collapse; width: 100%; font-size: var(--font-size-sm); }
+  table { border-collapse: collapse; width: 100%; font-size: var(--font-size-xs); }
   th, td { padding: var(--spacing-sm) var(--spacing-lg); text-align: left; border-bottom: 1px solid var(--color-border); }
-  th { font-family: var(--typography-heading); font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); border-bottom-width: var(--border-width-medium); border-bottom-color: var(--color-gray-400); }
-  caption { font-family: var(--typography-heading); font-size: var(--font-size-sm); color: var(--color-text-muted); text-align: left; padding-bottom: var(--spacing-md); }
+  th { font-family: var(--typography-heading); font-weight: var(--font-weight-semibold); font-size: var(--font-size-xs); border-bottom-width: var(--border-width-medium); border-bottom-color: var(--color-gray-400); }
+  caption { font-family: var(--typography-heading); font-size: var(--font-size-xs); color: var(--color-text-muted); text-align: left; padding-bottom: var(--spacing-md); }
   .content-table th { position: sticky; top: 0; background: var(--color-bg); z-index: var(--z-sticky); }
   .data-table { overflow-x: auto; }
   @media (max-width: 600px) { th, td { padding: var(--spacing-xs); font-size: var(--font-size-xs); } }
@@ -162,11 +162,12 @@ UTILITIES_LAYER = """\
   .text-muted { color: var(--color-text-muted); }
   .font-mono { font-family: var(--typography-mono); }
   .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-  .visually-hidden:focus-visible { position: fixed; top: var(--spacing-md); left: var(--spacing-md); width: auto; height: auto; padding: var(--spacing-md) var(--spacing-xl); margin: 0; overflow: visible; clip: auto; white-space: normal; background: var(--color-bg); color: var(--color-link); font-family: var(--typography-mono); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); border: 2px solid var(--color-focus-ring); border-radius: var(--radius-md); z-index: var(--z-overlay); text-decoration: none; }
+  .visually-hidden:focus-visible { position: fixed; top: var(--spacing-md); left: var(--spacing-md); width: auto; height: auto; padding: var(--spacing-md) var(--spacing-xl); margin: 0; overflow: visible; clip: auto; white-space: normal; background: var(--color-bg); color: var(--color-link); font-family: var(--typography-mono); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); border: 2px solid var(--color-focus-ring); border-radius: var(--radius-md); z-index: var(--z-overlay); text-decoration: none; }
   .font-sans { font-family: var(--typography-body); }
   .uppercase { text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); }
-  .text-sm { font-size: var(--font-size-sm); }
+  .text-2xs { font-size: var(--font-size-2xs); }
   .text-xs { font-size: var(--font-size-xs); }
+  .text-sm { font-size: var(--font-size-sm); }
   .text-lg { font-size: var(--font-size-lg); }
   .font-medium { font-weight: var(--font-weight-medium); }
   .font-semibold { font-weight: var(--font-weight-semibold); }
