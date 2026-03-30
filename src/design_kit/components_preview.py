@@ -188,6 +188,38 @@ def generate_components_preview_html() -> str:
     }
     .meta-k { color: var(--color-text-muted); }
     .meta-v { color: var(--color-text); }
+    .event-log {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-code-bg);
+      max-height: 240px;
+      overflow: auto;
+      font-family: var(--typography-mono);
+      font-size: var(--font-size-xs);
+    }
+    .event-log-empty {
+      color: var(--color-text-muted);
+      padding: var(--spacing-sm) var(--spacing-md);
+    }
+    .event-log-row {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text);
+      line-height: var(--font-line-height-base);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .event-log-row:last-child {
+      border-bottom: none;
+    }
+    .event-log-event {
+      color: var(--color-link);
+      margin-right: var(--spacing-sm);
+    }
+    .event-log-target {
+      color: var(--color-text-muted);
+      margin-right: var(--spacing-sm);
+    }
     @media (max-width: 1100px) {
       .viewer {
         grid-template-columns: 220px 1fr;
@@ -237,6 +269,10 @@ def generate_components_preview_html() -> str:
         <div id="props-editor"></div>
         <h2 class="section-title" style="margin-top: var(--spacing-xl);">Metadata</h2>
         <div id="meta-grid" class="meta-grid"></div>
+        <h2 class="section-title" style="margin-top: var(--spacing-xl);">Event Log</h2>
+        <div id="event-log" class="event-log">
+          <div class="event-log-empty">Interact with the preview to inspect events.</div>
+        </div>
       </div>
     </aside>
   </div>
