@@ -1,6 +1,6 @@
 # Visual Language
 
-This document describes the aesthetic choices specific to design-kit. It builds on the universal visual design principles in [system-principles](https://github.com/standsleeping/system-principles) (TOKEN_DRIVEN_DESIGN, COLOR_USAGE, ONE_SIGNAL_PER_MEANING, DATA_INK_RATIO, VISUAL_ENCODING, SUBORDINATE_VISUALIZATION, SIMPLIFICATION_PATTERNS, FOCUS_STATES, RESPONSIVE_COMPONENTS, and the layout/ui-debugging groups). Those principles apply to any frontend project; the choices below apply to projects using this design system.
+This document describes the aesthetic principles and specific choices that define design-kit's visual identity. The principles below govern all projects that use this design system.
 
 ## Identity
 
@@ -16,7 +16,7 @@ Monospace is also a branding device. When headings, navigation, identity blocks,
 
 ### 2. Greyscale carries hierarchy
 
-The full stone palette is the primary tool for establishing visual hierarchy. Dark text for primary content; medium grey for secondary; light grey for tertiary and chrome. Different font sizes and weights at different grey levels create clear information layers without needing color or decoration. Where two surfaces of different shade meet, a border provides clean separation.
+The full gray palette is the primary tool for establishing visual hierarchy. Dark text for primary content; medium grey for secondary; light grey for tertiary and chrome. Different font sizes and weights at different grey levels create clear information layers without needing color or decoration. Where two surfaces of different shade meet, a border provides clean separation.
 
 ### 3. Color is semantic, not decorative
 
@@ -52,6 +52,8 @@ Tables, numbers, and values are first-class. Column headers exist when needed bu
 
 **Demote metadata.** Technical identifiers, internal codes, and timestamps are for the system, not the reader. Make them small, light, and peripheral. If metadata appears at the same visual weight as content, it competes for attention it hasn't earned.
 
+**Table density and progressive disclosure.** Large tables (10+ rows) need uniform row heights to preserve the scanning grid. When cell content varies in length, constrain it with `line-clamp` (2-3 lines) and provide an expand affordance. Secondary content within a cell (file references, metadata links, context notes) collapses behind a count indicator ("3 refs") that expands on click. When a column contains few distinct values that group rows (priority, status, category), replace it with section header rows and reclaim the horizontal space. Within a group, deduplicate consecutive identical values in other columns; show the value on the first row only. Add a subtle hover state (`gray-50`) so the eye can track across wide rows.
+
 ### 9. Dual visual register
 
 A design system can operate with two coherent visual languages applied to different contexts. One register is raw and editorial: full monospace typography, minimal chrome, plaintext structural ornament, content as interface. This register suits marketing pages, changelogs, landing pages, and anywhere the product voice should feel direct and unmediated. The other register is structured and conventional: multi-column layouts, proportional body text, navigational sidebars, and standard documentation patterns. This register suits reference documentation, API guides, and long-form technical content.
@@ -64,7 +66,7 @@ Interactive affordances (search bars, theme toggles, collapsible sections, copy 
 
 Prefer icon-only controls where the action is universally understood (clipboard icon for copy, magnifying glass for search, chevron for expand/collapse). Show secondary actions on hover or focus rather than permanently. Search inputs use a simple text field with a keyboard-shortcut hint (`Cmd+K`) rather than a prominent styled bar. Theme toggles (light/dark/system) are small, peripheral controls placed in headers or footers. Code block toolbars (copy, additional actions) sit in the top corner of the block and use muted icons that become visible on hover.
 
-All interactive elements use the same stone palette as surrounding chrome. The only color exception is focus rings and active-state indicators, which use the standard interactive color (blue-600) for accessibility.
+All interactive elements use the same gray palette as surrounding chrome. The only color exception is focus rings and active-state indicators, which use the standard interactive color (purple-500) for accessibility.
 
 ## Content Patterns for Developer Documentation
 
@@ -94,19 +96,19 @@ Multi-step procedures use numbered lists where order matters. Each step is a sin
 |---------|------|-----------|
 | Body text, labels, headings | mono | Default; creates natural grid |
 | Long prose (documentation, descriptions) | sans | Readability over density |
-| Never | heading (Rubik) | Not part of this aesthetic |
+| Table column headers, captions | heading (Rubik) | Distinguishes structural labels from data |
 
 ### When borders appear
 
 | Pattern | Treatment |
 |---------|-----------|
-| Table rows (minor separation) | Bottom border (1px, stone-200) or absent if alignment suffices |
-| Section/category (major separation) | Bottom border (1px, stone-400) or heavier weight than row borders |
-| Interactive focus | Focus ring (blue-600, standard accessibility pattern) |
+| Table rows (minor separation) | Bottom border (1px, gray-200) or absent if alignment suffices |
+| Section/category (major separation) | Bottom border (1px, gray-400) or heavier weight than row borders |
+| Interactive focus | Focus ring (purple-500, standard accessibility pattern) |
 | Adjacent surfaces of different shade | Border at the boundary for clean contrast |
 | Navigation | None; text links with spacing |
-| Fieldset-style bordered sections | Thin border (1px, stone-300) around content; heading label breaks the top edge, creating a titled container. Use sparingly for grouping related controls or pricing tiers. |
-| Changelog metadata block | Bottom rule (stone-300) separating the metadata header (date, author, feature labels) from the entry body |
+| Fieldset-style bordered sections | Thin border (1px, gray-300) around content; heading label breaks the top edge, creating a titled container. Use sparingly for grouping related controls or pricing tiers. |
+| Changelog metadata block | Bottom rule (gray-300) separating the metadata header (date, author, feature labels) from the entry body |
 
 ### Background shading
 
@@ -114,12 +116,12 @@ Different surfaces use different shades. Where two shades meet, a border creates
 
 | Surface | Background |
 |---------|-----------|
-| Page | stone-100 or stone-50 |
+| Page | gray-100 or gray-50 |
 | Primary content area | white |
-| Sidebar / secondary | stone-50 or stone-100 |
-| Table header row | stone-100 |
-| Table row hover | stone-50 |
-| Recessed/inset | stone-200 |
+| Sidebar / secondary | gray-50 or gray-100 |
+| Table header row | gray-100 |
+| Table row hover | gray-50 |
+| Recessed/inset | gray-200 |
 
 ### Color budget
 
@@ -128,9 +130,9 @@ Different surfaces use different shades. Where two shades meet, a border creates
 | Fresh / healthy / active | green-700 | Status dots, badges |
 | Stale / warning | amber-700 | Status dots, badges |
 | Error / critical | red-700 | Status dots, badges |
-| Interactive / link | blue-600 | Links, focus rings |
+| Interactive / link | purple-500 | Links, focus rings |
 | Required tag | red-700 | API parameter "required" indicator |
-| Everything else | stone palette | All chrome, text, backgrounds |
+| Everything else | gray palette | All chrome, text, backgrounds |
 
 ### Spacing defaults
 
@@ -162,9 +164,9 @@ Inline charts follow the same greyscale discipline as the rest of the interface.
 
 | Element | Treatment |
 |---------|-----------|
-| Line/stroke | stone-500, 1px |
-| Data points | stone-500, small circles (r=1.5) |
-| Filled area | stone-200 (lighter shade beneath the line) |
+| Line/stroke | gray-500, 1px |
+| Data points | gray-500, small circles (r=1.5) |
+| Filled area | gray-200 (lighter shade beneath the line) |
 | Axes, gridlines, labels | Absent; the surrounding table provides context |
 | Size | Compact; sized to fit within a table row (e.g., 120x24px) |
 
