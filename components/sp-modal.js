@@ -234,9 +234,7 @@ SPModal.componentStyles.replaceSync(`
     z-index: var(--z-overlay);
     max-height: 80vh;
     background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
+    border: var(--border-width-medium) solid var(--color-gray-400);
     display: flex;
     flex-direction: column;
     overflow: hidden;

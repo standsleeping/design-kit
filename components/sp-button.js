@@ -68,13 +68,13 @@ SPButton.componentStyles.replaceSync(`
 
   .btn-primary {
     color: var(--color-white);
-    background: var(--color-blue-600);
-    border-color: var(--color-blue-600);
+    background: var(--color-purple-600);
+    border-color: var(--color-purple-600);
   }
 
   .btn-primary:hover {
-    background: var(--color-blue-700);
-    border-color: var(--color-blue-700);
+    background: var(--color-purple-700);
+    border-color: var(--color-purple-700);
   }
 `);
 
