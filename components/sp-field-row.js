@@ -39,7 +39,7 @@ SPFieldRow.componentStyles.replaceSync(`
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-sm) var(--spacing-md);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: var(--field-row-border, 1px solid var(--color-border));
   }
 
   .field-row-compact {
