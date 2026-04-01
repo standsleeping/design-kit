@@ -476,6 +476,30 @@ const COMPONENTS = [
       { name: 'Bottom Right', props: { position: 'bottom-right', width: 320 } },
     ],
   },
+  {
+    tag: 'sp-title-block',
+    title: 'SPTitleBlock',
+    description: 'Document identity block in the standards-manual tradition.',
+    defaults: { 'doc-title': 'Design Token Specification', identifier: 'DK-2024-001', revision: '1.3', date: '2026-03-31', author: 'Standards Division', status: 'ACTIVE' },
+    variants: [
+      { name: 'Full', props: { 'doc-title': 'Design Token Specification', identifier: 'DK-2024-001', revision: '1.3', date: '2026-03-31', author: 'Standards Division', status: 'ACTIVE' } },
+      { name: 'Minimal', props: { 'doc-title': 'Quarterly Report', date: '2026-03-31' } },
+      { name: 'With Status', props: { 'doc-title': 'API Reference', identifier: 'API-v2', revision: '2.0', date: '2026-03-31', status: 'DRAFT' } },
+    ],
+  },
+  {
+    tag: 'sp-form-layout',
+    title: 'SPFormLayout',
+    description: 'Grid form layout for structured data entry.',
+    defaults: { columns: 2, label: '' },
+    variants: [
+      { name: 'Two Column', props: { columns: 2 } },
+      { name: 'Three Column', props: { columns: 3 } },
+      { name: 'With Label', props: { columns: 2, label: 'PASSENGER DATA' } },
+      { name: 'With Sections', props: { columns: 2, label: 'APPLICATION' } },
+      { name: 'Single Column', props: { columns: 1 } },
+    ],
+  },
 ];
 
 const elList = document.getElementById('component-list');
@@ -624,6 +648,42 @@ function applySlotContent(el, tag) {
       control.setAttribute('disabled', '');
     }
     el.appendChild(control);
+  } else if (tag === 'sp-form-layout') {
+    const cols = state.props.columns || 2;
+    const useSections = state.props.label === 'APPLICATION';
+    const fields = useSections
+      ? [
+          { label: 'SURNAME', span: '2' },
+          { label: 'GIVEN NAMES' },
+          { label: 'DATE OF BIRTH' },
+          { sectionHeader: 'CONTACT INFORMATION' },
+          { label: 'EMAIL', span: '2' },
+          { label: 'PHONE' },
+          { label: 'COUNTRY' },
+        ]
+      : [
+          { label: 'SURNAME', span: Math.min(cols, 2) > 1 ? '2' : null },
+          { label: 'GIVEN NAMES' },
+          { label: 'DATE OF BIRTH' },
+          { label: 'NATIONALITY' },
+          ...(cols >= 3 ? [{ label: 'DOCUMENT NO.' }] : []),
+        ];
+    fields.forEach((f) => {
+      if (f.sectionHeader) {
+        const div = document.createElement('div');
+        div.setAttribute('section-header', '');
+        div.textContent = f.sectionHeader;
+        el.appendChild(div);
+        return;
+      }
+      const row = document.createElement('sp-field-row');
+      row.setAttribute('label', f.label);
+      if (f.span) row.setAttribute('span', f.span);
+      const input = document.createElement('sp-text-input');
+      input.setAttribute('placeholder', f.label);
+      row.appendChild(input);
+      el.appendChild(row);
+    });
   } else if (tag === 'sp-expandable-card') {
     const content = document.createElement('div');
     content.style.fontFamily = 'var(--typography-mono)';

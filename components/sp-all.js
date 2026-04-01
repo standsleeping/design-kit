@@ -27,3 +27,5 @@ export { SPThemeToggle } from './sp-theme-toggle.js';
 export { SPSegmentedToggle } from './sp-segmented-toggle.js';
 export { SPModal } from './sp-modal.js';
 export { SPSearchInput } from './sp-search-input.js';
+export { SPTitleBlock } from './sp-title-block.js';
+export { SPFormLayout } from './sp-form-layout.js';
