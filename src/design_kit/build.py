@@ -11,6 +11,7 @@ from design_kit.token_css import generate_token_css
 logger = get_logger(__name__)
 
 COMPONENTS_DIR = Path("components")
+PAGES_DIR = Path("pages")
 
 
 def build(tokens_path: Path, output_dir: Path) -> None:
@@ -34,6 +35,12 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     components_html_path = output_dir / "components.html"
     components_html_path.write_text(components_html, encoding="utf-8")
     logger.info(f"Generated {components_html_path}")
+
+    if PAGES_DIR.is_dir():
+        for page in PAGES_DIR.glob("*.html"):
+            dest = output_dir / page.name
+            shutil.copy2(page, dest)
+            logger.info(f"Copied {dest}")
 
     if COMPONENTS_DIR.is_dir():
         dest_components = output_dir / "components"
