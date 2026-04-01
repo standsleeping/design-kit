@@ -91,7 +91,6 @@ def generate_preview_html() -> str:
     }}
     .swatch-color {{
       height: 32px;
-      border-radius: var(--radius-sm);
       border: 1px solid rgba(128, 128, 128, 0.3);
     }}
     .swatch-label {{
@@ -118,7 +117,6 @@ def generate_preview_html() -> str:
     .spacing-block {{
       height: 20px;
       background: var(--color-gray-300);
-      border-radius: var(--radius-sm);
       flex-shrink: 0;
     }}
     .spacing-label {{
@@ -623,27 +621,6 @@ def _section_borders() -> str:
         </div>
       </div>
 
-      <div class="subsection">
-        <div class="subsection-heading">Border Radii</div>
-        <div class="swatch-grid">
-          <div class="swatch">
-            <div class="swatch-color" style="border-radius: var(--radius-sm); background: var(--color-gray-300);"></div>
-            <span class="swatch-label">sm (2px)</span>
-          </div>
-          <div class="swatch">
-            <div class="swatch-color" style="border-radius: var(--radius-md); background: var(--color-gray-300);"></div>
-            <span class="swatch-label">md (4px)</span>
-          </div>
-          <div class="swatch">
-            <div class="swatch-color" style="border-radius: var(--radius-lg); background: var(--color-gray-300);"></div>
-            <span class="swatch-label">lg (6px)</span>
-          </div>
-          <div class="swatch">
-            <div class="swatch-color" style="border-radius: var(--radius-xl); background: var(--color-gray-300);"></div>
-            <span class="swatch-label">xl (8px)</span>
-          </div>
-        </div>
-      </div>
     </div>"""
 
 
@@ -662,9 +639,7 @@ def _section_tables() -> str:
             <tbody>
               <tr><td>Color</td><td>Visual identity</td><td><code>--color-gray-500</code></td></tr>
               <tr><td>Spacing</td><td>Consistent rhythm</td><td><code>--spacing-lg</code></td></tr>
-              <tr><td>Radius</td><td>Corner rounding</td><td><code>--radius-md</code></td></tr>
               <tr><td>Typography</td><td>Font stacks</td><td><code>--typography-mono</code></td></tr>
-              <tr><td>Shadow</td><td>Depth cues</td><td><code>--shadow-sm</code></td></tr>
               <tr><td>Motion</td><td>Transitions</td><td><code>--motion-duration-fast</code></td></tr>
             </tbody>
           </table>
@@ -937,7 +912,7 @@ color: var(--color-text-muted); margin: 0 0 var(--spacing-md) 0;">
           '</div>' +
           '<div style="margin-bottom: var(--spacing-md);">' +
             '<div style="height: 20px; background: var(--color-gray-300); ' +
-              'border-radius: var(--radius-sm); width: ' + value + '; min-width: 2px;"></div>' +
+              'width: ' + value + '; min-width: 2px;"></div>' +
           '</div>' +
           '<div>' +
             '<span style="color: var(--color-text-muted);">Usage</span><br>' +
