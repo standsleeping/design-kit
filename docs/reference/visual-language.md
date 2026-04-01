@@ -6,6 +6,8 @@ This document describes the aesthetic principles and specific choices that defin
 
 Data-forward interfaces that feel like well-designed developer tools: an IDE, a Bloomberg terminal, a thoughtfully formatted CLI output. Monospace typography carries structure. Greyscale carries hierarchy. Color is scarce and therefore meaningful. The aesthetic is modern and minimal, not nostalgically retro.
 
+The design system draws from a specific historical chain: Swiss systems modernism (grids, hierarchy, institutional authority), aerospace standards-manual modernism (NASA/IBM procedural identity), machine-legibility typography (OCR, fixed-width rhythm, tabular document logic), and display-constrained experimental modernism (CRT/seven-segment letterform constraints). The illustrated taxonomy in `pages/taxonomy.html` documents these lineages with visual examples, prompt language, and typeface references.
+
 ## Principles
 
 ### 1. Monospace is the default
@@ -24,7 +26,7 @@ Color appears only to encode meaning: status (fresh/stale/error), interactive af
 
 ### 4. Strip decoration, not structure
 
-Semantic structure serves comprehension: tables for tabular data, column headers for labeling, grouped sections for categories. These are not decoration; removing them loses information. What is decorative: card borders drawn around content, rounded-corner panels, drop shadow depth, boxes for visual grouping. Grouping is achieved through proximity, shared indentation, shared background shade, or a single structural border (one side only: left for hierarchy, bottom for sequence). Prefer single-side borders over full boxes. Avoid rounded corners on small elements (badges, inline code); the monospace grid favors sharp geometry. If removing a border changes nothing about comprehension, remove it. If removing a table header or a section grouping makes data harder to scan, it was structural.
+Semantic structure serves comprehension: tables for tabular data, column headers for labeling, grouped sections for categories. These are not decoration; removing them loses information. What is decorative: card borders drawn around content, rounded-corner panels, drop shadow depth, boxes for visual grouping. Grouping is achieved through proximity, shared indentation, shared background shade, or a single structural border (one side only: left for hierarchy, bottom for sequence). Prefer single-side borders over full boxes. All corners are square; the token system enforces zero border-radius. No shadows exist in the token palette. The monospace grid demands sharp geometry; every lineage this system draws from (Swiss grids, NASA spec pages, OCR documents, seven-segment displays) uses right angles exclusively. If removing a border changes nothing about comprehension, remove it. If removing a table header or a section grouping makes data harder to scan, it was structural.
 
 **ASCII structural ornament.** Plaintext characters can serve as structural devices within the monospace grid. Dot leaders align a label to a value across a wide column. Bracket-delimited labels (`[ ACTION ]`) mark interactive elements or section roles. Pipe-delimited lists (`Manual | Status | Pricing`) present inline navigation. Horizontal rules from repeated characters (`------`, `~~~`) separate sections at a visible but lightweight level. These are not decoration because they carry meaning: containment, separation, alignment. They belong to the monospace grid and reinforce the terminal aesthetic. The test remains the same: if removing the character sequence loses structural information, it is justified.
 
@@ -96,7 +98,7 @@ Multi-step procedures use numbered lists where order matters. Each step is a sin
 |---------|------|-----------|
 | Body text, labels, headings | mono | Default; creates natural grid |
 | Long prose (documentation, descriptions) | sans | Readability over density |
-| Table column headers, captions | heading (Rubik) | Distinguishes structural labels from data |
+| Table column headers, captions | mono (semibold, uppercase) | Weight and case distinguish structural labels from data |
 
 ### When borders appear
 
