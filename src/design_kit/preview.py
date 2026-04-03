@@ -48,6 +48,7 @@ def generate_preview_html() -> str:
   <style>
     .section {{
       padding: var(--spacing-2xl) 0 var(--spacing-xl);
+      scroll-margin-top: var(--spacing-2xl);
     }}
     .section + .section {{
       border-top: 1px solid var(--color-border);
@@ -282,7 +283,6 @@ def generate_preview_html() -> str:
 def _header() -> str:
     return """\
   <div slot="header" class="header-bar">
-    <span class="header-title">Design Kit</span>
     <sp-theme-toggle></sp-theme-toggle>
   </div>"""
 
