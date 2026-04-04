@@ -95,9 +95,12 @@
       "xl": "0"
     },
     "font": {
-      "family": {
-        "sans": "\"IBM Plex Sans\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
-        "mono": "\"IBM Plex Mono\", \"SFMono-Regular\", Consolas, monospace"
+      "family": "\"Recursive\", ui-monospace, \"SFMono-Regular\", Consolas, monospace",
+      "axis": {
+        "mono": 1,
+        "casl": 0,
+        "slnt": 0,
+        "crsv": 0.5
       },
       "size": {
         "2xs": "0.625rem",
@@ -107,13 +110,19 @@
         "lg": "1.125rem",
         "xl": "1.25rem",
         "2xl": "1.5rem",
-        "3xl": "2rem"
+        "3xl": "2rem",
+        "4xl": "2.5rem",
+        "5xl": "3rem",
+        "display": "clamp(3rem, 8vw, 8rem)"
       },
       "weight": {
+        "light": 300,
         "regular": 400,
         "medium": 500,
         "semibold": 600,
-        "bold": 700
+        "bold": 700,
+        "extrabold": 800,
+        "black": 900
       },
       "line-height": {
         "tight": 1.1,
@@ -173,9 +182,9 @@
       "success": "{color.green.500}"
     },
     "typography": {
-      "body": "{font.family.sans}",
-      "heading": "{font.family.mono}",
-      "mono": "{font.family.mono}"
+      "body": "{font.family}",
+      "heading": "{font.family}",
+      "mono": "{font.family}"
     },
     "layout": {
       "sidebar-width": "220px",
