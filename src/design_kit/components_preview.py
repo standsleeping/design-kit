@@ -11,6 +11,10 @@ def generate_components_preview_html() -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Design Kit Components</title>
   <link rel="stylesheet" href="tokens.css">
+  <!-- Recursive variable font (canonical URL in token_css.py:GOOGLE_FONTS_LINK) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -255,6 +259,27 @@ def generate_components_preview_html() -> str:
             <label for="height-range">Height</label>
             <input id="height-range" type="range" min="80" max="640" value="220">
             <input id="height-number" type="number" min="80" max="640" value="220">
+          </div>
+          <div class="control-divider" style="border-top: 1px solid var(--color-border); margin: var(--spacing-sm) 0;"></div>
+          <div class="control-row">
+            <label for="mono-range">MONO</label>
+            <input id="mono-range" type="range" min="0" max="1" step="1" value="1">
+            <input id="mono-number" type="number" min="0" max="1" step="1" value="1">
+          </div>
+          <div class="control-row">
+            <label for="casl-range">CASL</label>
+            <input id="casl-range" type="range" min="0" max="1" step="0.1" value="0">
+            <input id="casl-number" type="number" min="0" max="1" step="0.1" value="0">
+          </div>
+          <div class="control-row">
+            <label for="slnt-range">slnt</label>
+            <input id="slnt-range" type="range" min="-15" max="0" step="1" value="0">
+            <input id="slnt-number" type="number" min="-15" max="0" step="1" value="0">
+          </div>
+          <div class="control-row">
+            <label for="crsv-range">CRSV</label>
+            <input id="crsv-range" type="range" min="0" max="1" step="0.5" value="0.5">
+            <input id="crsv-number" type="number" min="0" max="1" step="0.5" value="0.5">
           </div>
         </div>
         <div id="preview-frame"></div>

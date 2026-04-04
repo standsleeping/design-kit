@@ -514,6 +514,14 @@ const elWRange = document.getElementById('width-range');
 const elWNumber = document.getElementById('width-number');
 const elHRange = document.getElementById('height-range');
 const elHNumber = document.getElementById('height-number');
+const elMonoRange = document.getElementById('mono-range');
+const elMonoNumber = document.getElementById('mono-number');
+const elCaslRange = document.getElementById('casl-range');
+const elCaslNumber = document.getElementById('casl-number');
+const elSlntRange = document.getElementById('slnt-range');
+const elSlntNumber = document.getElementById('slnt-number');
+const elCrsvRange = document.getElementById('crsv-range');
+const elCrsvNumber = document.getElementById('crsv-number');
 
 const EVENT_NAMES = [
   'sp-input',
@@ -537,6 +545,10 @@ const state = {
   props: {},
   width: Number(elWRange.value),
   height: Number(elHRange.value),
+  mono: 1,
+  casl: 0,
+  slnt: 0,
+  crsv: 0.5,
   eventLog: [],
 };
 
@@ -857,6 +869,10 @@ function renderPreview() {
   elFrame.innerHTML = '';
   elFrame.style.width = `${state.width}px`;
   elFrame.style.height = `${state.height}px`;
+  elFrame.style.setProperty('--mono', state.mono);
+  elFrame.style.setProperty('--casl', state.casl);
+  elFrame.style.setProperty('--slnt', state.slnt);
+  elFrame.style.setProperty('--crsv', state.crsv);
   const instance = buildInstance(def.tag, state.props);
   elFrame.appendChild(instance);
 }
@@ -897,7 +913,28 @@ function bindSizeControls() {
   elHNumber.addEventListener('input', () => syncHeight(elHNumber.value || state.height));
 }
 
+function bindAxisControls() {
+  const axes = [
+    { key: 'mono', range: elMonoRange, number: elMonoNumber, min: 0, max: 1 },
+    { key: 'casl', range: elCaslRange, number: elCaslNumber, min: 0, max: 1 },
+    { key: 'slnt', range: elSlntRange, number: elSlntNumber, min: -15, max: 0 },
+    { key: 'crsv', range: elCrsvRange, number: elCrsvNumber, min: 0, max: 1 },
+  ];
+  axes.forEach(({ key, range, number, min, max }) => {
+    const sync = (value) => {
+      const next = Math.max(min, Math.min(max, Number(value)));
+      state[key] = next;
+      range.value = String(next);
+      number.value = String(next);
+      renderPreview();
+    };
+    range.addEventListener('input', () => sync(range.value));
+    number.addEventListener('input', () => sync(number.value || state[key]));
+  });
+}
+
 bindSizeControls();
+bindAxisControls();
 bindEventLogListeners();
 if (COMPONENTS.length > 0) {
   selectComponent(COMPONENTS[0].tag);
