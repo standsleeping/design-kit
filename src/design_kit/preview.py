@@ -330,6 +330,7 @@ def _sidebar() -> str:
       <a class="nav-link" href="components.html">Component Explorer</a>
       <a class="nav-link" href="bento.html">Bento Layout</a>
       <a class="nav-link" href="taxonomy.html">Design Taxonomy</a>
+      <a class="nav-link" href="line-height-units.html">Line Height Units</a>
     </div>
 
     <div slot="footer" class="sidebar-footer-block">

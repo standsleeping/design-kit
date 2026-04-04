@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Line Height Units — Design Kit</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
+  <style>
+    /* ── Root line-height enables rlh unit ── */
+    html {
+      line-height: var(--font-line-height-base); /* 1.5 → 1rlh = 24px */
+    }
+
+    /* ── Page shell ── */
+    .page {
+      padding: var(--spacing-2xl);
+      max-width: 1200px;
+    }
+
+    .page-title {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--font-letter-spacing-wide);
+      --mono: 1;
+    }
+
+    .page-desc {
+      margin-top: var(--spacing-md);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      --mono: 0;
+      line-height: var(--font-line-height-relaxed);
+      max-width: 72ch;
+    }
+
+    /* ── Page-level controls ── */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xl);
+      padding: var(--spacing-md) 0;
+      margin-top: var(--spacing-xl);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* ── Scenario-level controls (no borders, no bleed) ── */
+    .scenario-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xl);
+      padding: var(--spacing-sm) 0;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .control-label {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: var(--font-letter-spacing-wide);
+      --mono: 1;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      user-select: none;
+    }
+
+    .control-label input[type="checkbox"] {
+      accent-color: var(--color-purple-500);
+    }
+
+    .control-label input[type="range"] {
+      accent-color: var(--color-purple-500);
+      width: 120px;
+    }
+
+    .control-value {
+      min-width: 3.5em;
+      text-align: right;
+    }
+
+    /* ── Scenarios ── */
+    .scenario {
+      margin-top: var(--spacing-2xl);
+    }
+
+    .scenario-heading {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--font-letter-spacing-wide);
+      --mono: 1;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .scenario-note {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      --mono: 0;
+      margin-bottom: var(--spacing-lg);
+      max-width: 72ch;
+    }
+
+    /* ── Comparison grid ── */
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-xl);
+    }
+
+    .panel {
+      border: 1px solid var(--color-border);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      background: var(--color-code-bg);
+    }
+
+    .panel-label {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--font-letter-spacing-wider);
+      --mono: 1;
+    }
+
+    .panel-meta {
+      font-size: var(--font-size-2xs);
+      color: var(--color-text-muted);
+      --mono: 1;
+    }
+
+    .panel-body {
+      padding: var(--spacing-xl);
+    }
+
+    /* ── Prose containers ── */
+    .prose-rem {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xl);
+    }
+
+    .prose-lh {
+      display: flex;
+      flex-direction: column;
+      gap: 1lh;
+    }
+
+    .prose-2xl {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-2xl);
+    }
+
+    .prose-rem p,
+    .prose-lh p,
+    .prose-2xl p {
+      --mono: 0;
+      line-height: var(--font-line-height-relaxed);
+    }
+
+    .prose-rem h2,
+    .prose-lh h2,
+    .prose-2xl h2 {
+      font-size: var(--font-size-lg);
+    }
+
+    /* ── Line grid overlay: alternating bands + lines ── */
+    [data-grid="on"] .prose-rem,
+    [data-grid="on"] .prose-lh,
+    [data-grid="on"] .prose-2xl {
+      background-image:
+        repeating-linear-gradient(
+          to bottom,
+          transparent calc(1lh - 1px),
+          rgba(108, 92, 231, 0.35) calc(1lh - 1px),
+          rgba(108, 92, 231, 0.35) 1lh
+        ),
+        repeating-linear-gradient(
+          to bottom,
+          rgba(108, 92, 231, 0.07) 0,
+          rgba(108, 92, 231, 0.07) 1lh,
+          transparent 1lh,
+          transparent 2lh
+        );
+    }
+
+    /* ── Summary table ── */
+    .summary {
+      margin-top: var(--spacing-2xl);
+      border-top: 1px solid var(--color-border);
+      padding-top: var(--spacing-xl);
+    }
+
+    .summary table {
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1 class="page-title">Line Height Units</h1>
+    <p class="page-desc">
+      Comparing <code>gap: var(--spacing-xl)</code> (rem-based)
+      with <code>gap: 1lh</code> (line-height-based).
+      Toggle the grid overlay to see alignment.
+    </p>
+
+    <div class="controls">
+      <label class="control-label">
+        <input type="checkbox" id="grid-toggle">
+        Line grid
+      </label>
+      <span class="control-label" style="cursor: default;">
+        1lh = <span id="base-lh-display"></span>
+      </span>
+      <span class="control-label" style="cursor: default;">
+        1rlh = <span id="rlh-display"></span>
+      </span>
+    </div>
+
+
+    <!-- ── Scenario 1: Interactive font-size ── -->
+    <div class="scenario">
+      <h2 class="scenario-heading">1. Adaptive Spacing</h2>
+      <p class="scenario-note">
+        Drag the slider to change font-size. The rem gap stays fixed at 16px;
+        the lh gap tracks the computed line-height at every size.
+        At large sizes, the rem gap collapses to a sliver.
+      </p>
+      <div class="scenario-controls">
+        <label class="control-label">
+          Font size
+          <input type="range" id="font-size-slider" min="12" max="28" value="16" step="1">
+          <span class="control-value" id="font-size-value">16px</span>
+        </label>
+        <span class="control-label" style="cursor: default;">
+          1lh = <span id="adaptive-lh-value"></span>
+        </span>
+      </div>
+      <div class="comparison">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">rem</span>
+            <span class="panel-meta">gap: 16px (fixed)</span>
+          </div>
+          <div class="panel-body">
+            <div class="prose-rem" id="adaptive-rem">
+              <p>Turn the soil to a depth of eight inches and work in two inches of aged compost. The texture should feel loose and crumbly when squeezed. Water the prepared bed the evening before planting.</p>
+              <p>Space seedlings twelve inches apart in rows running north to south. This orientation gives each plant equal sun exposure as the day progresses. Mulch between rows to retain moisture.</p>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">lh</span>
+            <span class="panel-meta">gap: 1lh (adaptive)</span>
+          </div>
+          <div class="panel-body">
+            <div class="prose-lh" id="adaptive-lh">
+              <p>Turn the soil to a depth of eight inches and work in two inches of aged compost. The texture should feel loose and crumbly when squeezed. Water the prepared bed the evening before planting.</p>
+              <p>Space seedlings twelve inches apart in rows running north to south. This orientation gives each plant equal sun exposure as the day progresses. Mulch between rows to retain moisture.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── Scenario 2: Body paragraphs ── -->
+    <div class="scenario">
+      <h2 class="scenario-heading">2. Body Paragraphs</h2>
+      <p class="scenario-note">
+        Three paragraphs at base font-size (1rem) with line-height 1.6.
+        The grid shows 1lh intervals: alternating bands plus lines. In the
+        left panel, the 16px gap is less than one line (25.6px); text drifts
+        across band boundaries after each break.
+      </p>
+      <div class="comparison">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">rem</span>
+            <span class="panel-meta">gap: var(--spacing-xl) → 16px</span>
+          </div>
+          <div class="panel-body">
+            <div class="prose-rem">
+              <p>Measure the workspace and mark cut lines with a straightedge. Double-check each measurement against the plan before making any cuts. Precision at this stage prevents waste and rework later.</p>
+              <p>Assemble the frame on a flat surface using wood glue at each joint. Clamp the corners square and let the glue set for at least an hour before adding fasteners. A speed square helps verify right angles.</p>
+              <p>Sand all surfaces progressively: 120 grit to remove mill marks, 180 to smooth, 220 for a finish-ready surface. Wipe with a tack cloth between grits. The grain should feel uniform in every direction.</p>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">lh</span>
+            <span class="panel-meta">gap: 1lh → <span class="js-lh-base"></span></span>
+          </div>
+          <div class="panel-body">
+            <div class="prose-lh">
+              <p>Measure the workspace and mark cut lines with a straightedge. Double-check each measurement against the plan before making any cuts. Precision at this stage prevents waste and rework later.</p>
+              <p>Assemble the frame on a flat surface using wood glue at each joint. Clamp the corners square and let the glue set for at least an hour before adding fasteners. A speed square helps verify right angles.</p>
+              <p>Sand all surfaces progressively: 120 grit to remove mill marks, 180 to smooth, 220 for a finish-ready surface. Wipe with a tack cloth between grits. The grain should feel uniform in every direction.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── Scenario 3: Close values ── -->
+    <div class="scenario">
+      <h2 class="scenario-heading">3. Close Values: spacing-2xl vs 1lh</h2>
+      <p class="scenario-note">
+        The obvious counter-argument: just pick a larger rem token.
+        Here <code>spacing-2xl</code> (24px) is close to <code>1lh</code>
+        (25.6px); only 1.6px apart. But the 24px gap drifts 1.6px per break.
+        After five breaks the cumulative offset is 8px: visible in the bands.
+      </p>
+      <div class="comparison">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">spacing-2xl</span>
+            <span class="panel-meta">gap: var(--spacing-2xl) → 24px</span>
+          </div>
+          <div class="panel-body">
+            <div class="prose-2xl">
+              <p>Measure the stock twice and mark the waste side of every cut line. A sharp pencil leaves a thinner mark than a marker, which matters when tolerances are tight.</p>
+              <p>Set the blade depth so one tooth clears the bottom face of the material. Too shallow leaves a ragged edge; too deep wastes energy and increases tear-out.</p>
+              <p>Feed the stock at a steady pace and let the blade do the cutting. Forcing the material sideways loads the blade unevenly and produces a wandering kerf.</p>
+              <p>Clear sawdust from the cut line between passes. Dust buildup obscures the mark and can shift the fence if it accumulates against the guide.</p>
+              <p>Check each cut against the plan before moving to the next piece. A compound error across four joints can close or open a frame by a visible amount.</p>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">lh</span>
+            <span class="panel-meta">gap: 1lh → <span class="js-lh-base"></span></span>
+          </div>
+          <div class="panel-body">
+            <div class="prose-lh">
+              <p>Measure the stock twice and mark the waste side of every cut line. A sharp pencil leaves a thinner mark than a marker, which matters when tolerances are tight.</p>
+              <p>Set the blade depth so one tooth clears the bottom face of the material. Too shallow leaves a ragged edge; too deep wastes energy and increases tear-out.</p>
+              <p>Feed the stock at a steady pace and let the blade do the cutting. Forcing the material sideways loads the blade unevenly and produces a wandering kerf.</p>
+              <p>Clear sawdust from the cut line between passes. Dust buildup obscures the mark and can shift the fence if it accumulates against the guide.</p>
+              <p>Check each cut against the plan before moving to the next piece. A compound error across four joints can close or open a frame by a visible amount.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── Scenario 4: Heading + body ── -->
+    <div class="scenario">
+      <h2 class="scenario-heading">4. Heading + Body</h2>
+      <p class="scenario-note">
+        A heading (line-height: 1.1) followed by body paragraphs (1.6).
+        The gap resolves against the container's line-height, not each child's.
+        Body paragraphs stay on-grid relative to each other; the heading
+        introduces a phase shift because its line-height differs.
+      </p>
+      <div class="comparison">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">rem</span>
+            <span class="panel-meta">gap: var(--spacing-xl) → 16px</span>
+          </div>
+          <div class="panel-body">
+            <div class="prose-rem">
+              <h2>Materials List</h2>
+              <p>Select boards that are straight, dry, and free of twist. Sight down each edge from one end to check for bow. Reject any stock with visible cupping or checks along the grain.</p>
+              <p>Calculate quantities with a ten percent waste allowance. End cuts, knots, and grain mismatches will consume some material. Order everything from the same lot to ensure consistent color.</p>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">lh</span>
+            <span class="panel-meta">gap: 1lh → <span class="js-lh-base"></span></span>
+          </div>
+          <div class="panel-body">
+            <div class="prose-lh">
+              <h2>Materials List</h2>
+              <p>Select boards that are straight, dry, and free of twist. Sight down each edge from one end to check for bow. Reject any stock with visible cupping or checks along the grain.</p>
+              <p>Calculate quantities with a ten percent waste allowance. End cuts, knots, and grain mismatches will consume some material. Order everything from the same lot to ensure consistent color.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── Summary ── -->
+    <div class="summary">
+      <h2 class="scenario-heading">Unit Reference</h2>
+      <p class="scenario-note">
+        With <code>line-height: var(--font-line-height-base)</code> set on
+        <code>html</code>, <code>rlh</code> resolves to a predictable
+        value (24px at 1rem root). Body text keeps its 1.6 line-height via
+        the <code>body</code> rule.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Unit</th>
+            <th>Resolves to</th>
+            <th>Value (at defaults)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>1rlh</code></td>
+            <td>root line-height (html)</td>
+            <td id="summary-rlh"></td>
+          </tr>
+          <tr>
+            <td><code>1lh</code> (body)</td>
+            <td>body line-height</td>
+            <td id="summary-lh-body"></td>
+          </tr>
+          <tr>
+            <td><code>1lh</code> (h2)</td>
+            <td>heading line-height</td>
+            <td id="summary-lh-h2"></td>
+          </tr>
+          <tr>
+            <td><code>1rem</code></td>
+            <td>root font-size</td>
+            <td>16px</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const gridToggle = document.getElementById('grid-toggle');
+    gridToggle.addEventListener('change', () => {
+      document.body.dataset.grid = gridToggle.checked ? 'on' : 'off';
+    });
+
+    function getComputedLh(el) {
+      return parseFloat(getComputedStyle(el).lineHeight);
+    }
+
+    function updateDisplayValues() {
+      const bodyP = document.querySelector('.prose-lh p');
+      const bodyLh = getComputedLh(bodyP);
+      const htmlLh = getComputedLh(document.documentElement);
+      const h2El = document.querySelector('.prose-lh h2');
+      const h2Lh = h2El ? getComputedLh(h2El) : 0;
+
+      document.getElementById('base-lh-display').textContent = bodyLh.toFixed(1) + 'px';
+      document.getElementById('rlh-display').textContent = htmlLh.toFixed(1) + 'px';
+
+      document.querySelectorAll('.js-lh-base').forEach(el => {
+        el.textContent = bodyLh.toFixed(1) + 'px';
+      });
+
+      document.getElementById('summary-rlh').textContent = htmlLh.toFixed(1) + 'px';
+      document.getElementById('summary-lh-body').textContent = bodyLh.toFixed(1) + 'px';
+      document.getElementById('summary-lh-h2').textContent = h2Lh.toFixed(1) + 'px';
+    }
+
+    const slider = document.getElementById('font-size-slider');
+    const sizeLabel = document.getElementById('font-size-value');
+    const adaptiveLhLabel = document.getElementById('adaptive-lh-value');
+    const adaptiveRem = document.getElementById('adaptive-rem');
+    const adaptiveLh = document.getElementById('adaptive-lh');
+
+    slider.addEventListener('input', () => {
+      const px = parseFloat(slider.value);
+      sizeLabel.textContent = px + 'px';
+      adaptiveRem.style.fontSize = px + 'px';
+      adaptiveLh.style.fontSize = px + 'px';
+      adaptiveLhLabel.textContent = (px * 1.6).toFixed(1) + 'px';
+    });
+    slider.dispatchEvent(new Event('input'));
+
+    if (document.fonts) {
+      document.fonts.ready.then(updateDisplayValues);
+    } else {
+      window.addEventListener('load', updateDisplayValues);
+    }
+  </script>
+</body>
+</html>
