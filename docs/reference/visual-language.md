@@ -164,8 +164,29 @@ Before writing any padding declaration, identify the element's role:
 | Container | Primary content surface | Square | `xl` to `3xl` | Code blocks, panels, page sections |
 | Chrome | Utility strip attached to a container | Square | `lg` to `xl` | Toolbars, status bars, filter bars |
 | Inline | Small control within chrome or a container | May be asymmetric | `sm` to `md` | Buttons, badges, table cells |
+| Flow child | Element inside a flow container | Vertical only | `xs` to `sm` | List items, derivation steps, stack children |
 
-The rule: role first, then token, then square unless inline. A toolbar is chrome, not a container; a status bar is chrome, not inline. Getting the role wrong produces padding that is visibly too large or too small.
+The rule: **role first, then token, then square unless inline or flow child.** A toolbar is chrome, not a container; a status bar is chrome, not inline. A list item inside a padded container is a flow child, not a container. Getting the role wrong produces padding that is visibly too large or too small.
+
+### Container owns inset, children own flow
+
+Horizontal padding belongs on the container; children handle only vertical spacing (via gap or vertical padding with zero horizontal). This prevents compounding inset when both container and children apply horizontal padding, and ensures all children share a consistent left/right edge without declaring it individually.
+
+```css
+/* Container sets horizontal inset */
+.block {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--spacing-md);
+}
+
+/* Children set only vertical flow spacing */
+.block-item {
+  padding: var(--spacing-sm) 0;
+}
+```
+
+When a child needs the `padding` shorthand for vertical values, use longhand properties (`padding-top`, `padding-bottom`) to avoid clobbering the zero horizontal padding.
 
 ### Structural ornament patterns
 
