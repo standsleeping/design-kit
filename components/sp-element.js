@@ -69,10 +69,11 @@ export class SPElement extends HTMLElement {
 SPElement.baseStyles.replaceSync(`
   :host {
     font-family: var(--typography-body);
+    font-variation-settings: 'MONO' var(--mono), 'CASL' var(--casl), 'CRSV' var(--crsv), 'slnt' var(--slnt);
     color: var(--color-text);
     line-height: var(--font-line-height-base);
     box-sizing: border-box;
   }
   :host([hidden]) { display: none; }
-  *, *::before, *::after { box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: border-box; font-variation-settings: 'MONO' var(--mono), 'CASL' var(--casl), 'CRSV' var(--crsv), 'slnt' var(--slnt); }
 `);
