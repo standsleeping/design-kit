@@ -68,10 +68,10 @@ def generate_preview_html() -> str:
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
       color: var(--color-text);
-      margin-bottom: var(--spacing-xl);
+      margin-bottom: 1lh;
     }}
     .subsection {{
-      margin-top: var(--spacing-xl);
+      margin-top: 1lh;
     }}
     .subsection-heading {{
       font-family: var(--typography-mono);
@@ -80,7 +80,7 @@ def generate_preview_html() -> str:
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
       color: var(--color-text-muted);
-      margin-bottom: var(--spacing-md);
+      margin-bottom: 0.5lh;
     }}
     .swatch-grid {{
       display: flex;

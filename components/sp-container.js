@@ -46,14 +46,14 @@ SPContainer.componentStyles.replaceSync(`
 
   .container-standard {
     padding: var(--spacing-xl) 0;
-    gap: var(--spacing-xl);
+    gap: 1lh;
   }
 
   .container-centered {
     max-width: var(--layout-content-max-width, 680px);
     margin: 0 auto;
     padding: var(--spacing-2xl) var(--spacing-xl);
-    gap: var(--spacing-xl);
+    gap: 1lh;
   }
 `);
 

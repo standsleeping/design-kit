@@ -133,7 +133,7 @@ def _build_tokens_layer(
 RESET_LAYER = """\
 @layer reset {
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-variation-settings: inherit; }
-  html { -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html { -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: var(--font-line-height-base); }
   ul, ol { list-style: none; padding-inline-start: 0; }
   h1, h2, h3, h4, h5, h6 { font-weight: var(--font-weight-semibold); text-wrap: balance; }
   p { text-wrap: pretty; }
@@ -184,6 +184,8 @@ UTILITIES_LAYER = """\
   .gap-lg { gap: var(--spacing-lg); }
   .gap-xl { gap: var(--spacing-xl); }
   .gap-2xl { gap: var(--spacing-2xl); }
+  .gap-lh { gap: 1lh; }
+  .gap-half-lh { gap: 0.5lh; }
   .text-muted { color: var(--color-text-muted); }
   .font-mono { --mono: 1; }
   .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
