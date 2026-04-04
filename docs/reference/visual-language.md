@@ -12,7 +12,9 @@ The design system draws from a specific historical chain: Swiss systems modernis
 
 ### 1. Monospace is the default
 
-The primary typeface is monospace. Proportional fonts are the exception, used only where monospace actively hinders readability (long prose paragraphs). Headings, labels, data, navigation, and UI chrome are all monospace. This creates natural grid alignment without effort.
+The system typeface is Recursive, a single variable font with five axes (MONO, CASL, wght, slnt, CRSV). The MONO axis at 1 (monospace) is the default; proportional (MONO 0) is used only where monospace actively hinders readability (long prose paragraphs). Headings, labels, data, navigation, and UI chrome are all monospace. This creates natural grid alignment without effort.
+
+Because both monospace and proportional roles come from the same font, vertical metrics (line height, cap height, x-height) are shared across the axis. Mixing mono and proportional text in the same line or table does not break alignment. Typographic roles are expressed as axis positions, not font-family swaps: `--mono: 1` for structure, `--mono: 0` for prose.
 
 Monospace is also a branding device. When headings, navigation, identity blocks, and data all share the same typographic voice, the typeface itself becomes the brand signature. A stacked monospace identity block (product name, organization, version or year) reads as a mark without requiring a logo. The monospace grid unifies every surface of the product into a single visual identity.
 
@@ -38,7 +40,7 @@ Favor compact presentation. Padding is tight. Line height is close. More informa
 
 ### 6. Typography is structure
 
-Weight, size, and shade create hierarchy without color or decoration. Section labels are small and muted. Data values are regular weight. Emphasis uses weight (medium/semibold), never italic, never underline (except links). The font size range is narrow; hierarchy comes from weight and color more than from dramatic size differences.
+Weight, size, and shade create hierarchy without color or decoration. Recursive's weight axis spans 300 (Light) to 900 (Black), enabling dramatic scale contrast: Light for muted chrome, Regular for body, Semibold for table headers, ExtraBold/Black for display and hero typography. Section labels are small and muted. Data values are regular weight. Emphasis uses weight (medium/semibold), never underline (except links). The slant axis (`--slnt: -12`) serves one specific role: distinguishing code comments. It is not general-purpose emphasis.
 
 **Case treatment.** Normal title or sentence casing is the default for body text and most labels. Uppercase with letter-spacing is acceptable for headings and section labels when it reinforces the monospace/terminal identity; it signals structural landmarks in a page of otherwise quiet text. Do not use forced lowercase as an affectation.
 
@@ -58,9 +60,9 @@ Tables, numbers, and values are first-class. Column headers exist when needed bu
 
 ### 9. Dual visual register
 
-A design system can operate with two coherent visual languages applied to different contexts. One register is raw and editorial: full monospace typography, minimal chrome, plaintext structural ornament, content as interface. This register suits marketing pages, changelogs, landing pages, and anywhere the product voice should feel direct and unmediated. The other register is structured and conventional: multi-column layouts, proportional body text, navigational sidebars, and standard documentation patterns. This register suits reference documentation, API guides, and long-form technical content.
+A design system can operate with two coherent visual languages applied to different contexts. One register is raw and editorial: full monospace typography, the Casual axis engaged (`--casl: 0.3` to `0.5`), minimal chrome, plaintext structural ornament, content as interface. This register suits marketing pages, changelogs, landing pages, and anywhere the product voice should feel direct and unmediated. The other register is structured and conventional: multi-column layouts, proportional body text (`--mono: 0`), Linear axis (`--casl: 0`), navigational sidebars, and standard documentation patterns. This register suits reference documentation, API guides, and long-form technical content.
 
-The two registers share foundational tokens (typeface families, color palette, spacing scale, border treatments) and key identity markers (monospace headings, uppercase section labels, restrained color, terminal-inflected ornament). They diverge in density, layout, and the ratio of monospace to proportional text. Both must feel like the same product. If a user moves from a changelog page to a reference page, the transition should feel like changing rooms in the same building, not visiting a different site.
+The two registers share foundational tokens (the Recursive typeface, color palette, spacing scale, border treatments) and key identity markers (monospace headings, uppercase section labels, restrained color, terminal-inflected ornament). The Casual axis is the primary dial between registers: Linear (CASL 0) for institutional precision; Casual (CASL 0.3-0.5) for editorial warmth. They diverge in density, layout, and the ratio of monospace to proportional text. Both must feel like the same product. If a user moves from a changelog page to a reference page, the transition should feel like changing rooms in the same building, not visiting a different site.
 
 ### 10. Interactive elements are understated
 
@@ -92,13 +94,17 @@ Multi-step procedures use numbered lists where order matters. Each step is a sin
 
 ## Token Application Guide
 
-### When to use each font family
+### When to use each axis setting
 
-| Context | Font | Reasoning |
-|---------|------|-----------|
-| Body text, labels, headings | mono | Default; creates natural grid |
-| Long prose (documentation, descriptions) | sans | Readability over density |
-| Table column headers, captions | mono (semibold, uppercase) | Weight and case distinguish structural labels from data |
+| Context | Axis setting | Reasoning |
+|---------|-------------|-----------|
+| Body text, labels, headings | `--mono: 1` | Default; creates natural grid |
+| Long prose (documentation, descriptions) | `--mono: 0` | Readability over density |
+| Editorial/marketing contexts | `--mono: 1; --casl: 0.3` | Subtle brush warmth for personality |
+| Code blocks | `--mono: 1; --casl: 0` | Always linear mono for code |
+| Code comments | `--mono: 1; --slnt: -12` | Slant distinguishes comments from code |
+| Table column headers, captions | `--mono: 1` (semibold, uppercase) | Weight and case distinguish structural labels from data |
+| Display/hero typography | `--mono: 1; font-weight: 800` | Scale contrast with extended weight range |
 
 ### When borders appear
 
@@ -146,6 +152,20 @@ Tight by default. Use the lower end of the spacing scale for internal padding (x
 | Section gap | lg to xl (0.75-1rem) |
 | Page margin | 2xl (1.5rem) |
 | Between label and content | xs to sm (0.125-0.25rem) |
+
+### Padding: square by default, role determines scale
+
+**Default to square padding** (same token on all four sides). Asymmetric padding (more horizontal than vertical) is the single most common layout mistake; it makes elements look over-indented and visually unbalanced. Only use asymmetric padding at inline scale where the text content dominates and the padding itself is invisible.
+
+Before writing any padding declaration, identify the element's role:
+
+| Role | What it is | Padding | Token range | Examples |
+|------|-----------|---------|-------------|---------|
+| Container | Primary content surface | Square | `xl` to `3xl` | Code blocks, panels, page sections |
+| Chrome | Utility strip attached to a container | Square | `lg` to `xl` | Toolbars, status bars, filter bars |
+| Inline | Small control within chrome or a container | May be asymmetric | `sm` to `md` | Buttons, badges, table cells |
+
+The rule: role first, then token, then square unless inline. A toolbar is chrome, not a container; a status bar is chrome, not inline. Getting the role wrong produces padding that is visibly too large or too small.
 
 ### Structural ornament patterns
 
