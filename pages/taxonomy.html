@@ -135,31 +135,13 @@
     .gallery-caption a:hover {
       text-decoration: underline;
     }
-    .link-list {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-sm);
+    .reading-list {
       margin-bottom: 1lh;
     }
-    .link-item {
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-xs);
-      display: flex;
-      gap: var(--spacing-md);
-      align-items: baseline;
-    }
-    .link-item .link-label {
+    .reading-list td:first-child {
       color: var(--color-text-muted);
       white-space: nowrap;
-      min-width: 100px;
-    }
-    .link-item a {
-      color: var(--color-link);
-      font-weight: var(--font-weight-semibold);
-      text-decoration: none;
-    }
-    .link-item a:hover {
-      text-decoration: underline;
+      width: 100px;
     }
     .vocab-section {
       margin-bottom: 1lh;
@@ -267,28 +249,13 @@
     </div>
 
     <div class="subsection-heading">Further Reading</div>
-    <div class="link-list">
-      <div class="link-item">
-        <span class="link-label">Poster</span>
-        <a href="https://www.moma.org/collection/works/7233" target="_blank" rel="noopener">MoMA: Muller-Brockmann, Musica Viva (1958)</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">Article</span>
-        <a href="https://socks-studio.com/2016/11/30/joseph-muller-brockmann-musica-viva-posters-for-the-zurich-tonhalle/" target="_blank" rel="noopener">SOCKS: Musica Viva posters for the Zurich Tonhalle</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">Manual</span>
-        <a href="https://standardsmanual.com/products/nyctacompactedition" target="_blank" rel="noopener">Standards Manual: NYCTA Graphics Standards Manual</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">Grid</span>
-        <a href="https://ms-studio.net/notes/karl-gerstners-layout-grid/" target="_blank" rel="noopener">MS Studio: Gerstner's layout grid for Capital</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">Pictograms</span>
-        <a href="https://www.theolympicdesign.com/olympic-games/pictograms/munich-1972/" target="_blank" rel="noopener">Olympic Design: Munich 1972 pictogram system</a>
-      </div>
-    </div>
+    <table class="reading-list">
+      <tr><td>Poster</td><td><a href="https://www.moma.org/collection/works/7233" target="_blank" rel="noopener">MoMA: Muller-Brockmann, Musica Viva (1958)</a></td></tr>
+      <tr><td>Article</td><td><a href="https://socks-studio.com/2016/11/30/joseph-muller-brockmann-musica-viva-posters-for-the-zurich-tonhalle/" target="_blank" rel="noopener">SOCKS: Musica Viva posters for the Zurich Tonhalle</a></td></tr>
+      <tr><td>Manual</td><td><a href="https://standardsmanual.com/products/nyctacompactedition" target="_blank" rel="noopener">Standards Manual: NYCTA Graphics Standards Manual</a></td></tr>
+      <tr><td>Grid</td><td><a href="https://ms-studio.net/notes/karl-gerstners-layout-grid/" target="_blank" rel="noopener">MS Studio: Gerstner's layout grid for Capital</a></td></tr>
+      <tr><td>Pictograms</td><td><a href="https://www.theolympicdesign.com/olympic-games/pictograms/munich-1972/" target="_blank" rel="noopener">Olympic Design: Munich 1972 pictogram system</a></td></tr>
+    </table>
 
     <div class="subsection-heading">What It Looks Like</div>
     <div class="feature-list">
@@ -343,28 +310,13 @@
     </div>
 
     <div class="subsection-heading">Further Reading</div>
-    <div class="link-list">
-      <div class="link-item">
-        <span class="link-label">Manual</span>
-        <a href="https://standardsmanual.com/products/nasa-graphics-standards-manual" target="_blank" rel="noopener">Standards Manual: NASA Graphics Standards Manual reissue</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">PDF</span>
-        <a href="https://www.nasa.gov/wp-content/uploads/2015/01/nasa_graphics_manual_nhb_1430-2_jan_1976.pdf" target="_blank" rel="noopener">NASA.gov: Original NHB 1430.2 manual (Jan 1976)</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">IBM</span>
-        <a href="https://www.paulrand.design/work/IBM.html" target="_blank" rel="noopener">Paul Rand: IBM corporate identity work</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">IBM Manual</span>
-        <a href="https://standardsmanual.com/products/ibm-graphic-design-guide" target="_blank" rel="noopener">Standards Manual: IBM Graphic Design Guide (1969-1987)</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">Article</span>
-        <a href="https://www.itsnicethat.com/features/paul-rand-ibm-graphic-standards-manual-empire-editions-publication-graphic-design-180418" target="_blank" rel="noopener">It's Nice That: Paul Rand's IBM Graphic Standards Manual</a>
-      </div>
-    </div>
+    <table class="reading-list">
+      <tr><td>Manual</td><td><a href="https://standardsmanual.com/products/nasa-graphics-standards-manual" target="_blank" rel="noopener">Standards Manual: NASA Graphics Standards Manual reissue</a></td></tr>
+      <tr><td>PDF</td><td><a href="https://www.nasa.gov/wp-content/uploads/2015/01/nasa_graphics_manual_nhb_1430-2_jan_1976.pdf" target="_blank" rel="noopener">NASA.gov: Original NHB 1430.2 manual (Jan 1976)</a></td></tr>
+      <tr><td>IBM</td><td><a href="https://www.paulrand.design/work/IBM.html" target="_blank" rel="noopener">Paul Rand: IBM corporate identity work</a></td></tr>
+      <tr><td>IBM Manual</td><td><a href="https://standardsmanual.com/products/ibm-graphic-design-guide" target="_blank" rel="noopener">Standards Manual: IBM Graphic Design Guide (1969-1987)</a></td></tr>
+      <tr><td>Article</td><td><a href="https://www.itsnicethat.com/features/paul-rand-ibm-graphic-standards-manual-empire-editions-publication-graphic-design-180418" target="_blank" rel="noopener">It's Nice That: Paul Rand's IBM Graphic Standards Manual</a></td></tr>
+    </table>
 
     <div class="subsection-heading">What It Looks Like</div>
     <div class="feature-list">
@@ -437,28 +389,13 @@
     </div>
 
     <div class="subsection-heading">Further Reading</div>
-    <div class="link-list">
-      <div class="link-item">
-        <span class="link-label">History</span>
-        <a href="https://tedium.co/2017/03/22/ocr-typography-optical-character-recognition-history/" target="_blank" rel="noopener">Tedium: The history of OCR fonts</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">OCR-A</span>
-        <a href="https://en.wikipedia.org/wiki/OCR-A" target="_blank" rel="noopener">Wikipedia: OCR-A</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">OCR-B</span>
-        <a href="https://www.prepressure.com/fonts/interesting/ocra-and-ocrb" target="_blank" rel="noopener">Prepressure: The OCRA and OCRB fonts</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">MICR</span>
-        <a href="https://en.wikipedia.org/wiki/Magnetic_ink_character_recognition" target="_blank" rel="noopener">Wikipedia: Magnetic Ink Character Recognition</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">In Use</span>
-        <a href="https://fontsinuse.com/typefaces/4325/ocr-a" target="_blank" rel="noopener">Fonts In Use: OCR-A usage archive</a>
-      </div>
-    </div>
+    <table class="reading-list">
+      <tr><td>History</td><td><a href="https://tedium.co/2017/03/22/ocr-typography-optical-character-recognition-history/" target="_blank" rel="noopener">Tedium: The history of OCR fonts</a></td></tr>
+      <tr><td>OCR-A</td><td><a href="https://en.wikipedia.org/wiki/OCR-A" target="_blank" rel="noopener">Wikipedia: OCR-A</a></td></tr>
+      <tr><td>OCR-B</td><td><a href="https://www.prepressure.com/fonts/interesting/ocra-and-ocrb" target="_blank" rel="noopener">Prepressure: The OCRA and OCRB fonts</a></td></tr>
+      <tr><td>MICR</td><td><a href="https://en.wikipedia.org/wiki/Magnetic_ink_character_recognition" target="_blank" rel="noopener">Wikipedia: Magnetic Ink Character Recognition</a></td></tr>
+      <tr><td>In Use</td><td><a href="https://fontsinuse.com/typefaces/4325/ocr-a" target="_blank" rel="noopener">Fonts In Use: OCR-A usage archive</a></td></tr>
+    </table>
 
     <div class="subsection-heading">What It Looks Like</div>
     <div class="feature-list">
@@ -518,28 +455,13 @@
     </div>
 
     <div class="subsection-heading">Further Reading</div>
-    <div class="link-list">
-      <div class="link-item">
-        <span class="link-label">MoMA</span>
-        <a href="https://www.moma.org/collection/works/139322" target="_blank" rel="noopener">MoMA: Wim Crouwel, New Alphabet (1967)</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">Specimen</span>
-        <a href="https://productiontype.com/article/the-specimen-of-new-alphabet-wim-crouwel-1967" target="_blank" rel="noopener">Production Type: The specimen of New Alphabet</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">Essay</span>
-        <a href="https://eyemagazine.com/feature/article/electrifying-the-alphabet" target="_blank" rel="noopener">Eye Magazine: Electrifying the alphabet</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">Foundry</span>
-        <a href="https://www.thefoundrytypes.com/fonts/new-alphabet/" target="_blank" rel="noopener">The Foundry Types: New Alphabet (digital revival)</a>
-      </div>
-      <div class="link-item">
-        <span class="link-label">7-Segment</span>
-        <a href="https://en.wikipedia.org/wiki/Seven-segment_display" target="_blank" rel="noopener">Wikipedia: Seven-segment display</a>
-      </div>
-    </div>
+    <table class="reading-list">
+      <tr><td>MoMA</td><td><a href="https://www.moma.org/collection/works/139322" target="_blank" rel="noopener">MoMA: Wim Crouwel, New Alphabet (1967)</a></td></tr>
+      <tr><td>Specimen</td><td><a href="https://productiontype.com/article/the-specimen-of-new-alphabet-wim-crouwel-1967" target="_blank" rel="noopener">Production Type: The specimen of New Alphabet</a></td></tr>
+      <tr><td>Essay</td><td><a href="https://eyemagazine.com/feature/article/electrifying-the-alphabet" target="_blank" rel="noopener">Eye Magazine: Electrifying the alphabet</a></td></tr>
+      <tr><td>Foundry</td><td><a href="https://www.thefoundrytypes.com/fonts/new-alphabet/" target="_blank" rel="noopener">The Foundry Types: New Alphabet (digital revival)</a></td></tr>
+      <tr><td>7-Segment</td><td><a href="https://en.wikipedia.org/wiki/Seven-segment_display" target="_blank" rel="noopener">Wikipedia: Seven-segment display</a></td></tr>
+    </table>
 
     <div class="subsection-heading">What It Looks Like</div>
     <div class="feature-list">
