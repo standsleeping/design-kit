@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+from design_kit.token_css import GOOGLE_FONTS_LINK
+
 
 def generate_preview_html() -> str:
     """Return a complete HTML page showcasing all design kit tokens and components.
@@ -19,6 +21,7 @@ def generate_preview_html() -> str:
     sections = [
         _section_colors(),
         _section_typography(),
+        _section_display_typography(),
         _section_spacing(),
         _section_borders(),
         _section_tables(),
@@ -44,6 +47,7 @@ def generate_preview_html() -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Design Kit</title>
   <link rel="stylesheet" href="tokens.css">
+{GOOGLE_FONTS_LINK}
   <script type="module" src="components/sp-all.js"></script>
   <style>
     .section {{
@@ -299,6 +303,7 @@ def _sidebar() -> str:
       <div class="nav-section-title">Tokens</div>
       <a class="nav-link" href="#colors">Colors</a>
       <a class="nav-link" href="#typography">Typography</a>
+      <a class="nav-link" href="#display-typography">Display Typography</a>
       <a class="nav-link" href="#spacing">Spacing</a>
       <a class="nav-link" href="#borders">Borders</a>
       <a class="nav-link" href="#tables">Tables</a>
@@ -320,6 +325,13 @@ def _sidebar() -> str:
       <a class="nav-link" href="#toc">Table of Contents</a>
     </div>
 
+    <div class="nav-section">
+      <div class="nav-section-title">Pages</div>
+      <a class="nav-link" href="components.html">Component Explorer</a>
+      <a class="nav-link" href="bento.html">Bento Layout</a>
+      <a class="nav-link" href="taxonomy.html">Design Taxonomy</a>
+    </div>
+
     <div slot="footer" class="sidebar-footer-block">
       <a href="#" class="sidebar-footer-link">Docs</a>
     </div>
@@ -329,6 +341,7 @@ def _sidebar() -> str:
 _SECTIONS: list[dict[str, str | int]] = [
     {"id": "colors", "label": "Color Palette", "level": 0},
     {"id": "typography", "label": "Typography", "level": 0},
+    {"id": "display-typography", "label": "Display Typography", "level": 1},
     {"id": "spacing", "label": "Spacing Scale", "level": 0},
     {"id": "borders", "label": "Borders", "level": 0},
     {"id": "tables", "label": "Tables", "level": 0},
@@ -538,16 +551,28 @@ def _section_typography() -> str:
       {_heading("typography", "Typography")}
 
       <div class="subsection">
-        <div class="subsection-heading">Font Families</div>
+        <div class="subsection-heading">Font Axes</div>
         <div class="type-sample">
-          <div class="type-meta">mono (IBM Plex Mono): default for UI</div>
-          <div style="font-family: var(--typography-mono); font-size: var(--font-size-sm);">
+          <div class="type-meta">mono (Recursive MONO 1): default for UI</div>
+          <div style="--mono: 1; font-size: var(--font-size-sm);">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789
           </div>
         </div>
         <div class="type-sample">
-          <div class="type-meta">sans (IBM Plex Sans): long prose</div>
-          <div style="font-family: var(--typography-body); font-size: var(--font-size-sm);">
+          <div class="type-meta">proportional (Recursive MONO 0): long prose</div>
+          <div style="--mono: 0; font-size: var(--font-size-sm);">
+            ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789
+          </div>
+        </div>
+        <div class="type-sample">
+          <div class="type-meta">casual (Recursive CASL 0.5): editorial warmth</div>
+          <div style="--mono: 1; --casl: 0.5; font-size: var(--font-size-sm);">
+            ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789
+          </div>
+        </div>
+        <div class="type-sample">
+          <div class="type-meta">slanted (Recursive slnt -12): comments, attribution</div>
+          <div style="--mono: 1; --slnt: -12; font-size: var(--font-size-sm);">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789
           </div>
         </div>
@@ -568,6 +593,66 @@ def _section_typography() -> str:
         </div>
         <div class="heading-demo">
           <h3>H3 Heading</h3>
+        </div>
+      </div>
+    </div>"""
+
+
+def _section_display_typography() -> str:
+    weights = [
+        ("Light", 300),
+        ("Regular", 400),
+        ("Medium", 500),
+        ("Semibold", 600),
+        ("Bold", 700),
+        ("ExtraBold", 800),
+        ("Black", 900),
+    ]
+    weight_samples = ""
+    for label, value in weights:
+        weight_samples += (
+            f'        <div style="font-weight: {value}; --mono: 1;'
+            f' font-size: var(--font-size-2xl);">'
+            f"{label} ({value})</div>\n"
+        )
+
+    return f"""\
+    <div class="section">
+      {_heading("display-typography", "Display Typography")}
+
+      <div class="subsection">
+        <div class="subsection-heading">Display Scales</div>
+        <div style="--mono: 1; font-weight: var(--font-weight-extrabold);\
+ overflow: hidden;">
+          <div style="font-size: var(--font-size-4xl); line-height:\
+ var(--font-line-height-tight);">4xl (2.5rem)</div>
+          <div style="font-size: var(--font-size-5xl); line-height:\
+ var(--font-line-height-tight);">5xl (3rem)</div>
+          <div style="font-size: var(--font-size-display); line-height:\
+ var(--font-line-height-tight);">display</div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-heading">Weight Range</div>
+{weight_samples}\
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-heading">Axis Combinations at Scale</div>
+        <div style="overflow: hidden;">
+          <div style="--mono: 1; --casl: 0; font-weight: 800;\
+ font-size: var(--font-size-4xl); line-height: var(--font-line-height-tight);\
+">Linear ExtraBold</div>
+          <div style="--mono: 1; --casl: 0.5; font-weight: 800;\
+ font-size: var(--font-size-4xl); line-height: var(--font-line-height-tight);\
+">Casual ExtraBold</div>
+          <div style="--mono: 0; --casl: 0; font-weight: 900;\
+ font-size: var(--font-size-4xl); line-height: var(--font-line-height-tight);\
+">Proportional Black</div>
+          <div style="--mono: 1; --slnt: -12; font-weight: 700;\
+ font-size: var(--font-size-4xl); line-height: var(--font-line-height-tight);\
+">Slanted Bold</div>
         </div>
       </div>
     </div>"""
