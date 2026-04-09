@@ -23,6 +23,7 @@ export { SPCodeBlock } from './sp-code-block.js';
 export { SPToc } from './sp-toc.js';
 export { SPBreadcrumb } from './sp-breadcrumb.js';
 export { SPPageNav } from './sp-page-nav.js';
+export { SPReadingPositionNav } from './sp-reading-position-nav.js';
 export { SPThemeToggle } from './sp-theme-toggle.js';
 export { SPSegmentedToggle } from './sp-segmented-toggle.js';
 export { SPModal } from './sp-modal.js';
