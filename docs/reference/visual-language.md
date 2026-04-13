@@ -44,6 +44,8 @@ Weight, size, and shade create hierarchy without color or decoration. Recursive'
 
 **Case treatment.** Normal title or sentence casing is the default for body text and most labels. Uppercase with letter-spacing is acceptable for headings and section labels when it reinforces the monospace/terminal identity; it signals structural landmarks in a page of otherwise quiet text. Do not use forced lowercase as an affectation.
 
+**Optical scaling for inline code.** Monospace glyphs consume 20–30% more horizontal space than proportional glyphs at the same font-size and read visually heavier in mixed prose. When inline `<code>` appears inside proportional body text, scale it down (`0.9em`) so it blends rather than dominates. Block `<pre>` code is exempt; it lives in its own typographic context. This mirrors GitHub Primer (85%), Bootstrap, and the Tailwind Typography plugin.
+
 **Rendered heading markers.** The `#` and `##` characters from markdown can be rendered literally as structural prefixes alongside heading text. This treats them as visible typographic elements (not hidden semantic markup), reinforcing the plaintext aesthetic. Use this treatment selectively; it works best in editorial or changelog contexts where the raw-document feel is intentional.
 
 ### 7. Dividers reflect hierarchy
