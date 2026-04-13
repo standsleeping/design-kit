@@ -9,11 +9,20 @@ import { SPElement } from './sp-element.js';
  * blockquotes or paragraphs). As the user scrolls, the component
  * displays the most recent section heading and item label, stacked.
  *
+ * Both section and item labels honor an optional `data-nav-label`
+ * attribute on the tracked element, which overrides the default.
+ * This is useful when the element's textContent contains more
+ * than you want shown in the nav (e.g., "Chapter 3, Annotated").
+ *
  * Item labels come from one of three sources, in priority order:
  *   1. `data-nav-label` attribute on the element
  *   2. `item-label` prop + trailing digits of the element's id
  *      (e.g., id="s7" with item-label="Sentence" → "Sentence 7")
  *   3. the element's textContent (trimmed, truncated)
+ *
+ * Section labels come from:
+ *   1. `data-nav-label` attribute on the element
+ *   2. the element's textContent (trimmed)
  */
 export class SPReadingPositionNav extends SPElement {
   static metadata = {
@@ -115,6 +124,8 @@ export class SPReadingPositionNav extends SPElement {
   }
 
   _formatSection(el) {
+    const explicit = el.getAttribute('data-nav-label');
+    if (explicit) return explicit;
     return (el.textContent || '').trim();
   }
 
