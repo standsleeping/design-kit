@@ -9,7 +9,7 @@ TOKENS_PATH = Path(__file__).parent.parent / "tokens" / "design-tokens.json"
 
 
 def test_build_creates_output_files(tmp_path: Path) -> None:
-    """Creates tokens.css, preview pages, and scripts in output directory."""
+    """Creates tokens.css and the preview page in the output directory."""
     build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
 
     tokens_css = tmp_path / "tokens.css"
@@ -22,13 +22,6 @@ def test_build_creates_output_files(tmp_path: Path) -> None:
     html_content = preview_html.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in html_content
     assert "tokens.css" in html_content
-    assert "components/sp-all.js" in html_content
-
-    components_html = tmp_path / "components.html"
-    assert components_html.exists()
-    components_html_content = components_html.read_text(encoding="utf-8")
-    assert "<!DOCTYPE html>" in components_html_content
-    assert "components/component-preview.js" in components_html_content
 
 
 def test_build_copies_components(tmp_path: Path) -> None:
@@ -37,8 +30,19 @@ def test_build_copies_components(tmp_path: Path) -> None:
 
     components_dir = tmp_path / "components"
     assert components_dir.is_dir()
-    assert (components_dir / "sp-all.js").exists()
-    assert (components_dir / "component-preview.js").exists()
+    assert (components_dir / "storybook.js").exists()
+    assert (components_dir / "storybook.config.json").exists()
+
+
+def test_build_ships_contract_tests_page(tmp_path: Path) -> None:
+    """Copies the contract-tests page into the output directory."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    contract_tests = tmp_path / "contract-tests.html"
+    assert contract_tests.exists()
+    html = contract_tests.read_text(encoding="utf-8")
+    assert "Contract Tests" in html
+    assert "storybook.config.json" in html
 
 
 def test_build_creates_output_dir(tmp_path: Path) -> None:
@@ -49,4 +53,3 @@ def test_build_creates_output_dir(tmp_path: Path) -> None:
     assert output_dir.is_dir()
     assert (output_dir / "tokens.css").exists()
     assert (output_dir / "preview.html").exists()
-    assert (output_dir / "components.html").exists()

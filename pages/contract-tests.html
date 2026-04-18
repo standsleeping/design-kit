@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contract Tests · design-kit</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  body {
+    margin: 0;
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+  }
+  h1 {
+    font-size: var(--font-size-lg);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    margin: 0 0 var(--spacing-md) 0;
+  }
+  .summary {
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    border: var(--border-width-thin) solid var(--color-border);
+  }
+  .summary-ok { border-color: var(--color-green-500, #3c5f00); color: var(--color-green-500, #3c5f00); }
+  .summary-fail { border-color: var(--color-red-700, #7f0000); color: var(--color-red-700, #7f0000); }
+  .results table { width: 100%; border-collapse: collapse; }
+  .results th, .results td {
+    text-align: left;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-family: inherit;
+    font-size: inherit;
+  }
+  .results th {
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+  }
+  .pass { color: var(--color-green-500, #3c5f00); }
+  .fail { color: var(--color-red-700, #7f0000); }
+  .failure-detail {
+    color: var(--color-red-700, #7f0000);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+</style>
+</head>
+<body>
+<h1>Component Contract Tests</h1>
+<div class="summary" data-summary>Running…</div>
+<div class="results">
+  <table>
+    <thead>
+      <tr><th>Component</th><th>Checks</th><th>Failures</th></tr>
+    </thead>
+    <tbody data-results></tbody>
+  </table>
+</div>
+
+<script type="module">
+const CONFIG_URL = 'components/storybook.config.json';
+const ALLOWED_PROP_TYPES = ['string', 'number', 'boolean', 'enum', 'array', 'object'];
+const PASCAL_CASE = /^[A-Z][a-zA-Z0-9]*$/;
+const KEBAB_CASE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+function check(failures, condition, message) {
+  if (!condition) failures.push(message);
+}
+
+async function runChecks(url, mod, seenNames) {
+  const failures = [];
+
+  const { metadata, propTypes, variants, render } = mod;
+
+  // metadata
+  check(failures, metadata && typeof metadata === 'object', 'metadata missing or not an object');
+  if (metadata) {
+    check(failures, typeof metadata.name === 'string' && metadata.name.length > 0, 'metadata.name missing');
+    check(failures, PASCAL_CASE.test(metadata.name ?? ''), `metadata.name '${metadata.name}' is not PascalCase`);
+    check(failures, !seenNames.has(metadata.name), `metadata.name '${metadata.name}' duplicates another component`);
+    seenNames.add(metadata.name);
+    check(failures, typeof metadata.description === 'string' && metadata.description.length > 0, 'metadata.description missing');
+    check(failures, typeof metadata.category === 'string' && metadata.category.length > 0, 'metadata.category missing');
+  }
+
+  // propTypes
+  check(failures, propTypes && typeof propTypes === 'object', 'propTypes missing or not an object');
+  if (propTypes && typeof propTypes === 'object') {
+    for (const [key, descriptor] of Object.entries(propTypes)) {
+      check(failures, descriptor && typeof descriptor === 'object', `propTypes.${key} is not a descriptor`);
+      if (!descriptor) continue;
+      check(failures, ALLOWED_PROP_TYPES.includes(descriptor.type), `propTypes.${key}.type '${descriptor.type}' not allowed`);
+      check(failures, 'default' in descriptor, `propTypes.${key}.default missing`);
+      if (descriptor.type === 'enum') {
+        check(failures, Array.isArray(descriptor.options) && descriptor.options.length > 0, `propTypes.${key}: enum requires non-empty options array`);
+      }
+    }
+  }
+
+  // variants
+  check(failures, Array.isArray(variants), 'variants must be an array');
+  if (Array.isArray(variants)) {
+    check(failures, variants.length > 0, 'variants array is empty');
+    const seenVariantNames = new Set();
+    for (const v of variants) {
+      check(failures, v && typeof v === 'object', 'variant is not an object');
+      if (!v) continue;
+      check(failures, typeof v.name === 'string' && v.name.length > 0, 'variant.name missing');
+      check(failures, KEBAB_CASE.test(v.name ?? ''), `variant.name '${v.name}' is not kebab-case`);
+      check(failures, !seenVariantNames.has(v.name), `variant.name '${v.name}' duplicated within this component`);
+      seenVariantNames.add(v.name);
+      check(failures, v.props && typeof v.props === 'object', `variant '${v.name}' missing props object`);
+    }
+  }
+
+  // render
+  check(failures, typeof render === 'function', 'render must be a function');
+
+  // render smoke test on first variant
+  if (typeof render === 'function' && Array.isArray(variants) && variants.length > 0) {
+    let rendered;
+    try {
+      rendered = render(variants[0].props ?? {});
+    } catch (err) {
+      failures.push(`render(variants[0].props) threw: ${err.message}`);
+    }
+    if (rendered) {
+      if (rendered instanceof HTMLElement) {
+        // ok
+      } else if (typeof rendered === 'object' && rendered.node) {
+        check(failures, rendered.node instanceof HTMLElement, 'render().node is not an HTMLElement');
+        check(failures, typeof rendered.cleanup === 'function', 'render() returned { node, ... } without cleanup function');
+        if (typeof rendered.cleanup === 'function') {
+          try {
+            rendered.cleanup();
+          } catch (err) {
+            failures.push(`cleanup() threw: ${err.message}`);
+          }
+        }
+      } else {
+        failures.push('render() returned neither an HTMLElement nor { node, cleanup }');
+      }
+    }
+  }
+
+  return failures;
+}
+
+async function main() {
+  const summary = document.querySelector('[data-summary]');
+  const resultsBody = document.querySelector('[data-results]');
+
+  let config;
+  try {
+    const res = await fetch(CONFIG_URL, { cache: 'no-cache' });
+    config = await res.json();
+  } catch (err) {
+    summary.textContent = `Failed to load config: ${err.message}`;
+    summary.classList.add('summary-fail');
+    return;
+  }
+
+  const seenNames = new Set();
+  let totalChecks = 0;
+  let totalFailures = 0;
+
+  for (const pool of config.pools ?? []) {
+    for (const filename of pool.components ?? []) {
+      const url = new URL(`${pool.path}/${filename}?v=${Date.now()}`, document.baseURI).href;
+      let mod;
+      try {
+        mod = await import(url);
+      } catch (err) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${filename}</td><td class="fail">IMPORT FAIL</td><td class="failure-detail">${err.message}</td>`;
+        resultsBody.append(row);
+        totalFailures += 1;
+        continue;
+      }
+
+      const failures = await runChecks(url, mod, seenNames);
+      totalChecks += 1;
+      if (failures.length) totalFailures += 1;
+
+      const row = document.createElement('tr');
+      const name = mod.metadata?.name ?? filename;
+      if (failures.length === 0) {
+        row.innerHTML = `<td>${name}</td><td class="pass">PASS</td><td></td>`;
+      } else {
+        row.innerHTML = `<td>${name}</td><td class="fail">FAIL</td><td class="failure-detail">${failures.map((f) => escapeHTML(f)).join('\n')}</td>`;
+      }
+      resultsBody.append(row);
+    }
+  }
+
+  if (totalFailures === 0) {
+    summary.textContent = `All ${totalChecks} components pass the contract.`;
+    summary.classList.add('summary-ok');
+  } else {
+    summary.textContent = `${totalFailures} of ${totalChecks} components have failures.`;
+    summary.classList.add('summary-fail');
+  }
+  document.body.dataset.testStatus = totalFailures === 0 ? 'pass' : 'fail';
+  document.body.dataset.testTotal = String(totalChecks);
+  document.body.dataset.testFailures = String(totalFailures);
+}
+
+function escapeHTML(s) {
+  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+main().catch((err) => {
+  const summary = document.querySelector('[data-summary]');
+  summary.textContent = `Fatal: ${err.message}`;
+  summary.classList.add('summary-fail');
+  document.body.dataset.testStatus = 'fail';
+});
+</script>
+</body>
+</html>
