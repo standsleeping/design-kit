@@ -179,7 +179,8 @@
       "syntax-punctuation": "{color.gray.500}",
       "accent-bg": "{color.purple.100}",
       "accent-bg-hover": "{color.purple.200}",
-      "success": "{color.green.500}"
+      "success": "{color.green.500}",
+      "danger": "{color.red.500}"
     },
     "typography": {
       "body": "{font.family}",
@@ -213,7 +214,8 @@
         "syntax-punctuation": "{color.gray.300}",
         "accent-bg": "{color.purple.700}",
         "accent-bg-hover": "{color.purple.600}",
-        "success": "{color.green.200}"
+        "success": "{color.green.200}",
+        "danger": "{color.red.300}"
       }
     }
   }
