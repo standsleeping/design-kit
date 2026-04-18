@@ -1,0 +1,57 @@
+.dk-title-block-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.dk-title-block {
+  border: var(--border-width-thin) solid var(--color-border);
+  font-family: var(--typography-mono);
+  display: grid;
+  background: var(--color-border);
+  gap: 1px;
+}
+
+.dk-title-block-field {
+  background: var(--color-bg);
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.dk-title-block-label {
+  font-size: var(--font-size-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+  color: var(--color-text-muted);
+  line-height: var(--font-line-height-tight);
+}
+
+.dk-title-block-value {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  line-height: var(--font-line-height-base);
+}
+
+.dk-title-block-title {
+  grid-column: 1 / -1;
+}
+
+.dk-title-block-title .dk-title-block-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dk-title-block-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1px;
+  background: var(--color-border);
+  grid-column: 1 / -1;
+}
+
+.dk-title-block-meta .dk-title-block-field {
+  background: var(--color-bg);
+}
+
+.dk-title-block-supplementary:empty {
+  display: none;
+}

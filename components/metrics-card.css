@@ -1,0 +1,41 @@
+.dk-metrics-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: var(--border-width-thin) solid var(--color-border);
+  background: var(--color-bg);
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+}
+
+.dk-metrics-card-muted {
+  color: var(--color-text-muted);
+}
+
+.dk-metrics-card-error {
+  color: var(--color-red-700);
+}
+
+.dk-metrics-card-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.dk-metrics-card-value {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.dk-metrics-card-label {
+  color: var(--color-text-muted);
+}
+
+.dk-metrics-card-separator {
+  color: var(--color-gray-300);
+  user-select: none;
+}
