@@ -43,6 +43,10 @@ Object keyed by prop name. Each entry is a prop descriptor.
 
 `array` and `object` carry structured data (e.g., breadcrumb items, segmented toggle options). The storybook inspector treats them as opaque JSON in its propTypes editor for now; richer editing is deferred.
 
+### Validation scope
+
+`validatePropTypes` runs only at storybook scan time (`scanPool` in `storybook.js`) and at contract-test time (`pages/contract-tests.html`). Production render calls do not validate — `render(props)` accepts whatever is passed and trusts the caller. Callers are the boundary; pass valid props, or expect undefined behavior.
+
 ### Why `function` is not a type
 
 Function props (callbacks) are deliberately excluded. Components communicate outward by dispatching `CustomEvent` on the returned node; see the events section below. This keeps `render` pure and the prop surface serializable, which is what lets the storybook deep-link variants and width settings via URL.
@@ -218,6 +222,28 @@ A component with no styles may omit the sibling file.
 A pool is a directory of component modules plus a base stylesheet. The storybook reads pools from `storybook.config.json`; each pool entry has `name`, `path`, and `stylesheet`. Pool scanning is recursive: every `.js` file under `path` is import-probed, and files that conform to this contract are added to the registry. Files that do not conform are skipped with a console warning. The pool `stylesheet` is loaded once per pool and carries project-wide base styles (tokens, resets, utilities); per-component CSS sibling files are loaded on demand as each component is imported.
 
 A component's fully qualified identity is `<pool>/<metadata.name>`. Names must be unique within a pool; they may collide across pools.
+
+### File-naming conventions
+
+Each project keeps its own file-naming convention. The storybook does not enforce a single form:
+
+| Project | Convention | Examples |
+|---|---|---|
+| design-kit | kebab-case | `menu-item.js`, `tab-bar.js`, `code-block.js` |
+| comphost  | camelCase (default), PascalCase when a class is the canonical export | `menuItem.js`, `searchInput.js`, `CollapsibleSection.js` |
+
+The sibling-CSS loader replaces the trailing `.js` with `.css` on the full URL, so the CSS file must share the JS basename exactly (case-sensitive). `menuItem.js` → `menuItem.css`; `CollapsibleSection.js` → `CollapsibleSection.css`.
+
+### CSS class prefix
+
+Components declare classes under a pool-namespaced prefix to avoid cross-pool collisions:
+
+| Pool | Prefix | Example class |
+|---|---|---|
+| design-kit | `dk-` | `.dk-menu-item`, `.dk-tab-bar-active` |
+| comphost | `ch-` | `.ch-menu-item`, `.ch-entity-metrics-section` |
+
+Prefixing is strict: every selector a component owns starts with its pool prefix. Shared modifier classes (`resolved`, `disabled`, `expanded`, etc.) are acceptable as secondary classes when a component already carries its prefixed primary class.
 
 ---
 
