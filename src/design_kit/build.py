@@ -1,9 +1,9 @@
 """Build command: generate CSS and preview pages into an output directory."""
 
 import shutil
+import time
 from pathlib import Path
 
-from design_kit.components_preview import generate_components_preview_html
 from design_kit.logging import get_logger
 from design_kit.preview import generate_preview_html
 from design_kit.token_css import generate_token_css
@@ -31,15 +31,13 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     html_path.write_text(html, encoding="utf-8")
     logger.info(f"Generated {html_path}")
 
-    components_html = generate_components_preview_html()
-    components_html_path = output_dir / "components.html"
-    components_html_path.write_text(components_html, encoding="utf-8")
-    logger.info(f"Generated {components_html_path}")
-
+    cache_bust = str(int(time.time()))
     if PAGES_DIR.is_dir():
         for page in PAGES_DIR.glob("*.html"):
             dest = output_dir / page.name
-            shutil.copy2(page, dest)
+            text = page.read_text(encoding="utf-8")
+            text = text.replace("{{CACHE_BUST}}", cache_bust)
+            dest.write_text(text, encoding="utf-8")
             logger.info(f"Copied {dest}")
 
     if COMPONENTS_DIR.is_dir():
