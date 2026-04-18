@@ -1,81 +1,42 @@
-import { SPElement } from './sp-element.js';
+export const metadata = {
+  name: 'Button',
+  description: 'Button with variant styling',
+  category: 'actions',
+};
 
-export class SPButton extends SPElement {
-  static metadata = {
-    name: 'SPButton',
-    description: 'Button with variant styling',
-    category: 'actions',
-  };
+export const propTypes = {
+  label: { type: 'string', default: 'Button' },
+  variant: { type: 'enum', default: 'default', options: ['default', 'primary'] },
+  disabled: { type: 'boolean', default: false },
+  type: { type: 'enum', default: 'button', options: ['button', 'submit', 'reset'] },
+};
 
-  static propTypes = {
-    variant: { type: 'string', default: 'default' },
-    disabled: { type: 'boolean', default: false },
-    type: { type: 'string', default: 'button' },
-  };
+export const variants = [
+  { name: 'default', description: 'Default button', props: { label: 'Cancel' } },
+  { name: 'primary', description: 'Primary action', props: { label: 'Save Changes', variant: 'primary' } },
+  { name: 'disabled', description: 'Disabled default', props: { label: 'Unavailable', disabled: true } },
+  { name: 'primary-disabled', description: 'Disabled primary', props: { label: 'Saving…', variant: 'primary', disabled: true } },
+];
 
-  static variants = ['default', 'primary'];
+export function render(props = {}) {
+  const label = props.label ?? propTypes.label.default;
+  const variant = props.variant ?? propTypes.variant.default;
+  const disabled = props.disabled ?? propTypes.disabled.default;
+  const type = props.type ?? propTypes.type.default;
 
-  static componentStyles = new CSSStyleSheet();
+  const root = document.createElement('button');
+  root.type = type;
+  root.disabled = disabled;
+  root.className = `dk-button${variant === 'primary' ? ' dk-button-primary' : ''}`;
+  root.textContent = label;
 
-  render() {
-    const variant = this.prop('variant');
-    const disabled = this.prop('disabled');
-    const type = this.prop('type');
+  root.addEventListener('click', () => {
+    if (disabled) return;
+    root.dispatchEvent(new CustomEvent('button:click', {
+      bubbles: true,
+      detail: { label, variant },
+    }));
+  });
 
-    this.shadowRoot.innerHTML = `
-      <button
-        class="btn ${variant === 'primary' ? 'btn-primary' : ''}"
-        type="${type}"
-        ${disabled ? 'disabled' : ''}
-      ><slot></slot></button>
-    `;
-  }
+  return root;
 }
-
-SPButton.componentStyles.replaceSync(`
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md) var(--spacing-xl);
-    font-family: var(--typography-body);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    line-height: var(--font-line-height-base);
-    color: var(--color-text);
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
-  }
-
-  .btn:hover {
-    background: var(--color-hover-bg);
-    border-color: var(--color-border);
-  }
-
-  .btn:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
-    outline-offset: 2px;
-  }
-
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .btn-primary {
-    color: var(--color-white);
-    background: var(--color-purple-600);
-    border-color: var(--color-purple-600);
-  }
-
-  .btn-primary:hover {
-    background: var(--color-purple-700);
-    border-color: var(--color-purple-700);
-  }
-`);
-
-customElements.define('sp-button', SPButton);

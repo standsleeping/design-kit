@@ -1,84 +1,37 @@
-import { SPElement } from './sp-element.js';
+export const metadata = {
+  name: 'Checkbox',
+  description: 'Checkbox control with normalized change payload',
+  category: 'inputs',
+};
 
-export class SPCheckbox extends SPElement {
-  static metadata = {
-    name: 'SPCheckbox',
-    description: 'Checkbox control wrapper with normalized change payload',
-    category: 'inputs',
-  };
+export const propTypes = {
+  checked: { type: 'boolean', default: false },
+  disabled: { type: 'boolean', default: false },
+};
 
-  static propTypes = {
-    checked: { type: 'boolean', default: false },
-    disabled: { type: 'boolean', default: false },
-  };
+export const variants = [
+  { name: 'unchecked', description: 'Unchecked state', props: {} },
+  { name: 'checked', description: 'Checked state', props: { checked: true } },
+  { name: 'disabled', description: 'Disabled unchecked', props: { disabled: true } },
+  { name: 'disabled-checked', description: 'Disabled checked', props: { checked: true, disabled: true } },
+];
 
-  static variants = ['unchecked', 'checked', 'disabled'];
+export function render(props = {}) {
+  const checked = props.checked ?? propTypes.checked.default;
+  const disabled = props.disabled ?? propTypes.disabled.default;
 
-  static componentStyles = new CSSStyleSheet();
+  const root = document.createElement('input');
+  root.type = 'checkbox';
+  root.className = 'dk-checkbox';
+  root.checked = checked;
+  root.disabled = disabled;
 
-  connectedCallback() {
-    this.render();
-  }
+  root.addEventListener('change', (event) => {
+    root.dispatchEvent(new CustomEvent('checkbox:change', {
+      bubbles: true,
+      detail: { checked: event.target.checked },
+    }));
+  });
 
-  attributeChangedCallback(name, oldVal, newVal) {
-    if (oldVal === newVal) return;
-
-    const input = this.shadowRoot?.querySelector('.checkbox');
-    if (!input) {
-      this.render();
-      return;
-    }
-
-    if (name === 'checked') {
-      input.checked = newVal !== null && newVal !== 'false';
-      return;
-    }
-
-    if (name === 'disabled') {
-      input.disabled = newVal !== null && newVal !== 'false';
-      return;
-    }
-
-    this.render();
-  }
-
-  render() {
-    const checked = this.prop('checked');
-    const disabled = this.prop('disabled');
-
-    this.shadowRoot.innerHTML = `
-      <input
-        class="checkbox"
-        type="checkbox"
-        ${checked ? 'checked' : ''}
-        ${disabled ? 'disabled' : ''}
-      />
-    `;
-
-    const input = this.shadowRoot.querySelector('.checkbox');
-    input.addEventListener('change', (event) => {
-      const nextChecked = event.target.checked;
-      if (nextChecked) {
-        this.setAttribute('checked', '');
-      } else {
-        this.removeAttribute('checked');
-      }
-      this.dispatchEvent(
-        new CustomEvent('sp-change', {
-          bubbles: true,
-          detail: { checked: nextChecked },
-        })
-      );
-    });
-  }
+  return root;
 }
-
-SPCheckbox.componentStyles.replaceSync(`
-  .checkbox {
-    width: 14px;
-    height: 14px;
-    accent-color: var(--color-link);
-  }
-`);
-
-customElements.define('sp-checkbox', SPCheckbox);

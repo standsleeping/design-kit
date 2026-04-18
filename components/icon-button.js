@@ -1,95 +1,43 @@
-import { SPElement } from './sp-element.js';
+export const metadata = {
+  name: 'IconButton',
+  description: 'Icon-only button with size variants',
+  category: 'actions',
+};
 
-export class SPIconButton extends SPElement {
-  static metadata = {
-    name: 'SPIconButton',
-    description: 'Icon-only button with size variants',
-    category: 'actions',
-  };
+export const propTypes = {
+  icon: { type: 'string', default: '◆' },
+  label: { type: 'string', default: '' },
+  size: { type: 'enum', default: 'default', options: ['sm', 'default', 'touch'] },
+  disabled: { type: 'boolean', default: false },
+};
 
-  static propTypes = {
-    size: { type: 'string', default: 'default' },
-    label: { type: 'string', default: '' },
-    disabled: { type: 'boolean', default: false },
-  };
+export const variants = [
+  { name: 'sm', description: 'Small (24px)', props: { icon: '×', label: 'Close', size: 'sm' } },
+  { name: 'default', description: 'Default (32px)', props: { icon: '⋯', label: 'More options' } },
+  { name: 'touch', description: 'Touch target (40px)', props: { icon: '☰', label: 'Open menu', size: 'touch' } },
+  { name: 'disabled', description: 'Disabled state', props: { icon: '↓', label: 'Download', disabled: true } },
+];
 
-  static variants = ['sm', 'default', 'touch'];
+export function render(props = {}) {
+  const icon = props.icon ?? propTypes.icon.default;
+  const label = props.label ?? propTypes.label.default;
+  const size = props.size ?? propTypes.size.default;
+  const disabled = props.disabled ?? propTypes.disabled.default;
 
-  static componentStyles = new CSSStyleSheet();
+  const root = document.createElement('button');
+  root.type = 'button';
+  root.className = `dk-icon-button dk-icon-button-${size}`;
+  root.disabled = disabled;
+  if (label) root.setAttribute('aria-label', label);
+  root.textContent = icon;
 
-  render() {
-    const size = this.prop('size');
-    const label = this.prop('label');
-    const disabled = this.prop('disabled');
+  root.addEventListener('click', () => {
+    if (disabled) return;
+    root.dispatchEvent(new CustomEvent('icon-button:click', {
+      bubbles: true,
+      detail: { label, size },
+    }));
+  });
 
-    this.shadowRoot.innerHTML = `
-      <button
-        class="icon-btn icon-btn-${size}"
-        aria-label="${label}"
-        ${disabled ? 'disabled' : ''}
-      ><slot></slot></button>
-    `;
-  }
+  return root;
 }
-
-SPIconButton.componentStyles.replaceSync(`
-  .icon-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    flex-shrink: 0;
-    color: var(--color-text-muted);
-    transition: color 0.15s ease, background-color 0.15s ease;
-  }
-
-  .icon-btn:hover {
-    background: var(--color-hover-bg);
-  }
-
-  .icon-btn:active {
-    background: var(--color-active-bg);
-  }
-
-  .icon-btn:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
-    outline-offset: 2px;
-  }
-
-  .icon-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .icon-btn-sm {
-    width: 24px;
-    height: 24px;
-    font-size: var(--font-size-xs);
-    border-radius: var(--radius-sm);
-  }
-
-  .icon-btn-sm:hover { color: var(--color-text); }
-
-  .icon-btn-default {
-    width: 32px;
-    height: 32px;
-    font-size: var(--font-size-sm);
-    border-radius: var(--radius-md);
-  }
-
-  .icon-btn-default:hover { color: var(--color-text); }
-
-  .icon-btn-touch {
-    width: 40px;
-    height: 40px;
-    font-size: var(--font-size-base);
-    border-radius: var(--radius-md);
-  }
-
-  .icon-btn-touch:hover { color: var(--color-text); }
-`);
-
-customElements.define('sp-icon-button', SPIconButton);

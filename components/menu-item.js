@@ -1,104 +1,54 @@
-import { SPElement } from './sp-element.js';
+export const metadata = {
+  name: 'MenuItem',
+  description: 'Selectable navigation row with optional icon',
+  category: 'navigation',
+};
 
-export class SPMenuItem extends SPElement {
-  static metadata = {
-    name: 'SPMenuItem',
-    description: 'Selectable navigation row with optional icon',
-    category: 'navigation',
-  };
+export const propTypes = {
+  label: { type: 'string', default: 'Item' },
+  icon: { type: 'string', default: '' },
+  selected: { type: 'boolean', default: false },
+  disabled: { type: 'boolean', default: false },
+};
 
-  static propTypes = {
-    label: { type: 'string', default: 'Item' },
-    icon: { type: 'string', default: '' },
-    selected: { type: 'boolean', default: false },
-    disabled: { type: 'boolean', default: false },
-  };
+export const variants = [
+  { name: 'default', description: 'Default state', props: { label: 'Menu Item' } },
+  { name: 'selected', description: 'Currently selected item', props: { label: 'Selected Item', selected: true } },
+  { name: 'disabled', description: 'Disabled/inactive item', props: { label: 'Disabled Item', disabled: true } },
+  { name: 'with-icon', description: 'Menu item with leading icon', props: { label: 'Dashboard', icon: '▸' } },
+];
 
-  static variants = ['default', 'selected', 'disabled'];
+export function render(props = {}) {
+  const label = props.label ?? propTypes.label.default;
+  const icon = props.icon ?? propTypes.icon.default;
+  const selected = props.selected ?? propTypes.selected.default;
+  const disabled = props.disabled ?? propTypes.disabled.default;
 
-  static componentStyles = new CSSStyleSheet();
+  const root = document.createElement('button');
+  root.type = 'button';
+  root.className = `dk-menu-item${selected ? ' dk-menu-item-selected' : ''}`;
+  root.disabled = disabled;
 
-  render() {
-    const label = this.prop('label');
-    const icon = this.prop('icon');
-    const selected = this.prop('selected');
-    const disabled = this.prop('disabled');
-
-    this.shadowRoot.innerHTML = `
-      <button
-        type="button"
-        class="menu-item ${selected ? 'menu-item-selected' : ''}"
-        ${disabled ? 'disabled' : ''}
-      >
-        ${icon ? `<span class="menu-item-icon" aria-hidden="true">${icon}</span>` : ''}
-        <span class="menu-item-label">${label}</span>
-      </button>
-    `;
-
-    const button = this.shadowRoot.querySelector('.menu-item');
-    button.addEventListener('click', () => {
-      if (disabled) return;
-      this.dispatchEvent(
-        new CustomEvent('sp-select', {
-          bubbles: true,
-          detail: { label },
-        })
-      );
-    });
+  if (icon) {
+    const iconEl = document.createElement('span');
+    iconEl.className = 'dk-menu-item-icon';
+    iconEl.setAttribute('aria-hidden', 'true');
+    iconEl.textContent = icon;
+    root.append(iconEl);
   }
+
+  const labelEl = document.createElement('span');
+  labelEl.className = 'dk-menu-item-label';
+  labelEl.textContent = label;
+  root.append(labelEl);
+
+  root.addEventListener('click', () => {
+    if (disabled) return;
+    root.dispatchEvent(new CustomEvent('menu-item:select', {
+      bubbles: true,
+      detail: { label },
+    }));
+  });
+
+  return root;
 }
-
-SPMenuItem.componentStyles.replaceSync(`
-  .menu-item {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--color-text-muted);
-    font-family: var(--typography-mono);
-    font-size: var(--font-size-xs);
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  }
-
-  .menu-item:hover {
-    background: var(--color-hover-bg);
-    color: var(--color-text);
-  }
-
-  .menu-item:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
-    outline-offset: 2px;
-  }
-
-  .menu-item-selected {
-    border-color: var(--color-link);
-    color: var(--color-link);
-    background: var(--color-focus-ring-light);
-  }
-
-  .menu-item:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .menu-item-icon {
-    color: var(--color-text-muted);
-    width: 1.25em;
-    text-align: center;
-    flex-shrink: 0;
-  }
-
-  .menu-item-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-`);
-
-customElements.define('sp-menu-item', SPMenuItem);

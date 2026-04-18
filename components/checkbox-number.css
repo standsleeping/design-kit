@@ -1,0 +1,5 @@
+.dk-checkbox-number {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}

@@ -1,131 +1,66 @@
-import { SPElement } from './sp-element.js';
+export const metadata = {
+  name: 'Range',
+  description: 'Range slider with inline value readout',
+  category: 'inputs',
+};
 
-export class SPRange extends SPElement {
-  static metadata = {
-    name: 'SPRange',
-    description: 'Range slider control with numeric event payloads',
-    category: 'inputs',
-  };
+export const propTypes = {
+  value: { type: 'number', default: 50 },
+  min: { type: 'number', default: 0 },
+  max: { type: 'number', default: 100 },
+  step: { type: 'number', default: 1 },
+  disabled: { type: 'boolean', default: false },
+};
 
-  static propTypes = {
-    value: { type: 'number', default: 50 },
-    min: { type: 'number', default: 0 },
-    max: { type: 'number', default: 100 },
-    step: { type: 'number', default: 1 },
-    disabled: { type: 'boolean', default: false },
-  };
+export const variants = [
+  { name: 'default', description: 'Midpoint value', props: {} },
+  { name: 'min', description: 'At minimum', props: { value: 0 } },
+  { name: 'max', description: 'At maximum', props: { value: 100 } },
+  { name: 'stepped', description: 'Step 10, value 70', props: { value: 70, step: 10 } },
+  { name: 'disabled', description: 'Disabled state', props: { value: 30, disabled: true } },
+];
 
-  static variants = ['default', 'disabled'];
+export function render(props = {}) {
+  const value = Number.isFinite(props.value) ? props.value : propTypes.value.default;
+  const min = props.min ?? propTypes.min.default;
+  const max = props.max ?? propTypes.max.default;
+  const step = props.step ?? propTypes.step.default;
+  const disabled = props.disabled ?? propTypes.disabled.default;
 
-  static componentStyles = new CSSStyleSheet();
+  const root = document.createElement('span');
+  root.className = 'dk-range';
 
-  connectedCallback() {
-    this.render();
-  }
+  const input = document.createElement('input');
+  input.type = 'range';
+  input.className = 'dk-range-input';
+  input.value = String(value);
+  input.min = String(min);
+  input.max = String(max);
+  input.step = String(step);
+  input.disabled = disabled;
 
-  attributeChangedCallback(name, oldVal, newVal) {
-    if (oldVal === newVal) return;
+  const readout = document.createElement('span');
+  readout.className = 'dk-range-value';
+  readout.textContent = String(value);
 
-    const input = this.shadowRoot?.querySelector('.range');
-    const valueLabel = this.shadowRoot?.querySelector('.range-value');
-    if (!input || !valueLabel) {
-      this.render();
-      return;
-    }
+  root.append(input, readout);
 
-    if (name === 'value') {
-      const next = Number(newVal);
-      const safe = Number.isFinite(next) ? next : 0;
-      if (Number(input.value) !== safe) {
-        input.value = String(safe);
-      }
-      valueLabel.textContent = String(safe);
-      return;
-    }
+  input.addEventListener('input', (event) => {
+    const next = Number(event.target.value);
+    readout.textContent = String(next);
+    root.dispatchEvent(new CustomEvent('range:input', {
+      bubbles: true,
+      detail: { value: next },
+    }));
+  });
 
-    if (name === 'min' || name === 'max' || name === 'step') {
-      const next = Number(newVal);
-      const safe = Number.isFinite(next) ? next : 0;
-      input[name] = String(safe);
-      return;
-    }
+  input.addEventListener('change', (event) => {
+    const next = Number(event.target.value);
+    root.dispatchEvent(new CustomEvent('range:change', {
+      bubbles: true,
+      detail: { value: next },
+    }));
+  });
 
-    if (name === 'disabled') {
-      input.disabled = newVal !== null && newVal !== 'false';
-      return;
-    }
-
-    this.render();
-  }
-
-  render() {
-    const value = this.prop('value');
-    const min = this.prop('min');
-    const max = this.prop('max');
-    const step = this.prop('step');
-    const disabled = this.prop('disabled');
-
-    this.shadowRoot.innerHTML = `
-      <span class="range-wrap">
-        <input
-          class="range"
-          type="range"
-          value="${Number.isFinite(value) ? value : 0}"
-          min="${Number.isFinite(min) ? min : 0}"
-          max="${Number.isFinite(max) ? max : 100}"
-          step="${Number.isFinite(step) ? step : 1}"
-          ${disabled ? 'disabled' : ''}
-        />
-        <span class="range-value">${Number.isFinite(value) ? value : 0}</span>
-      </span>
-    `;
-
-    const input = this.shadowRoot.querySelector('.range');
-    const valueLabel = this.shadowRoot.querySelector('.range-value');
-
-    input.addEventListener('input', (event) => {
-      const nextValue = Number(event.target.value);
-      this.setAttribute('value', String(nextValue));
-      valueLabel.textContent = String(nextValue);
-      this.dispatchEvent(
-        new CustomEvent('sp-input', {
-          bubbles: true,
-          detail: { value: nextValue },
-        })
-      );
-    });
-
-    input.addEventListener('change', (event) => {
-      this.dispatchEvent(
-        new CustomEvent('sp-change', {
-          bubbles: true,
-          detail: { value: Number(event.target.value) },
-        })
-      );
-    });
-  }
+  return root;
 }
-
-SPRange.componentStyles.replaceSync(`
-  .range-wrap {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    min-width: 140px;
-  }
-
-  .range {
-    width: 100px;
-    accent-color: var(--color-link);
-  }
-
-  .range-value {
-    min-width: 28px;
-    text-align: right;
-    font-family: var(--typography-mono);
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-  }
-`);
-
-customElements.define('sp-range', SPRange);

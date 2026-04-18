@@ -1,0 +1,19 @@
+.dk-range {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 140px;
+}
+
+.dk-range-input {
+  flex: 1;
+  min-width: 100px;
+}
+
+.dk-range-value {
+  min-width: 3ch;
+  text-align: right;
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}

@@ -1,0 +1,29 @@
+.dk-form-layout {
+  display: flex;
+  flex-direction: column;
+  border: var(--border-width-thin) solid var(--color-border);
+  font-family: var(--typography-mono);
+  --dk-field-row-border: none;
+}
+
+.dk-form-layout-label {
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+  color: var(--color-text-muted);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.dk-form-layout-rows {
+  display: grid;
+  grid-template-columns: repeat(var(--dk-form-columns, 2), 1fr);
+  gap: 1px;
+  background: var(--color-border);
+}
+
+.dk-form-layout-rows > * {
+  background: var(--color-bg);
+}
