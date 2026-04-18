@@ -1,0 +1,28 @@
+.dk-bento-scroll {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dk-bento-scroll-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.dk-bento-scroll-container::-webkit-scrollbar { width: 4px; }
+.dk-bento-scroll-container::-webkit-scrollbar-track { background: transparent; }
+.dk-bento-scroll-container::-webkit-scrollbar-thumb { background: var(--color-gray-300); }
+
+.dk-bento-scroll-pre {
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  line-height: var(--font-line-height-base);
+  color: var(--color-text-muted);
+  margin: 0;
+  white-space: pre;
+}

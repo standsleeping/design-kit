@@ -1,0 +1,44 @@
+.dk-bento-compress {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.dk-bento-compress-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.dk-bento-compress-item {
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wider);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  transition: font-size 0.15s ease;
+}
+
+.dk-bento-compress-separator {
+  color: var(--color-gray-300);
+  user-select: none;
+}
+
+@container (min-width: 200px) {
+  .dk-bento-compress { padding: var(--spacing-sm) var(--spacing-lg); }
+  .dk-bento-compress-items { gap: var(--spacing-sm); }
+  .dk-bento-compress-item { font-size: var(--font-size-xs); }
+}
+
+@container (min-width: 400px) {
+  .dk-bento-compress { padding: var(--spacing-md) var(--spacing-xl); }
+  .dk-bento-compress-items { gap: var(--spacing-md); }
+  .dk-bento-compress-item { font-size: var(--font-size-sm); }
+}
