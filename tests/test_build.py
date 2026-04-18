@@ -1,9 +1,9 @@
 """Tests for the build command."""
 
+import json
 from pathlib import Path
 
 from design_kit.build import build
-
 
 TOKENS_PATH = Path(__file__).parent.parent / "tokens" / "design-tokens.json"
 
@@ -32,6 +32,19 @@ def test_build_copies_components(tmp_path: Path) -> None:
     assert components_dir.is_dir()
     assert (components_dir / "storybook.js").exists()
     assert (components_dir / "storybook.config.json").exists()
+
+
+def test_build_emits_component_manifest(tmp_path: Path) -> None:
+    """Writes a manifest.json listing every component .js (excluding runtime)."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    manifest_path = tmp_path / "components" / "manifest.json"
+    assert manifest_path.exists()
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert isinstance(manifest, list)
+    assert "storybook.js" not in manifest
+    assert all(name.endswith(".js") for name in manifest)
+    assert manifest == sorted(manifest)
 
 
 def test_build_ships_contract_tests_page(tmp_path: Path) -> None:

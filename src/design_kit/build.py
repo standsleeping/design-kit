@@ -1,5 +1,6 @@
 """Build command: generate CSS and preview pages into an output directory."""
 
+import json
 import shutil
 import time
 from pathlib import Path
@@ -12,6 +13,9 @@ logger = get_logger(__name__)
 
 COMPONENTS_DIR = Path("components")
 PAGES_DIR = Path("pages")
+# Runtime / infrastructure JS files that live alongside components but are
+# not themselves contract-conformant components.
+NON_COMPONENT_JS = {"storybook.js"}
 
 
 def build(tokens_path: Path, output_dir: Path) -> None:
@@ -46,5 +50,16 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             shutil.rmtree(dest_components)
         shutil.copytree(COMPONENTS_DIR, dest_components)
         logger.info(f"Copied components to {dest_components}")
+
+        manifest = sorted(
+            p.name
+            for p in dest_components.glob("*.js")
+            if p.name not in NON_COMPONENT_JS
+        )
+        manifest_path = dest_components / "manifest.json"
+        manifest_path.write_text(
+            json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+        )
+        logger.info(f"Generated {manifest_path} ({len(manifest)} components)")
     else:
         logger.warning(f"Components directory not found: {COMPONENTS_DIR}")

@@ -188,7 +188,22 @@ async function main() {
     let poolFirstImport = true;
     let poolUnreachable = false;
 
-    for (const filename of pool.components ?? []) {
+    let components = pool.components;
+    if (!Array.isArray(components)) {
+      const manifestUrl = new URL(`${pool.path}/manifest.json?v=${Date.now()}`, document.baseURI).href;
+      try {
+        const res = await fetch(manifestUrl, { cache: 'no-cache' });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const data = await res.json();
+        components = Array.isArray(data) ? data : (data.components ?? []);
+      } catch (err) {
+        poolUnreachable = true;
+        unreachablePools.push({ name: pool.name, path: pool.path, reason: `manifest.json: ${err.message}` });
+        continue;
+      }
+    }
+
+    for (const filename of components) {
       if (poolUnreachable) break;
       const url = new URL(`${pool.path}/${filename}?v=${Date.now()}`, document.baseURI).href;
       let mod;

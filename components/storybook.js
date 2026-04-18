@@ -78,10 +78,28 @@ async function loadPoolStylesheet(pool) {
   document.head.append(link);
 }
 
+async function resolveComponents(pool) {
+  if (Array.isArray(pool.components)) return pool.components;
+  const manifestUrl = new URL(`${pool.path}/manifest.json`, document.baseURI).href;
+  try {
+    const res = await fetch(manifestUrl, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.components)) return data.components;
+    console.warn(`[storybook] ${manifestUrl} has unexpected shape; expected array or { components: [] }`);
+    return [];
+  } catch (err) {
+    console.warn(`[storybook] ${pool.name}: no components array and manifest fetch failed: ${err.message}`);
+    return [];
+  }
+}
+
 async function scanPool(pool) {
   await loadPoolStylesheet(pool);
   const registry = [];
-  for (const filename of pool.components ?? []) {
+  const components = await resolveComponents(pool);
+  for (const filename of components) {
     const url = new URL(`${pool.path}/${filename}`, document.baseURI).href;
     let mod;
     try {
