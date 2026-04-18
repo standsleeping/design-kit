@@ -2,11 +2,24 @@ const CONTRACT_EXPORTS = ['metadata', 'propTypes', 'variants', 'render'];
 const ALLOWED_PROP_TYPES = ['string', 'number', 'boolean', 'enum', 'array', 'object'];
 const MAX_EVENT_LOG = 50;
 const CONFIG_URL = 'components/storybook.config.json';
+const LOCAL_CONFIG_URL = 'components/storybook.config.local.json';
 
 async function loadConfig() {
   const res = await fetch(CONFIG_URL, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`config load failed: ${res.status}`);
-  return res.json();
+  const config = await res.json();
+  try {
+    const localRes = await fetch(LOCAL_CONFIG_URL, { cache: 'no-cache' });
+    if (localRes.ok) {
+      const local = await localRes.json();
+      const byName = new Map((config.pools ?? []).map((p) => [p.name, p]));
+      for (const pool of local.pools ?? []) byName.set(pool.name, pool);
+      config.pools = [...byName.values()];
+    }
+  } catch {
+    /* local override is optional */
+  }
+  return config;
 }
 
 function conforms(mod) {
@@ -90,13 +103,23 @@ async function scanPool(pool) {
   return registry;
 }
 
-function renderComponentList(listEl, registry, activeName, onSelect) {
+function renderComponentList(listEl, registry, active, onSelect, showPoolHeaders) {
   listEl.innerHTML = '';
+  let lastPool = null;
   for (const entry of registry) {
+    if (showPoolHeaders && entry.pool !== lastPool) {
+      const header = document.createElement('span');
+      header.className = 'storybook-pool-header';
+      header.textContent = entry.pool;
+      listEl.append(header);
+      lastPool = entry.pool;
+    }
     const link = document.createElement('a');
     link.href = `#${entry.pool}/${entry.mod.metadata.name}`;
     link.className = 'storybook-component-link';
-    if (entry.mod.metadata.name === activeName) link.classList.add('is-active');
+    if (entry.pool === active?.pool && entry.mod.metadata.name === active?.mod.metadata.name) {
+      link.classList.add('is-active');
+    }
     link.textContent = entry.mod.metadata.name;
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -104,6 +127,55 @@ function renderComponentList(listEl, registry, activeName, onSelect) {
     });
     listEl.append(link);
   }
+}
+
+const POOL_FILTER_STORAGE_KEY = 'dk-storybook-pool-filter';
+const POOL_FILTER_ALL = 'all';
+
+function loadPoolFilter() {
+  try {
+    return localStorage.getItem(POOL_FILTER_STORAGE_KEY) || POOL_FILTER_ALL;
+  } catch {
+    return POOL_FILTER_ALL;
+  }
+}
+
+function savePoolFilter(value) {
+  try {
+    localStorage.setItem(POOL_FILTER_STORAGE_KEY, value);
+  } catch {
+    /* quota or disabled — ignore */
+  }
+}
+
+function renderPoolFilter(filterEl, poolNames, activeFilter, onChange) {
+  filterEl.innerHTML = '';
+  if (poolNames.length < 2) {
+    filterEl.hidden = true;
+    return;
+  }
+  filterEl.hidden = false;
+  const entries = [POOL_FILTER_ALL, ...poolNames];
+  entries.forEach((value, idx) => {
+    if (idx > 0) {
+      const sep = document.createElement('span');
+      sep.className = 'storybook-pool-tab-separator';
+      sep.setAttribute('aria-hidden', 'true');
+      sep.textContent = '\u00B7';
+      filterEl.append(sep);
+    }
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'storybook-pool-tab';
+    btn.dataset.poolFilter = value;
+    btn.setAttribute('role', 'tab');
+    const isActive = value === activeFilter;
+    btn.setAttribute('aria-selected', String(isActive));
+    if (isActive) btn.classList.add('storybook-pool-tab-active');
+    btn.textContent = value === POOL_FILTER_ALL ? 'All' : value;
+    btn.addEventListener('click', () => onChange(value));
+    filterEl.append(btn);
+  });
 }
 
 function renderEntry(mod, props, cleanups) {
@@ -327,6 +399,7 @@ async function main() {
   const el = {
     count: document.querySelector('[data-storybook-count]'),
     list: document.querySelector('[data-storybook-list]'),
+    poolFilter: document.querySelector('[data-storybook-pool-filter]'),
     name: document.querySelector('[data-storybook-component-name]'),
     widthSlider: document.querySelector('[data-storybook-width-slider]'),
     widthNumber: document.querySelector('[data-storybook-width-number]'),
@@ -341,8 +414,12 @@ async function main() {
   };
 
   let registry = [];
+  const poolNames = [];
   for (const pool of config.pools ?? []) {
     const poolRegistry = await scanPool(pool);
+    if (poolRegistry.length > 0 && !poolNames.includes(pool.name)) {
+      poolNames.push(pool.name);
+    }
     registry = registry.concat(poolRegistry);
   }
 
@@ -360,6 +437,15 @@ async function main() {
   let width = Number(el.widthSlider.value);
   let height = Number(el.heightSlider.value);
   let overrides = {};
+  let poolFilter = loadPoolFilter();
+  if (poolFilter !== POOL_FILTER_ALL && !poolNames.includes(poolFilter)) {
+    poolFilter = POOL_FILTER_ALL;
+  }
+
+  const visibleRegistry = () =>
+    poolFilter === POOL_FILTER_ALL
+      ? registry
+      : registry.filter((e) => e.pool === poolFilter);
 
   const updateFooter = () => {
     if (el.footerHash) {
@@ -372,7 +458,16 @@ async function main() {
   };
 
   const paint = () => {
-    renderComponentList(el.list, registry, active.mod.metadata.name, select);
+    const visible = visibleRegistry();
+    const showPoolHeaders = new Set(visible.map((e) => e.pool)).size > 1;
+    renderComponentList(el.list, visible, active, select, showPoolHeaders);
+    if (el.poolFilter) {
+      renderPoolFilter(el.poolFilter, poolNames, poolFilter, (next) => {
+        poolFilter = next;
+        savePoolFilter(next);
+        paint();
+      });
+    }
     el.name.textContent = active.mod.metadata.name;
     renderVariants(el.variants, active, width, height, registry, cleanups, overrides);
     renderPropsForm();
