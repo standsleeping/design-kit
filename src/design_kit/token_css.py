@@ -142,6 +142,21 @@ RESET_LAYER = """\
 
 DEFAULTS_LAYER = """\
 @layer defaults {
+  /* UA-default chrome: every browser-colored surface routed through tokens. */
+  html { accent-color: var(--color-link); caret-color: var(--color-link); -webkit-tap-highlight-color: transparent; scrollbar-color: var(--color-border) transparent; scrollbar-width: thin; }
+  ::selection { background: var(--color-focus-ring-light); color: var(--color-text); }
+  ::placeholder { color: var(--color-text-muted); opacity: 1; }
+  :focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+  :focus:not(:focus-visible) { outline: none; }
+  ::marker { color: var(--color-text-muted); }
+  dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+  :-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px var(--color-bg) inset; -webkit-text-fill-color: var(--color-text); caret-color: var(--color-link); }
+  input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+  input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { appearance: none; -webkit-appearance: none; margin: 0; }
+  input[type="search"]::-webkit-search-cancel-button { appearance: none; -webkit-appearance: none; }
+  summary { list-style: none; cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
+
   body { font-family: var(--typography-body); --mono: 0; color: var(--color-text); background: var(--color-bg); line-height: var(--font-line-height-relaxed); }
   h1, h2, h3, h4, h5, h6 { font-family: var(--typography-heading); --mono: 1; line-height: var(--font-line-height-tight); text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); }
   h1 { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); }

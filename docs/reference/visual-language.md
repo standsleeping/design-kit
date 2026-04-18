@@ -2,6 +2,8 @@
 
 This document describes the aesthetic principles and specific choices that define design-kit's visual identity. The principles below govern all projects that use this design system.
 
+For shared vocabulary (inset, flush, rule, chrome, gutter, full-bleed, padding roles), see `glossary.md`.
+
 ## Identity
 
 Data-forward interfaces that feel like well-designed developer tools: an IDE, a Bloomberg terminal, a thoughtfully formatted CLI output. Monospace typography carries structure. Greyscale carries hierarchy. Color is scarce and therefore meaningful. The aesthetic is modern and minimal, not nostalgically retro.
@@ -48,9 +50,9 @@ Weight, size, and shade create hierarchy without color or decoration. Recursive'
 
 **Rendered heading markers.** The `#` and `##` characters from markdown can be rendered literally as structural prefixes alongside heading text. This treats them as visible typographic elements (not hidden semantic markup), reinforcing the plaintext aesthetic. Use this treatment selectively; it works best in editorial or changelog contexts where the raw-document feel is intentional.
 
-### 7. Dividers reflect hierarchy
+### 7. Rules reflect hierarchy
 
-Borders and rules carry hierarchy just like text. A section boundary is a heavier division than a row boundary; they should not look the same. Differentiate through color (darker for major, lighter for minor), width, or absence. Row-level dividers within a tight monospace table can often be very faint or removed entirely; the grid alignment provides implicit structure. If two dividers at different levels look identical, one of them needs to change.
+Borders and rules carry hierarchy just like text. A section boundary is a heavier division than a row boundary; they should not look the same. Differentiate through color (darker for major, lighter for minor), width, or absence. Row-level rules within a tight monospace table can often be very faint or removed entirely; the grid alignment provides implicit structure. If two rules at different levels look identical, one of them needs to change.
 
 ### 8. Let the data lead
 
@@ -131,7 +133,7 @@ Different surfaces use different shades. Where two shades meet, a border creates
 | Sidebar / secondary | gray-50 or gray-100 |
 | Table header row | gray-100 |
 | Table row hover | gray-50 |
-| Recessed/inset | gray-200 |
+| Recessed surface | gray-200 |
 
 ### Color budget
 
