@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storybook · design-kit</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-body);
+  }
+
+  .storybook {
+    display: grid;
+    grid-template-columns: 240px 1fr 320px;
+    grid-template-rows: auto 1fr auto;
+    height: 100vh;
+  }
+
+  .storybook-mobile-notice {
+    display: none;
+    padding: var(--spacing-2xl);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    --mono: 1;
+  }
+
+  .storybook-mobile-notice-title {
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .storybook-mobile-notice-body {
+    color: var(--color-text-muted);
+    line-height: var(--font-line-height-relaxed);
+  }
+
+  @media (max-width: 899px) {
+    .storybook { display: none; }
+    .storybook-mobile-notice { display: block; }
+  }
+
+  .storybook-header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    --mono: 1;
+  }
+
+  .storybook-header-title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+
+  .storybook-header-count {
+    color: var(--color-text-muted);
+  }
+
+  .storybook-nav,
+  .storybook-inspector {
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+    position: relative;
+  }
+
+  .storybook-nav {
+    border-right: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .storybook-inspector {
+    border-left: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .storybook-resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: ew-resize;
+    z-index: 2;
+  }
+
+  .storybook-resize-handle:hover {
+    background: var(--color-focus-ring-light, var(--color-hover-bg));
+  }
+
+  .storybook-resize-handle-right {
+    right: -3px;
+  }
+
+  .storybook-resize-handle-left {
+    left: -3px;
+  }
+
+  .storybook-content {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .storybook-section-title {
+    display: block;
+    font-size: var(--font-size-2xs);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--color-gray-100);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .storybook-component-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .storybook-component-link {
+    display: block;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+  }
+
+  .storybook-component-link:hover {
+    color: var(--color-text);
+    background: var(--color-hover-bg);
+  }
+
+  .storybook-component-link.is-active {
+    color: var(--color-link);
+    background: var(--color-focus-ring-light);
+    border-left-color: var(--color-link);
+  }
+
+  .storybook-width-control {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+  }
+
+  .storybook-width-control label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+  }
+
+  .storybook-width-control input[type="number"] {
+    width: 5ch;
+    padding: var(--spacing-2xs) var(--spacing-xs);
+    border: var(--border-width-thin) solid var(--color-border);
+    background: var(--color-bg);
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  .storybook-component-name {
+    margin-left: auto;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+  }
+
+  .storybook-axes-control {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-xl);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    --mono: 1;
+  }
+
+  .storybook-axes-control label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  .storybook-axes-control input[type="range"] {
+    width: 80px;
+  }
+
+  .storybook-axes-readout {
+    color: var(--color-text);
+    min-width: 3ch;
+    text-align: right;
+  }
+
+  .storybook-axes-reset {
+    margin-left: auto;
+    font-family: inherit;
+    font-size: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    color: var(--color-text-muted);
+    background: transparent;
+    border: var(--border-width-thin) solid var(--color-border);
+    padding: var(--spacing-2xs) var(--spacing-sm);
+    cursor: pointer;
+  }
+
+  .storybook-axes-reset:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+  }
+
+  .storybook-variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-xl);
+  }
+
+  .storybook-variant-card {
+    display: flex;
+    flex-direction: column;
+    border: var(--border-width-thin) solid var(--color-border);
+    background: var(--color-bg);
+  }
+
+  .storybook-variant-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-family: var(--typography-mono);
+    --mono: 1;
+  }
+
+  .storybook-variant-name {
+    font-size: var(--font-size-2xs);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .storybook-variant-description {
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-muted);
+  }
+
+  .storybook-variant-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    position: relative;
+    min-height: 200px;
+  }
+
+  .storybook-event-log {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .storybook-event-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .storybook-event-meta {
+    font-size: var(--font-size-2xs);
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+  }
+
+  .storybook-event-detail {
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-muted);
+    word-break: break-all;
+  }
+
+  .storybook-event-empty {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .storybook-inspector-tabs {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .storybook-inspector-tab {
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-2xs);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: var(--spacing-2xs) 0;
+    cursor: pointer;
+  }
+
+  .storybook-inspector-tab:hover {
+    color: var(--color-text);
+  }
+
+  .storybook-inspector-tab:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .storybook-inspector-tab-active {
+    color: var(--color-link);
+    font-weight: var(--font-weight-semibold);
+    border-bottom-color: var(--color-link);
+  }
+
+  .storybook-inspector-tab-separator {
+    color: var(--color-text-muted);
+    user-select: none;
+  }
+
+  .storybook-inspector-panel[hidden] {
+    display: none;
+  }
+
+  .storybook-props-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .storybook-props-reset {
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-2xs);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    background: transparent;
+    border: var(--border-width-thin) solid var(--color-border);
+    padding: var(--spacing-2xs) var(--spacing-sm);
+    cursor: pointer;
+  }
+
+  .storybook-props-reset:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+  }
+
+  .storybook-props-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .storybook-prop-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2xs);
+  }
+
+  .storybook-prop-label {
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-2xs);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+  }
+
+  .storybook-prop-type {
+    font-weight: var(--font-weight-regular);
+    color: var(--color-text-muted);
+  }
+
+  .storybook-prop-input {
+    width: 100%;
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+    background: var(--color-bg);
+    border: var(--border-width-thin) solid var(--color-border);
+    padding: var(--spacing-2xs) var(--spacing-sm);
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .storybook-prop-input:focus-visible {
+    border-color: var(--color-focus-ring);
+    box-shadow: 0 0 0 2px var(--color-focus-ring-light, var(--color-focus-ring));
+  }
+
+  .storybook-prop-input-invalid {
+    border-color: var(--color-red-700, #bf0000);
+  }
+
+  textarea.storybook-prop-input {
+    min-height: 4lh;
+    resize: vertical;
+    font-family: var(--typography-mono);
+    line-height: var(--font-line-height-base);
+  }
+
+  .storybook-prop-checkbox {
+    width: auto;
+  }
+
+  .storybook-props-empty {
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .storybook-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-xl);
+    border-top: var(--border-width-thin) solid var(--color-border);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    --mono: 1;
+  }
+
+  .storybook-footer-hash {
+    color: var(--color-text);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .storybook-footer-size {
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<div class="storybook">
+  <header class="storybook-header">
+    <span class="storybook-header-title">Storybook</span>
+    <span class="storybook-header-count" data-storybook-count></span>
+  </header>
+  <nav class="storybook-nav" aria-label="Components">
+    <span class="storybook-section-title">Components</span>
+    <div class="storybook-component-list" data-storybook-list></div>
+    <div class="storybook-resize-handle storybook-resize-handle-right" data-storybook-resize="nav"></div>
+  </nav>
+  <main class="storybook-content">
+    <div class="storybook-width-control">
+      <label>
+        Width
+        <input type="range" min="120" max="800" value="280" data-storybook-width-slider>
+      </label>
+      <input type="number" min="120" max="800" value="280" data-storybook-width-number>
+      <label>
+        Height
+        <input type="range" min="0" max="800" value="0" data-storybook-height-slider>
+      </label>
+      <input type="number" min="0" max="800" value="0" data-storybook-height-number placeholder="auto">
+      <span class="storybook-component-name" data-storybook-component-name></span>
+    </div>
+    <div class="storybook-axes-control" aria-label="Font axes">
+      <label>
+        MONO
+        <input type="range" min="0" max="1" step="0.1" value="1" data-storybook-axis="mono">
+        <span class="storybook-axes-readout" data-storybook-axis-readout="mono">1.0</span>
+      </label>
+      <label>
+        CASL
+        <input type="range" min="0" max="1" step="0.1" value="0" data-storybook-axis="casl">
+        <span class="storybook-axes-readout" data-storybook-axis-readout="casl">0.0</span>
+      </label>
+      <label>
+        slnt
+        <input type="range" min="-15" max="0" step="1" value="0" data-storybook-axis="slnt">
+        <span class="storybook-axes-readout" data-storybook-axis-readout="slnt">0</span>
+      </label>
+      <label>
+        CRSV
+        <input type="range" min="0" max="1" step="0.1" value="0.5" data-storybook-axis="crsv">
+        <span class="storybook-axes-readout" data-storybook-axis-readout="crsv">0.5</span>
+      </label>
+      <button type="button" class="storybook-axes-reset" data-storybook-axes-reset>Reset</button>
+    </div>
+    <div class="storybook-variants" data-storybook-variants></div>
+  </main>
+  <aside class="storybook-inspector" aria-label="Inspector">
+    <div class="storybook-resize-handle storybook-resize-handle-left" data-storybook-resize="inspector"></div>
+    <div class="storybook-inspector-tabs" role="tablist">
+      <button type="button" class="storybook-inspector-tab storybook-inspector-tab-active" data-storybook-inspector-tab="events" role="tab" aria-selected="true">Events</button>
+      <span class="storybook-inspector-tab-separator" aria-hidden="true">\u00B7</span>
+      <button type="button" class="storybook-inspector-tab" data-storybook-inspector-tab="props" role="tab" aria-selected="false">Props</button>
+    </div>
+    <div class="storybook-inspector-panel" data-storybook-inspector-panel="events">
+      <div class="storybook-event-log" data-storybook-events></div>
+    </div>
+    <div class="storybook-inspector-panel" data-storybook-inspector-panel="props" hidden>
+      <div class="storybook-props-header">
+        <button type="button" class="storybook-props-reset" data-storybook-props-reset>Reset</button>
+      </div>
+      <div class="storybook-props-form" data-storybook-props-form></div>
+    </div>
+  </aside>
+  <footer class="storybook-footer" aria-live="polite">
+    <span class="storybook-footer-hash" data-storybook-footer-hash>#design-kit/</span>
+    <span class="storybook-footer-size" data-storybook-footer-size>Width 280px · Height auto</span>
+  </footer>
+</div>
+<div class="storybook-mobile-notice">
+  <div class="storybook-mobile-notice-title">Desktop only</div>
+  <div class="storybook-mobile-notice-body">
+    The component storybook is designed for viewports wider than 900px.
+    Please revisit on a larger screen to browse variants, tune width and height,
+    and inspect component events.
+  </div>
+</div>
+<script type="module" src="components/storybook.js?v={{CACHE_BUST}}"></script>
+</body>
+</html>
