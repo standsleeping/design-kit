@@ -281,25 +281,29 @@ function installEventLog(previewRoot, logEl) {
       row.append(meta, detail);
       logEl.append(row);
     }
+    logEl.scrollTop = logEl.scrollHeight;
   };
 
   const originalDispatch = EventTarget.prototype.dispatchEvent;
   EventTarget.prototype.dispatchEvent = function (event) {
-    const result = originalDispatch.call(this, event);
-    try {
-      if (
-        event instanceof CustomEvent &&
-        this instanceof Node &&
-        previewRoot.contains(this)
-      ) {
-        events.unshift({ t: Date.now(), name: event.type, detail: event.detail });
-        if (events.length > MAX_EVENT_LOG) events.length = MAX_EVENT_LOG;
+    // Capture the dispatch sequence *before* handlers run so compound events
+    // show cause-above-effect: a handler that dispatches a follow-up event
+    // nests inside the outer dispatch, so logging at start (not at return)
+    // keeps the outer event chronologically earlier than its consequences.
+    if (
+      event instanceof CustomEvent &&
+      this instanceof Node &&
+      previewRoot.contains(this)
+    ) {
+      try {
+        events.push({ t: Date.now(), name: event.type, detail: event.detail });
+        if (events.length > MAX_EVENT_LOG) events.splice(0, events.length - MAX_EVENT_LOG);
         renderLog();
+      } catch {
+        /* swallow */
       }
-    } catch {
-      /* swallow */
     }
-    return result;
+    return originalDispatch.call(this, event);
   };
 
   renderLog();
