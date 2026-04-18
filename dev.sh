@@ -21,4 +21,4 @@ echo "contract tests:        http://localhost:$port/contract-tests.html"
 echo "Ctrl-C to stop."
 echo ""
 
-exec python3 -m http.server "$port" -d dist
+exec python3 scripts/serve.py "$port" dist
