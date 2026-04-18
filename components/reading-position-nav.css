@@ -1,0 +1,29 @@
+.dk-reading-position-nav {
+  display: block;
+  position: absolute;
+  top: var(--spacing-xl);
+  left: var(--spacing-xl);
+  z-index: var(--z-sticky, 100);
+  pointer-events: none;
+  max-width: 220px;
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  line-height: var(--font-line-height-base);
+}
+
+.dk-reading-position-nav-section {
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-xs);
+}
+
+.dk-reading-position-nav-item {
+  color: var(--color-text-muted);
+}
+
+.dk-reading-position-nav-section:empty,
+.dk-reading-position-nav-item:empty {
+  display: none;
+}

@@ -1,0 +1,40 @@
+.dk-tab-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm) var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.dk-tab-bar-tab {
+  padding: var(--spacing-xs) 0;
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
+}
+
+.dk-tab-bar-tab:hover {
+  color: var(--color-text);
+}
+
+.dk-tab-bar-tab:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.dk-tab-bar-tab-active {
+  color: var(--color-link);
+  font-weight: var(--font-weight-semibold);
+  border-bottom-color: var(--color-link);
+}
+
+.dk-tab-bar-separator {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  user-select: none;
+}
