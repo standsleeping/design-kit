@@ -1,0 +1,55 @@
+.dk-sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  height: 100%;
+  min-width: 0;
+  transition: width 0.2s ease-out;
+  border-right: var(--border-width-thin) solid var(--color-border);
+}
+
+.dk-sidebar-right {
+  border-right: none;
+  border-left: var(--border-width-thin) solid var(--color-border);
+}
+
+.dk-sidebar-collapsed {
+  width: 0 !important;
+  transition: width 0.15s ease-in;
+}
+
+.dk-sidebar-header,
+.dk-sidebar-footer {
+  flex-shrink: 0;
+}
+
+.dk-sidebar-main {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  min-height: 0;
+}
+
+.dk-sidebar-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 2;
+}
+
+.dk-sidebar-left .dk-sidebar-resizer {
+  right: -4px;
+}
+
+.dk-sidebar-right .dk-sidebar-resizer {
+  left: -4px;
+}
+
+.dk-sidebar-resizer:hover {
+  background: var(--color-focus-ring-light, var(--color-focus-ring));
+}

@@ -1,0 +1,21 @@
+.dk-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.dk-container-standard {
+  padding: var(--spacing-xl);
+  gap: 1lh;
+}
+
+.dk-container-centered {
+  max-width: var(--layout-content-max-width, 680px);
+  margin: 0 auto;
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  gap: 1lh;
+}
+
+.dk-container-content {
+  display: contents;
+}

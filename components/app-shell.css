@@ -1,0 +1,31 @@
+.dk-app-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  overflow: hidden;
+}
+
+.dk-app-shell-header,
+.dk-app-shell-footer {
+  flex-shrink: 0;
+}
+
+.dk-app-shell-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dk-app-shell-left,
+.dk-app-shell-right {
+  flex-shrink: 0;
+}
+
+.dk-app-shell-main {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}

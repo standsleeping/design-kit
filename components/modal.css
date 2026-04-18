@@ -1,0 +1,97 @@
+/* .dk-modal is position: absolute — requires a positioned ancestor.
+   For viewport-covering use, wrap in an AppShell or a full-viewport container
+   with position: relative. */
+.dk-modal {
+  position: absolute;
+  z-index: var(--z-overlay, 1000);
+  max-height: 80vh;
+  background: var(--color-bg);
+  border: var(--border-width-medium) solid var(--color-gray-400);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dk-modal[hidden] {
+  display: none;
+}
+
+.dk-modal-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.dk-modal-top-right {
+  top: var(--spacing-2xl);
+  right: var(--spacing-2xl);
+  left: auto;
+}
+
+.dk-modal-bottom-right {
+  bottom: var(--spacing-2xl);
+  right: var(--spacing-2xl);
+  left: auto;
+  top: auto;
+}
+
+.dk-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.dk-modal-header:active,
+.dk-modal-dragging .dk-modal-header {
+  cursor: grabbing;
+}
+
+.dk-modal-title {
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dk-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease),
+              background-color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
+}
+
+.dk-modal-close:hover {
+  color: var(--color-text);
+  background: var(--color-hover-bg);
+}
+
+.dk-modal-close:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+}
+
+.dk-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: var(--spacing-lg);
+}
