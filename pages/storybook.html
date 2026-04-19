@@ -69,6 +69,12 @@
     color: var(--color-text-muted);
   }
 
+  .storybook-header-theme {
+    margin-left: auto;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
   .storybook-nav,
   .storybook-inspector {
     overflow-y: auto;
@@ -121,7 +127,7 @@
     letter-spacing: var(--font-letter-spacing-wide);
     color: var(--color-text-muted);
     padding: var(--spacing-xs) var(--spacing-sm);
-    background: var(--color-gray-100);
+    background: var(--color-code-bg);
     margin-bottom: var(--spacing-sm);
   }
 
@@ -250,10 +256,10 @@
     align-items: center;
     flex-wrap: wrap;
     gap: var(--spacing-md);
-    padding: var(--spacing-sm) var(--spacing-xl);
+    padding: var(--spacing-md) var(--spacing-xl);
     border-bottom: var(--border-width-thin) solid var(--color-border);
     font-family: var(--typography-mono);
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
@@ -306,6 +312,73 @@
     flex-direction: column;
     border: var(--border-width-thin) solid var(--color-border);
     background: var(--color-bg);
+    position: relative;
+  }
+
+  .storybook-variant-card-overridden {
+    outline: var(--border-width-thin) dashed var(--color-focus-ring);
+    outline-offset: -1px;
+  }
+
+  .storybook-variant-card {
+    --storybook-resize-grip: 6px;
+    --storybook-resize-corner: 14px;
+    --storybook-resize-offset: -3px;
+  }
+
+  .storybook-variant-resize {
+    position: absolute;
+    background: transparent;
+    z-index: 1;
+    touch-action: none;
+  }
+
+  .storybook-variant-resize-x {
+    top: 0;
+    right: var(--storybook-resize-offset);
+    bottom: 0;
+    width: var(--storybook-resize-grip);
+    cursor: col-resize;
+  }
+
+  .storybook-variant-resize-y {
+    left: 0;
+    right: 0;
+    bottom: var(--storybook-resize-offset);
+    height: var(--storybook-resize-grip);
+    cursor: row-resize;
+  }
+
+  .storybook-variant-resize-xy {
+    right: var(--storybook-resize-offset);
+    bottom: var(--storybook-resize-offset);
+    width: var(--storybook-resize-corner);
+    height: var(--storybook-resize-corner);
+    cursor: nwse-resize;
+    z-index: 2;
+  }
+
+  .storybook-variant-resize:hover,
+  .storybook-variant-resize:active {
+    background: var(--color-focus-ring);
+  }
+
+  .storybook-variant-resize:focus-visible {
+    background: var(--color-focus-ring);
+    outline: var(--border-width-thin) solid var(--color-focus-ring);
+    outline-offset: 1px;
+  }
+
+  .storybook-variant-footer {
+    border-top: var(--border-width-thin) solid var(--color-border);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-family: var(--typography-mono);
+    --mono: 1;
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-muted);
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
   }
 
   .storybook-variant-header {
@@ -410,8 +483,12 @@
   }
 
   .storybook-inspector-tab-separator {
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-2xs);
+    line-height: 1;
     color: var(--color-text-muted);
     user-select: none;
+    align-self: center;
   }
 
   .storybook-inspector-panel[hidden] {
@@ -536,6 +613,7 @@
   <header class="storybook-header">
     <span class="storybook-header-title">Storybook</span>
     <span class="storybook-header-count" data-storybook-count></span>
+    <div class="storybook-header-theme" data-storybook-theme></div>
   </header>
   <nav class="storybook-nav" aria-label="Components">
     <span class="storybook-section-title">Components</span>
@@ -586,7 +664,7 @@
     <div class="storybook-resize-handle storybook-resize-handle-left" data-storybook-resize="inspector"></div>
     <div class="storybook-inspector-tabs" role="tablist">
       <button type="button" class="storybook-inspector-tab storybook-inspector-tab-active" data-storybook-inspector-tab="events" role="tab" aria-selected="true">Events</button>
-      <span class="storybook-inspector-tab-separator" aria-hidden="true">\u00B7</span>
+      <span class="storybook-inspector-tab-separator" aria-hidden="true">·</span>
       <button type="button" class="storybook-inspector-tab" data-storybook-inspector-tab="props" role="tab" aria-selected="false">Props</button>
     </div>
     <div class="storybook-inspector-panel" data-storybook-inspector-panel="events">

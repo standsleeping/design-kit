@@ -3,6 +3,33 @@ const ALLOWED_PROP_TYPES = ['string', 'number', 'boolean', 'enum', 'array', 'obj
 const MAX_EVENT_LOG = 50;
 const CONFIG_URL = 'components/storybook.config.json';
 const LOCAL_CONFIG_URL = 'components/storybook.config.local.json';
+const THEME_STORAGE_KEY = 'dk-theme';
+
+async function mountThemeToggle(mountEl) {
+  if (!mountEl) return;
+  let stored = null;
+  try { stored = localStorage.getItem(THEME_STORAGE_KEY); } catch { /* ignore */ }
+  const initial = stored === 'light' || stored === 'dark' ? stored : 'auto';
+  if (initial === 'auto') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', initial);
+  }
+  if (!document.querySelector('link[data-storybook-theme-css]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'components/theme-toggle.css';
+    link.dataset.storybookThemeCss = 'true';
+    document.head.append(link);
+  }
+  try {
+    const mod = await import('./theme-toggle.js');
+    mountEl.innerHTML = '';
+    mountEl.append(mod.render({ value: initial }));
+  } catch (err) {
+    console.warn('[storybook] theme toggle mount failed:', err);
+  }
+}
 
 async function loadConfig() {
   const res = await fetch(CONFIG_URL, { cache: 'no-cache' });
@@ -239,7 +266,125 @@ function runCleanups(cleanups) {
   cleanups.length = 0;
 }
 
-function renderVariants(variantsEl, entry, width, height, registry, cleanups, overrides) {
+const RESIZE_MIN = 40;
+const RESIZE_MAX = 2400;
+const RESIZE_KEY_STEP = 8;
+const RESIZE_KEY_STEP_LARGE = 32;
+
+function clampSize(value) {
+  return Math.max(RESIZE_MIN, Math.min(RESIZE_MAX, Math.round(value)));
+}
+
+// Wires drag and keyboard resize affordances into a variant card. All inline
+// style + override-map mutation lives here; renderVariants stays declarative.
+function installResizableCard(card, body, opts) {
+  const { variantName, sizeOverrides, defaults, footerText, onChange } = opts;
+  const initial = sizeOverrides.get(variantName);
+
+  const applyHeightOverride = (h) => {
+    card.style.height = `${h}px`;
+    body.style.minHeight = '0';
+    body.style.overflow = 'auto';
+  };
+
+  if (initial?.w !== undefined) card.style.width = `${initial.w}px`;
+  if (initial?.h !== undefined) applyHeightOverride(initial.h);
+  if (initial?.w !== undefined || initial?.h !== undefined) {
+    card.classList.add('storybook-variant-card-overridden');
+  }
+
+  const updateFooter = () => {
+    const rect = card.getBoundingClientRect();
+    footerText.textContent = `${Math.round(rect.width)} × ${Math.round(rect.height)} px`;
+  };
+  requestAnimationFrame(updateFooter);
+
+  const setOverrides = (patch) => {
+    const cur = sizeOverrides.get(variantName) ?? {};
+    sizeOverrides.set(variantName, { ...cur, ...patch });
+    card.classList.add('storybook-variant-card-overridden');
+  };
+
+  const applyDelta = (axis, dx, dy, base) => {
+    const patch = {};
+    if (axis === 'x' || axis === 'xy') {
+      const w = clampSize(base.w + dx);
+      card.style.width = `${w}px`;
+      patch.w = w;
+    }
+    if (axis === 'y' || axis === 'xy') {
+      const h = clampSize(base.h + dy);
+      applyHeightOverride(h);
+      patch.h = h;
+    }
+    setOverrides(patch);
+    updateFooter();
+    onChange?.();
+  };
+
+  const clearOverrides = () => {
+    sizeOverrides.delete(variantName);
+    card.style.width = `${defaults.w}px`;
+    card.style.height = '';
+    body.style.overflow = '';
+    body.style.minHeight = defaults.h > 0 ? `${defaults.h}px` : '';
+    card.classList.remove('storybook-variant-card-overridden');
+    requestAnimationFrame(updateFooter);
+    onChange?.();
+  };
+
+  const installHandle = (axis, className, label) => {
+    const handle = document.createElement('div');
+    handle.className = `storybook-variant-resize ${className}`;
+    handle.title = `Drag or arrow keys to resize · double-click to reset`;
+    handle.setAttribute('role', 'separator');
+    handle.setAttribute('tabindex', '0');
+    handle.setAttribute('aria-label', label);
+    if (axis === 'x') handle.setAttribute('aria-orientation', 'vertical');
+    else if (axis === 'y') handle.setAttribute('aria-orientation', 'horizontal');
+
+    handle.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      handle.setPointerCapture(e.pointerId);
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const rect = card.getBoundingClientRect();
+      const base = { w: rect.width, h: rect.height };
+      const onMove = (mv) => applyDelta(axis, mv.clientX - startX, mv.clientY - startY, base);
+      const onUp = (up) => {
+        handle.releasePointerCapture(up.pointerId);
+        handle.removeEventListener('pointermove', onMove);
+        handle.removeEventListener('pointerup', onUp);
+      };
+      handle.addEventListener('pointermove', onMove);
+      handle.addEventListener('pointerup', onUp);
+    });
+
+    handle.addEventListener('keydown', (e) => {
+      const step = e.shiftKey ? RESIZE_KEY_STEP_LARGE : RESIZE_KEY_STEP;
+      let dx = 0, dy = 0;
+      if (e.key === 'ArrowLeft')  dx = -step;
+      else if (e.key === 'ArrowRight') dx = step;
+      else if (e.key === 'ArrowUp')    dy = -step;
+      else if (e.key === 'ArrowDown')  dy = step;
+      else if (e.key === 'Escape') { clearOverrides(); e.preventDefault(); return; }
+      else return;
+      if ((axis === 'x' && dx === 0) || (axis === 'y' && dy === 0)) return;
+      e.preventDefault();
+      const rect = card.getBoundingClientRect();
+      applyDelta(axis, dx, dy, { w: rect.width, h: rect.height });
+    });
+
+    handle.addEventListener('dblclick', clearOverrides);
+    card.append(handle);
+  };
+
+  installHandle('x',  'storybook-variant-resize-x',  `Resize ${variantName} width`);
+  installHandle('y',  'storybook-variant-resize-y',  `Resize ${variantName} height`);
+  installHandle('xy', 'storybook-variant-resize-xy', `Resize ${variantName} width and height`);
+}
+
+function renderVariants(variantsEl, entry, width, height, registry, cleanups, overrides, sizeOverrides, callbacks) {
   runCleanups(cleanups);
   variantsEl.innerHTML = '';
   for (const variant of entry.mod.variants) {
@@ -269,6 +414,27 @@ function renderVariants(variantsEl, entry, width, height, registry, cleanups, ov
     if (variant.slots) resolveSlots(node, variant.slots, registry, cleanups);
     body.append(node);
     card.append(body);
+
+    const footer = document.createElement('footer');
+    footer.className = 'storybook-variant-footer';
+    const footerText = document.createElement('span');
+    footer.append(footerText);
+    card.append(footer);
+
+    if (sizeOverrides) {
+      installResizableCard(card, body, {
+        variantName: variant.name,
+        sizeOverrides,
+        defaults: { w: width, h: height },
+        footerText,
+        onChange: callbacks?.onResize,
+      });
+    } else {
+      requestAnimationFrame(() => {
+        const rect = card.getBoundingClientRect();
+        footerText.textContent = `${Math.round(rect.width)} × ${Math.round(rect.height)} px`;
+      });
+    }
 
     variantsEl.append(card);
   }
@@ -433,7 +599,10 @@ async function main() {
     footerSize: document.querySelector('[data-storybook-footer-size]'),
     propsForm: document.querySelector('[data-storybook-props-form]'),
     propsReset: document.querySelector('[data-storybook-props-reset]'),
+    themeMount: document.querySelector('[data-storybook-theme]'),
   };
+
+  await mountThemeToggle(el.themeMount);
 
   let registry = [];
   const poolNames = [];
@@ -459,6 +628,7 @@ async function main() {
   let width = Number(el.widthSlider.value);
   let height = Number(el.heightSlider.value);
   let overrides = {};
+  const sizeOverrides = new Map();
   let poolFilter = loadPoolFilter();
   if (poolFilter !== POOL_FILTER_ALL && !poolNames.includes(poolFilter)) {
     poolFilter = POOL_FILTER_ALL;
@@ -475,9 +645,13 @@ async function main() {
     }
     if (el.footerSize) {
       const h = height > 0 ? `${height}px` : 'auto';
-      el.footerSize.textContent = `Width ${width}px · Height ${h}`;
+      const n = sizeOverrides.size;
+      const suffix = n > 0 ? ` · ${n} card override${n === 1 ? '' : 's'}` : '';
+      el.footerSize.textContent = `Width ${width}px · Height ${h}${suffix}`;
     }
   };
+
+  const variantCallbacks = { onResize: updateFooter };
 
   const paint = () => {
     const visible = visibleRegistry();
@@ -491,13 +665,13 @@ async function main() {
       });
     }
     el.name.textContent = active.mod.metadata.name;
-    renderVariants(el.variants, active, width, height, registry, cleanups, overrides);
+    renderVariants(el.variants, active, width, height, registry, cleanups, overrides, sizeOverrides, variantCallbacks);
     renderPropsForm();
     updateFooter();
   };
 
   const repaintVariants = () => {
-    renderVariants(el.variants, active, width, height, registry, cleanups, overrides);
+    renderVariants(el.variants, active, width, height, registry, cleanups, overrides, sizeOverrides, variantCallbacks);
   };
 
   const select = (entry) => {
@@ -505,6 +679,7 @@ async function main() {
     window.location.hash = `${entry.pool}/${entry.mod.metadata.name}`;
     eventLog.clear();
     overrides = {};
+    sizeOverrides.clear();
     paint();
   };
 
