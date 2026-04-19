@@ -1,0 +1,194 @@
+.dk-table-wrap {
+  display: block;
+  position: relative;
+  width: 100%;
+  background: var(--color-bg);
+}
+
+.dk-table-scroll {
+  overflow-x: auto;
+  scrollbar-color: var(--color-gray-400) transparent;
+  scrollbar-width: thin;
+}
+
+.dk-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.dk-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dk-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-gray-400);
+}
+
+.dk-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--font-size-xs);
+  font-family: var(--typography-prop);
+}
+
+.dk-table-fixed {
+  table-layout: fixed;
+}
+
+.dk-table caption {
+  caption-side: top;
+  font-family: var(--typography-mono);
+  --mono: 1;
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+  text-align: left;
+  padding-bottom: var(--spacing-md);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+}
+
+.dk-table th,
+.dk-table td {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.dk-table th {
+  font-family: var(--typography-mono);
+  --mono: 1;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+  color: var(--color-text-muted);
+  border-bottom: var(--border-width-thin) solid var(--color-gray-400);
+  background: var(--color-bg);
+  white-space: nowrap;
+}
+
+.dk-table-sticky th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.dk-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dk-table tbody tr.dk-table-clickable {
+  cursor: pointer;
+}
+
+.dk-table tbody tr.dk-table-clickable:hover {
+  background: var(--color-hover-bg);
+}
+
+.dk-table tbody tr.dk-table-clickable:focus-within {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+}
+
+.dk-table-align-right { text-align: right; }
+.dk-table-align-center { text-align: center; }
+.dk-table-nowrap { white-space: nowrap; }
+
+.dk-table-clamped tbody td .dk-table-cell {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--dk-table-clamp, 2);
+  line-clamp: var(--dk-table-clamp, 2);
+  overflow: hidden;
+}
+
+.dk-table-empty {
+  padding: var(--spacing-xl);
+  color: var(--color-text-muted);
+  font-family: var(--typography-mono);
+  --mono: 1;
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+/* --- Edge affordances: gradient fades indicating horizontal overflow --- */
+.dk-table-wrap[data-overflow-left="true"]::before,
+.dk-table-wrap[data-overflow-right="true"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--spacing-2xl);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dk-table-wrap[data-overflow-left="true"]::before {
+  left: 0;
+  background: linear-gradient(to right, var(--color-bg), transparent);
+}
+
+.dk-table-wrap[data-overflow-right="true"]::after {
+  right: 0;
+  background: linear-gradient(to left, var(--color-bg), transparent);
+}
+
+/* --- Narrow / stacked mode: each row becomes a vertical card --- */
+.dk-table-stacked thead {
+  display: none;
+}
+
+.dk-table-stacked,
+.dk-table-stacked tbody,
+.dk-table-stacked tr,
+.dk-table-stacked td {
+  display: block;
+  width: auto;
+}
+
+.dk-table-stacked tr {
+  padding: var(--spacing-md) 0;
+  border-bottom: var(--border-width-thin) dashed var(--color-border);
+}
+
+.dk-table-stacked tr:last-child {
+  border-bottom: none;
+}
+
+.dk-table-stacked td {
+  padding: var(--spacing-xs) 0;
+  border-bottom: none;
+  text-align: left;
+}
+
+.dk-table-stacked td[data-label] {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--spacing-lg);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.dk-table-stacked td[data-label]::before {
+  content: attr(data-label);
+  font-family: var(--typography-mono);
+  --mono: 1;
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.dk-table-stacked td[data-primary="true"] {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  padding-bottom: var(--spacing-xs);
+}
+
+.dk-table-stacked td[data-primary="true"][data-label]::before {
+  display: none;
+}
