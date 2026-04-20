@@ -292,7 +292,6 @@ def _sidebar() -> str:
       <div class="nav-section">
         <div class="nav-section-title">Explore</div>
         <a class="nav-link" href="storybook.html">Storybook</a>
-        <a class="nav-link" href="bento.html">Bento Layout</a>
         <a class="nav-link" href="taxonomy.html">Design Taxonomy</a>
         <a class="nav-link" href="line-height-units.html">Line Height Units</a>
       </div>
