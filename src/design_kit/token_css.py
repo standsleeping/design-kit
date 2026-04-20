@@ -65,8 +65,14 @@ def _build_tokens_layer(
     semantics: list[tuple[str, str]],
     dark_overrides: list[tuple[str, str]] | None = None,
 ) -> str:
-    """Build the @layer tokens block with :root custom properties."""
-    lines = ["@layer tokens {", "  :root {", "    color-scheme: light;"]
+    """Build the @layer tokens block with :root custom properties.
+
+    When dark_overrides exist, semantics are emitted as light-dark() so a
+    single declaration carries both modes. color-scheme (set via OS
+    preference on :root, or forced by [data-theme]) picks which branch
+    resolves at use time.
+    """
+    lines = ["@layer tokens {", "  :root {", "    color-scheme: light dark;"]
 
     current_category = ""
     for name, value in primitives:
@@ -78,11 +84,16 @@ def _build_tokens_layer(
             current_category = category
         lines.append(f"    --{name}: {value};")
 
+    dark_map = dict(dark_overrides) if dark_overrides else {}
+
     if semantics:
         lines.append("")
         lines.append("    /* semantic aliases */")
         for name, value in semantics:
-            lines.append(f"    --{name}: {value};")
+            if name in dark_map:
+                lines.append(f"    --{name}: light-dark({value}, {dark_map[name]});")
+            else:
+                lines.append(f"    --{name}: {value};")
 
     lines.append("")
     lines.append("    /* variable-font axis defaults (cascadable) */")
@@ -100,31 +111,9 @@ def _build_tokens_layer(
     lines.extend(["  }"])
 
     if dark_overrides:
-        # System preference
         lines.append("")
-        lines.append("  @media (prefers-color-scheme: dark) {")
-        lines.append("    :root {")
-        lines.append("      color-scheme: dark;")
-        for name, value in dark_overrides:
-            lines.append(f"      --{name}: {value};")
-        lines.append("    }")
-        lines.append("  }")
-
-        # Manual dark toggle
-        lines.append("")
-        lines.append('  [data-theme="dark"] {')
-        lines.append("    color-scheme: dark;")
-        for name, value in dark_overrides:
-            lines.append(f"    --{name}: {value};")
-        lines.append("  }")
-
-        # Manual light toggle (overrides system dark preference)
-        lines.append("")
-        lines.append('  [data-theme="light"] {')
-        lines.append("    color-scheme: light;")
-        for name, value in semantics:
-            lines.append(f"    --{name}: {value};")
-        lines.append("  }")
+        lines.append('  [data-theme="dark"] { color-scheme: dark; }')
+        lines.append('  [data-theme="light"] { color-scheme: light; }')
 
     lines.append("}")
     return "\n".join(lines)
