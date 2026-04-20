@@ -30,12 +30,16 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
 
+class ReusableTCPServer(socketserver.TCPServer):
+    allow_reuse_address = True
+
+
 def main() -> int:
     port = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_PORT
     directory = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_DIR
     root = Path(directory).resolve()
     handler = lambda *a, **kw: NoCacheHandler(*a, directory=str(root), **kw)  # noqa: E731
-    with socketserver.TCPServer(("", port), handler) as httpd:
+    with ReusableTCPServer(("", port), handler) as httpd:
         print(f"Serving {root} at http://localhost:{port}/ (no-cache)")
         httpd.serve_forever()
     return 0
