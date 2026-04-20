@@ -37,6 +37,15 @@ def generate_preview_html() -> str:
   <link rel="stylesheet" href="components/menu-item.css">
 {GOOGLE_FONTS_LINK}
   <style>
+    /* Viewport-lock the page so .dk-app-shell's height: 100% resolves:
+       sidebar stays fixed, .dk-app-shell-main scrolls. */
+    html, body {{
+      height: 100%;
+      overflow: hidden;
+    }}
+    .dk-app-shell-main {{
+      scroll-behavior: smooth;
+    }}
     body {{
       margin: 0;
       font-family: var(--typography-mono);
