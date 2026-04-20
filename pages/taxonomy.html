@@ -90,60 +90,6 @@
       border-left: var(--border-width-thick) solid var(--color-gray-400);
       margin-bottom: var(--spacing-md);
     }
-.gallery {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--spacing-lg);
-      margin-bottom: 1lh;
-    }
-    .gallery-item {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-sm);
-    }
-    .gallery-item > a {
-      display: block;
-    }
-    .gallery-item img {
-      width: 100%;
-      height: 200px;
-      object-fit: contain;
-      background: var(--color-gray-100);
-      border: 1px solid var(--color-border);
-    }
-    .gallery-item img.logo-img {
-      height: 100px;
-      padding: var(--spacing-xl);
-    }
-    .gallery-item img.font-img {
-      height: 80px;
-      padding: var(--spacing-lg) var(--spacing-xl);
-    }
-    .gallery-item img.tall-img {
-      height: 280px;
-    }
-    .gallery-caption {
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-2xs);
-      color: var(--color-text-muted);
-      line-height: var(--font-line-height-base);
-    }
-    .gallery-caption a {
-      color: var(--color-link);
-      font-weight: var(--font-weight-semibold);
-      text-decoration: none;
-    }
-    .gallery-caption a:hover {
-      text-decoration: underline;
-    }
-    .reading-list {
-      margin-bottom: 1lh;
-    }
-    .reading-list td:first-child {
-      color: var(--color-text-muted);
-      white-space: nowrap;
-      width: 100px;
-    }
     .vocab-section {
       margin-bottom: 1lh;
     }
@@ -184,9 +130,6 @@
       margin-bottom: var(--spacing-xs);
     }
     @media (max-width: 600px) {
-      .gallery {
-        grid-template-columns: 1fr;
-      }
       body {
         padding: var(--spacing-xl) var(--spacing-md);
       }
@@ -208,55 +151,6 @@
     <div class="description">
       Rational, institutional graphic design built from grids, hierarchy, asymmetry, and neutral sans-serifs. This is the root language behind work that feels official, technical, and designed as a system rather than as illustration.
     </div>
-
-    <div class="subsection-heading">Visual Examples</div>
-    <div class="gallery">
-      <div class="gallery-item">
-        <a href="https://www.moma.org/collection/works/7233" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Musica_Viva._M%C3%BCller-Brockmann.jpg/400px-Musica_Viva._M%C3%BCller-Brockmann.jpg"
-               alt="Josef Muller-Brockmann, Musica Viva concert poster, 1959" class="tall-img">
-        </a>
-        <div class="gallery-caption">
-          Josef Muller-Brockmann, Musica Viva poster (1959). Geometric arcs on a strict grid; sans-serif type placed by mathematical proportion. The quintessential Swiss Style artifact. <a href="https://www.moma.org/collection/works/7233" target="_blank" rel="noopener">MoMA collection</a>
-        </div>
-      </div>
-      <div class="gallery-item">
-        <a href="https://www.theolympicdesign.com/olympic-games/pictograms/munich-1972/" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Athletics_pictogram_black_%281972_Summer_Olympics_style%29.svg/400px-Athletics_pictogram_black_%281972_Summer_Olympics_style%29.svg.png"
-               alt="1972 Munich Olympics athletics pictogram by Otl Aicher">
-        </a>
-        <div class="gallery-caption">
-          Otl Aicher, Munich 1972 Olympics pictogram. All 21 sport symbols share a single geometric vocabulary; visual unity emerges from the grid rules, not from individual drawing decisions. <a href="https://www.theolympicdesign.com/olympic-games/pictograms/munich-1972/" target="_blank" rel="noopener">View full set</a>
-        </div>
-      </div>
-      <div class="gallery-item">
-        <a href="https://en.wikipedia.org/wiki/IBM_(logo)" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg"
-               alt="IBM 8-bar striped logo by Paul Rand, 1967" class="logo-img">
-        </a>
-        <div class="gallery-caption">
-          Paul Rand, IBM 8-bar logo (1967). The striped wordmark in City Medium; black stripes drawn thicker than white to appear optically equal. The <a href="https://standardsmanual.com/products/ibm-graphic-design-guide" target="_blank" rel="noopener">graphic standards manual</a> governed every application from signage to stationery.
-        </div>
-      </div>
-      <div class="gallery-item">
-        <a href="https://commons.wikimedia.org/wiki/Category:Armin_Hofmann" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/1959_-_Kunsthalle_Basel_-_4_Bildhauer.jpg/400px-1959_-_Kunsthalle_Basel_-_4_Bildhauer.jpg"
-               alt="Armin Hofmann, Kunsthalle Basel exhibition poster, 1959" class="tall-img">
-        </a>
-        <div class="gallery-caption">
-          Armin Hofmann, Kunsthalle Basel poster (1959). Akzidenz-Grotesk type, geometric abstraction, restrained palette. Basel and Zurich were the two poles of Swiss Style; Hofmann taught at the Basel School of Design for 40 years.
-        </div>
-      </div>
-    </div>
-
-    <div class="subsection-heading">Further Reading</div>
-    <table class="reading-list">
-      <tr><td>Poster</td><td><a href="https://www.moma.org/collection/works/7233" target="_blank" rel="noopener">MoMA: Muller-Brockmann, Musica Viva (1958)</a></td></tr>
-      <tr><td>Article</td><td><a href="https://socks-studio.com/2016/11/30/joseph-muller-brockmann-musica-viva-posters-for-the-zurich-tonhalle/" target="_blank" rel="noopener">SOCKS: Musica Viva posters for the Zurich Tonhalle</a></td></tr>
-      <tr><td>Manual</td><td><a href="https://standardsmanual.com/products/nyctacompactedition" target="_blank" rel="noopener">Standards Manual: NYCTA Graphics Standards Manual</a></td></tr>
-      <tr><td>Grid</td><td><a href="https://ms-studio.net/notes/karl-gerstners-layout-grid/" target="_blank" rel="noopener">MS Studio: Gerstner's layout grid for Capital</a></td></tr>
-      <tr><td>Pictograms</td><td><a href="https://www.theolympicdesign.com/olympic-games/pictograms/munich-1972/" target="_blank" rel="noopener">Olympic Design: Munich 1972 pictogram system</a></td></tr>
-    </table>
 
     <div class="subsection-heading">What It Looks Like</div>
     <div class="feature-list">
@@ -288,40 +182,8 @@
       The governmental and corporate identity version of systems modernism. Think NASA graphics standards, procedural branding, technical spec pages, and official institutional graphics.
     </div>
 
-    <div class="subsection-heading">Visual Examples</div>
-    <div class="gallery">
-      <div class="gallery-item">
-        <a href="https://standardsmanual.com/products/nasa-graphics-standards-manual" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/NASA_Worm_logo.svg"
-               alt="NASA worm logotype designed by Danne & Blackburn, 1975" class="logo-img">
-        </a>
-        <div class="gallery-caption">
-          Danne &amp; Blackburn, NASA "worm" logotype (1975). Continuous-stroke letterforms; no serifs, no crossbar on the A. The <a href="https://standardsmanual.com/products/nasa-graphics-standards-manual" target="_blank" rel="noopener">220-page standards manual</a> controlled every application from vehicle markings to stationery.
-        </div>
-      </div>
-      <div class="gallery-item">
-        <a href="https://www.nasa.gov/wp-content/uploads/2015/01/nasa_graphics_manual_nhb_1430-2_jan_1976.pdf" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/400px-NASA_logo.svg.png"
-               alt="NASA meatball insignia">
-        </a>
-        <div class="gallery-caption">
-          The NASA insignia ("meatball"), which the worm logotype was designed to complement. The <a href="https://www.nasa.gov/wp-content/uploads/2015/01/nasa_graphics_manual_nhb_1430-2_jan_1976.pdf" target="_blank" rel="noopener">original 1976 manual (PDF)</a> is hosted on nasa.gov.
-        </div>
-      </div>
-    </div>
-
-    <div class="subsection-heading">Further Reading</div>
-    <table class="reading-list">
-      <tr><td>Manual</td><td><a href="https://standardsmanual.com/products/nasa-graphics-standards-manual" target="_blank" rel="noopener">Standards Manual: NASA Graphics Standards Manual reissue</a></td></tr>
-      <tr><td>PDF</td><td><a href="https://www.nasa.gov/wp-content/uploads/2015/01/nasa_graphics_manual_nhb_1430-2_jan_1976.pdf" target="_blank" rel="noopener">NASA.gov: Original NHB 1430.2 manual (Jan 1976)</a></td></tr>
-      <tr><td>IBM</td><td><a href="https://www.paulrand.design/work/IBM.html" target="_blank" rel="noopener">Paul Rand: IBM corporate identity work</a></td></tr>
-      <tr><td>IBM Manual</td><td><a href="https://standardsmanual.com/products/ibm-graphic-design-guide" target="_blank" rel="noopener">Standards Manual: IBM Graphic Design Guide (1969-1987)</a></td></tr>
-      <tr><td>Article</td><td><a href="https://www.itsnicethat.com/features/paul-rand-ibm-graphic-standards-manual-empire-editions-publication-graphic-design-180418" target="_blank" rel="noopener">It's Nice That: Paul Rand's IBM Graphic Standards Manual</a></td></tr>
-    </table>
-
     <div class="subsection-heading">What It Looks Like</div>
     <div class="feature-list">
-      Red/black/white palettes <span>/</span>
       logotype control pages <span>/</span>
       vehicle and signage specifications <span>/</span>
       technical diagrams <span>/</span>
@@ -348,55 +210,6 @@
     <div class="description">
       Typography designed for machines to read as well as humans. This includes OCR lineages, fixed-width logic, and document systems built around legibility, scanning, and differentiation.
     </div>
-
-    <div class="subsection-heading">Visual Examples</div>
-    <div class="gallery">
-      <div class="gallery-item">
-        <a href="https://en.wikipedia.org/wiki/OCR-A" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/OCR-A_font.svg"
-               alt="OCR-A typeface specimen" class="font-img">
-        </a>
-        <div class="gallery-caption">
-          OCR-A (American Type Founders, 1968). Designed to meet U.S. Bureau of Standards criteria for optical character recognition. Uniform stroke widths; exaggerated distinctions between similar glyphs (O vs. 0, 1 vs. l).
-        </div>
-      </div>
-      <div class="gallery-item">
-        <a href="https://en.wikipedia.org/wiki/OCR-B" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/OCR-B_font.svg"
-               alt="OCR-B typeface specimen" class="font-img">
-        </a>
-        <div class="gallery-caption">
-          OCR-B (Adrian Frutiger for Monotype, 1968). Accepted as world standard in 1973. More humanist than OCR-A but still monospaced and machine-optimized. Used today in UPC/EAN barcodes and <a href="https://en.wikipedia.org/wiki/Machine-readable_passport" target="_blank" rel="noopener">machine-readable passports</a>.
-        </div>
-      </div>
-      <div class="gallery-item">
-        <a href="https://en.wikipedia.org/wiki/Magnetic_ink_character_recognition" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/MICR.svg"
-               alt="MICR E-13B font character set" class="font-img">
-        </a>
-        <div class="gallery-caption">
-          MICR E-13B (Stanford Research Institute / General Electric, 1956). Magnetic ink character recognition font for bank checks. 10 numerals plus 4 special symbols (Transit, On-us, Amount, Dash: the "TOAD" characters).
-        </div>
-      </div>
-      <div class="gallery-item">
-        <a href="https://fontsinuse.com/typefaces/4325/ocr-a" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/58/MICR_char.svg"
-               alt="MICR E-13B individual characters" class="font-img">
-        </a>
-        <div class="gallery-caption">
-          MICR E-13B detail. Each character produces a unique magnetic waveform when scanned. The exaggerated geometry is not aesthetic; it is a signal-processing requirement. <a href="https://fontsinuse.com/typefaces/4325/ocr-a" target="_blank" rel="noopener">OCR-A usage archive at Fonts In Use</a>.
-        </div>
-      </div>
-    </div>
-
-    <div class="subsection-heading">Further Reading</div>
-    <table class="reading-list">
-      <tr><td>History</td><td><a href="https://tedium.co/2017/03/22/ocr-typography-optical-character-recognition-history/" target="_blank" rel="noopener">Tedium: The history of OCR fonts</a></td></tr>
-      <tr><td>OCR-A</td><td><a href="https://en.wikipedia.org/wiki/OCR-A" target="_blank" rel="noopener">Wikipedia: OCR-A</a></td></tr>
-      <tr><td>OCR-B</td><td><a href="https://www.prepressure.com/fonts/interesting/ocra-and-ocrb" target="_blank" rel="noopener">Prepressure: The OCRA and OCRB fonts</a></td></tr>
-      <tr><td>MICR</td><td><a href="https://en.wikipedia.org/wiki/Magnetic_ink_character_recognition" target="_blank" rel="noopener">Wikipedia: Magnetic Ink Character Recognition</a></td></tr>
-      <tr><td>In Use</td><td><a href="https://fontsinuse.com/typefaces/4325/ocr-a" target="_blank" rel="noopener">Fonts In Use: OCR-A usage archive</a></td></tr>
-    </table>
 
     <div class="subsection-heading">What It Looks Like</div>
     <div class="feature-list">
@@ -428,41 +241,10 @@
       Typography shaped by the logic of electronic display constraints. This is the lineage of modular, segmented, rectilinear letterforms that feel engineered rather than drawn.
     </div>
 
-    <div class="subsection-heading">Visual Examples</div>
-    <div class="gallery">
-      <div class="gallery-item">
-        <a href="https://www.moma.org/collection/works/139322" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/7-segment_abcdefg.svg"
-               alt="Seven-segment display diagram showing segment labeling">
-        </a>
-        <div class="gallery-caption">
-          The seven-segment display: the physical constraint that defines this lineage. Only horizontal and vertical strokes (plus diagonals at 45 degrees in some variants). Every letterform must be composed from these seven elements.
-        </div>
-      </div>
-      <div class="gallery-item">
-        <a href="https://en.wikipedia.org/wiki/Seven-segment_display" target="_blank" rel="noopener">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/7_segment_display_labeled.svg/330px-7_segment_display_labeled.svg.png"
-               alt="Seven-segment display with labeled segments">
-        </a>
-        <div class="gallery-caption">
-          Seven-segment display with labeled segments. LED segments are simple rectangles because they must be physically moulded to shape. This physical limitation became a typographic aesthetic.
-        </div>
-      </div>
-    </div>
-
     <div class="subsection-heading">Key Work: Wim Crouwel's New Alphabet (1967)</div>
     <div class="description">
       Crouwel designed a typeface suited for cathode-ray screens: because of their low resolution, CRT screens could not display the curves of traditional typefaces without altering them. The result used only horizontal, vertical, and 45-degree strokes. There was no differentiation between uppercase and lowercase except a bar above the letter to indicate a capital. Crouwel himself called it "over-the-top and never meant to be really used." MoMA acquired it in 2011 as one of its first 23 digital typefaces.
     </div>
-
-    <div class="subsection-heading">Further Reading</div>
-    <table class="reading-list">
-      <tr><td>MoMA</td><td><a href="https://www.moma.org/collection/works/139322" target="_blank" rel="noopener">MoMA: Wim Crouwel, New Alphabet (1967)</a></td></tr>
-      <tr><td>Specimen</td><td><a href="https://productiontype.com/article/the-specimen-of-new-alphabet-wim-crouwel-1967" target="_blank" rel="noopener">Production Type: The specimen of New Alphabet</a></td></tr>
-      <tr><td>Essay</td><td><a href="https://eyemagazine.com/feature/article/electrifying-the-alphabet" target="_blank" rel="noopener">Eye Magazine: Electrifying the alphabet</a></td></tr>
-      <tr><td>Foundry</td><td><a href="https://www.thefoundrytypes.com/fonts/new-alphabet/" target="_blank" rel="noopener">The Foundry Types: New Alphabet (digital revival)</a></td></tr>
-      <tr><td>7-Segment</td><td><a href="https://en.wikipedia.org/wiki/Seven-segment_display" target="_blank" rel="noopener">Wikipedia: Seven-segment display</a></td></tr>
-    </table>
 
     <div class="subsection-heading">What It Looks Like</div>
     <div class="feature-list">
