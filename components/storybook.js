@@ -3,31 +3,57 @@ const ALLOWED_PROP_TYPES = ['string', 'number', 'boolean', 'enum', 'array', 'obj
 const MAX_EVENT_LOG = 50;
 const CONFIG_URL = 'components/storybook.config.json';
 const LOCAL_CONFIG_URL = 'components/storybook.config.local.json';
-const THEME_STORAGE_KEY = 'dk-theme';
+const LUMINANCE_STORAGE_KEY = 'dk-luminance';
+const COLOR_THEME_STORAGE_KEY = 'dk-color-theme';
+const COLOR_THEMES = ['mono-purple', 'monochrome', 'solarized'];
+const DEFAULT_COLOR_THEME = 'mono-purple';
 
-async function mountThemeToggle(mountEl) {
+function ensureStylesheet(href, marker) {
+  if (document.querySelector(`link[${marker}]`)) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  link.setAttribute(marker, 'true');
+  document.head.append(link);
+}
+
+async function mountLuminanceToggle(mountEl) {
   if (!mountEl) return;
   let stored = null;
-  try { stored = localStorage.getItem(THEME_STORAGE_KEY); } catch { /* ignore */ }
+  try { stored = localStorage.getItem(LUMINANCE_STORAGE_KEY); } catch { /* ignore */ }
   const initial = stored === 'light' || stored === 'dark' ? stored : 'auto';
   if (initial === 'auto') {
-    document.documentElement.removeAttribute('data-theme');
+    document.documentElement.removeAttribute('data-luminance');
   } else {
-    document.documentElement.setAttribute('data-theme', initial);
+    document.documentElement.setAttribute('data-luminance', initial);
   }
-  if (!document.querySelector('link[data-storybook-theme-css]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'components/theme-toggle.css';
-    link.dataset.storybookThemeCss = 'true';
-    document.head.append(link);
-  }
+  ensureStylesheet('components/luminance-toggle.css', 'data-storybook-luminance-css');
   try {
-    const mod = await import('./theme-toggle.js');
+    const mod = await import('./luminance-toggle.js');
     mountEl.innerHTML = '';
     mountEl.append(mod.render({ value: initial }));
   } catch (err) {
-    console.warn('[storybook] theme toggle mount failed:', err);
+    console.warn('[storybook] luminance toggle mount failed:', err);
+  }
+}
+
+async function mountColorThemeToggle(mountEl) {
+  if (!mountEl) return;
+  let stored = null;
+  try { stored = localStorage.getItem(COLOR_THEME_STORAGE_KEY); } catch { /* ignore */ }
+  const initial = COLOR_THEMES.includes(stored) ? stored : DEFAULT_COLOR_THEME;
+  if (initial === DEFAULT_COLOR_THEME) {
+    document.documentElement.removeAttribute('data-color-theme');
+  } else {
+    document.documentElement.setAttribute('data-color-theme', initial);
+  }
+  ensureStylesheet('components/color-theme-toggle.css', 'data-storybook-color-theme-css');
+  try {
+    const mod = await import('./color-theme-toggle.js');
+    mountEl.innerHTML = '';
+    mountEl.append(mod.render({ value: initial }));
+  } catch (err) {
+    console.warn('[storybook] color theme toggle mount failed:', err);
   }
 }
 
@@ -599,10 +625,14 @@ async function main() {
     footerSize: document.querySelector('[data-storybook-footer-size]'),
     propsForm: document.querySelector('[data-storybook-props-form]'),
     propsReset: document.querySelector('[data-storybook-props-reset]'),
-    themeMount: document.querySelector('[data-storybook-theme]'),
+    luminanceMount: document.querySelector('[data-storybook-luminance]'),
+    colorThemeMount: document.querySelector('[data-storybook-color-theme]'),
   };
 
-  await mountThemeToggle(el.themeMount);
+  await Promise.all([
+    mountLuminanceToggle(el.luminanceMount),
+    mountColorThemeToggle(el.colorThemeMount),
+  ]);
 
   let registry = [];
   const poolNames = [];

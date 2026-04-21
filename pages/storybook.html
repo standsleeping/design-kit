@@ -70,8 +70,11 @@
     color: var(--color-text-muted);
   }
 
-  .storybook-header-theme {
+  .storybook-header-controls {
     margin-left: auto;
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: center;
     text-transform: none;
     letter-spacing: normal;
   }
@@ -614,7 +617,10 @@
   <header class="storybook-header">
     <span class="storybook-header-title">Storybook</span>
     <span class="storybook-header-count" data-storybook-count></span>
-    <div class="storybook-header-theme" data-storybook-theme></div>
+    <div class="storybook-header-controls">
+      <div data-storybook-color-theme></div>
+      <div data-storybook-luminance></div>
+    </div>
   </header>
   <nav class="storybook-nav" aria-label="Components">
     <span class="storybook-section-title">Components</span>

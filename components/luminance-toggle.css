@@ -1,10 +1,10 @@
-.dk-theme-toggle {
+.dk-luminance-toggle {
   display: inline-flex;
   gap: var(--spacing-xs);
   align-items: center;
 }
 
-.dk-theme-toggle-btn {
+.dk-luminance-toggle-btn {
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
@@ -19,16 +19,16 @@
               border-color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
 }
 
-.dk-theme-toggle-btn:hover {
+.dk-luminance-toggle-btn:hover {
   color: var(--color-text);
 }
 
-.dk-theme-toggle-btn:focus-visible {
+.dk-luminance-toggle-btn:focus-visible {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 
-.dk-theme-toggle-btn-active {
+.dk-luminance-toggle-btn-active {
   color: var(--color-link);
   border-color: var(--color-link);
 }

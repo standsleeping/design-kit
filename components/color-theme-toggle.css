@@ -1,0 +1,34 @@
+.dk-color-theme-toggle {
+  display: inline-flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.dk-color-theme-toggle-btn {
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+  color: var(--color-text-muted);
+  background: transparent;
+  border: var(--border-width-thin) solid transparent;
+  padding: var(--spacing-xs) var(--spacing-md);
+  cursor: pointer;
+  transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease),
+              border-color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
+}
+
+.dk-color-theme-toggle-btn:hover {
+  color: var(--color-text);
+}
+
+.dk-color-theme-toggle-btn:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.dk-color-theme-toggle-btn-active {
+  color: var(--color-link);
+  border-color: var(--color-link);
+}

@@ -5,6 +5,67 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+
+def _validate_tokens_shape(data: dict[str, object]) -> None:
+    """Raise ValueError at the JSON boundary if the shape is malformed.
+
+    Expected shape (see `tokens/design-tokens.json` for a full example):
+        {
+          "primitive": { ... },
+          "semantic": {
+            "default-theme"?: str,
+            "typography"?: {...}, "layout"?: {...},
+            "themes": {
+              "<name>": {
+                "luminance": {
+                  "light": {"color": {...}},
+                  "dark"?: {"color": {...}}
+                }
+              }, ...
+            }
+          }
+        }
+
+    Checks presence and nesting only; does not validate token-value syntax.
+    Errors point at the first missing key by path so misconfigurations
+    surface here rather than deeper in the CSS emitter.
+    """
+    if not isinstance(data.get("primitive"), dict):
+        raise ValueError("design-tokens.json: missing 'primitive' object")
+    semantic = data.get("semantic")
+    if not isinstance(semantic, dict):
+        raise ValueError("design-tokens.json: missing 'semantic' object")
+    themes = semantic.get("themes")
+    if not isinstance(themes, dict) or not themes:
+        raise ValueError(
+            "design-tokens.json: 'semantic.themes' must be a non-empty object"
+        )
+    for name, theme in themes.items():
+        if not isinstance(theme, dict):
+            raise ValueError(f"design-tokens.json: theme '{name}' must be an object")
+        luminance = theme.get("luminance")
+        if not isinstance(luminance, dict):
+            raise ValueError(
+                f"design-tokens.json: theme '{name}' missing 'luminance' object"
+            )
+        light = luminance.get("light")
+        if not isinstance(light, dict) or not isinstance(light.get("color"), dict):
+            raise ValueError(
+                f"design-tokens.json: theme '{name}' missing 'luminance.light.color'"
+            )
+        if "dark" in luminance:
+            dark = luminance.get("dark")
+            if not isinstance(dark, dict) or not isinstance(dark.get("color"), dict):
+                raise ValueError(
+                    f"design-tokens.json: theme '{name}' has malformed 'luminance.dark'"
+                )
+    default = semantic.get("default-theme")
+    if default is not None and default not in themes:
+        raise ValueError(
+            f"design-tokens.json: default-theme '{default}' not in 'semantic.themes'"
+        )
+
+
 GOOGLE_FONTS_LINK = (
     '  <link rel="preconnect" href="https://fonts.googleapis.com">\n'
     '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
@@ -60,19 +121,50 @@ def _flatten_semantics(
     return pairs
 
 
+def _emit_color_tokens(
+    light: list[tuple[str, str]],
+    dark: list[tuple[str, str]] | None,
+    indent: str,
+) -> list[str]:
+    """Emit color semantic tokens as light-dark() declarations.
+
+    Tokens present in both light and dark are paired via light-dark();
+    light-only tokens are emitted as-is.
+    """
+    dark_map = dict(dark) if dark else {}
+    lines: list[str] = []
+    for name, value in light:
+        if name in dark_map:
+            lines.append(f"{indent}--{name}: light-dark({value}, {dark_map[name]});")
+        else:
+            lines.append(f"{indent}--{name}: {value};")
+    return lines
+
+
 def _build_tokens_layer(
     primitives: list[tuple[str, str]],
-    semantics: list[tuple[str, str]],
-    dark_overrides: list[tuple[str, str]] | None = None,
+    base_semantics: list[tuple[str, str]],
+    themes: list[tuple[str, list[tuple[str, str]], list[tuple[str, str]] | None]],
+    default_theme: str | None = None,
 ) -> str:
-    """Build the @layer tokens block with :root custom properties.
+    """Build the @layer tokens block with :root and per-theme custom properties.
 
-    When dark_overrides exist, semantics are emitted as light-dark() so a
-    single declaration carries both modes. color-scheme (set via OS
-    preference on :root, or forced by [data-theme]) picks which branch
+    The default theme's color tokens live on :root alongside primitives and
+    typography/layout aliases. Non-default themes emit as
+    [data-color-theme="<name>"] blocks that override :root. Within each
+    theme block, color tokens are emitted as light-dark() so a single
+    declaration carries both luminance modes. color-scheme (set via OS
+    preference on :root, or forced by [data-luminance]) picks which branch
     resolves at use time.
     """
+    default_block = next(
+        (t for t in themes if t[0] == default_theme), themes[0] if themes else None
+    )
+    has_any_dark = any(t[2] for t in themes)
+
     lines = ["@layer tokens {", "  :root {", "    color-scheme: light dark;"]
+    if default_block:
+        lines.append(f'    --theme-name: "{default_block[0]}";')
 
     current_category = ""
     for name, value in primitives:
@@ -84,16 +176,16 @@ def _build_tokens_layer(
             current_category = category
         lines.append(f"    --{name}: {value};")
 
-    dark_map = dict(dark_overrides) if dark_overrides else {}
-
-    if semantics:
+    if base_semantics:
         lines.append("")
-        lines.append("    /* semantic aliases */")
-        for name, value in semantics:
-            if name in dark_map:
-                lines.append(f"    --{name}: light-dark({value}, {dark_map[name]});")
-            else:
-                lines.append(f"    --{name}: {value};")
+        lines.append("    /* semantic aliases: base */")
+        for name, value in base_semantics:
+            lines.append(f"    --{name}: {value};")
+
+    if default_block:
+        lines.append("")
+        lines.append(f"    /* semantic aliases: color theme = {default_block[0]} */")
+        lines.extend(_emit_color_tokens(default_block[1], default_block[2], "    "))
 
     lines.append("")
     lines.append("    /* variable-font axis defaults (cascadable) */")
@@ -107,13 +199,21 @@ def _build_tokens_layer(
         " 'MONO' var(--mono), 'CASL' var(--casl),"
         " 'CRSV' var(--crsv), 'slnt' var(--slnt);"
     )
+    lines.append("  }")
 
-    lines.extend(["  }"])
-
-    if dark_overrides:
+    for name, light, dark in themes:
+        if default_block is not None and name == default_block[0]:
+            continue
         lines.append("")
-        lines.append('  [data-theme="dark"] { color-scheme: dark; }')
-        lines.append('  [data-theme="light"] { color-scheme: light; }')
+        lines.append(f'  [data-color-theme="{name}"] {{')
+        lines.append(f'    --theme-name: "{name}";')
+        lines.extend(_emit_color_tokens(light, dark, "    "))
+        lines.append("  }")
+
+    if has_any_dark:
+        lines.append("")
+        lines.append('  [data-luminance="dark"] { color-scheme: dark; }')
+        lines.append('  [data-luminance="light"] { color-scheme: light; }')
 
     lines.append("}")
     return "\n".join(lines)
@@ -227,15 +327,26 @@ def generate_token_css(tokens_path: Path) -> str:
     reset → tokens → defaults → utilities
     """
     data = json.loads(tokens_path.read_text(encoding="utf-8"))
+    _validate_tokens_shape(data)
 
     primitives = _flatten_primitives(data["primitive"])
 
     semantic_data = dict(data["semantic"])
-    dark_data = semantic_data.pop("dark", None)
+    default_theme = semantic_data.pop("default-theme", None)
+    themes_data = semantic_data.pop("themes", {}) or {}
+    base_semantics = _flatten_semantics(semantic_data)
 
-    semantics = _flatten_semantics(semantic_data)
-    dark_overrides = _flatten_semantics(dark_data) if dark_data else None
-    tokens_layer = _build_tokens_layer(primitives, semantics, dark_overrides)
+    themes: list[tuple[str, list[tuple[str, str]], list[tuple[str, str]] | None]] = []
+    for name, theme in themes_data.items():
+        luminance = theme.get("luminance", {}) or {}
+        light = _flatten_semantics(luminance.get("light", {}))
+        dark_raw = luminance.get("dark")
+        dark = _flatten_semantics(dark_raw) if dark_raw else None
+        themes.append((name, light, dark))
+
+    tokens_layer = _build_tokens_layer(
+        primitives, base_semantics, themes, default_theme
+    )
 
     sections = [
         "@layer reset, tokens, defaults, utilities;",
