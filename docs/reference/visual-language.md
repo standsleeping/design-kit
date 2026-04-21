@@ -28,6 +28,8 @@ The full gray palette is the primary tool for establishing visual hierarchy. Dar
 
 Color appears only to encode meaning: status (fresh/stale/error), interactive affordance (links, focus), or data categories in charts. Outside of these roles, the interface is greyscale. When color does appear, its scarcity makes it immediately noticeable.
 
+For the vocabulary that separates *palette* (primitives), *luminance mode* (light/dark), *contrast mode* (default/high-contrast), and *color theme* (named aesthetic: `mono-purple` default, `monochrome`, `solarized`), see `glossary.md`. Components reference *semantic tokens* (`--color-bg`, `--color-link`), never primitives.
+
 ### 4. Strip decoration, not structure
 
 Semantic structure serves comprehension: tables for tabular data, column headers for labeling, grouped sections for categories. These are not decoration; removing them loses information. What is decorative: card borders drawn around content, rounded-corner panels, drop shadow depth, boxes for visual grouping. Grouping is achieved through proximity, shared indentation, shared background shade, or a single structural border (one side only: left for hierarchy, bottom for sequence). Prefer single-side borders over full boxes. All corners are square; the token system enforces zero border-radius. No shadows exist in the token palette. The monospace grid demands sharp geometry; every lineage this system draws from (Swiss grids, NASA spec pages, OCR documents, seven-segment displays) uses right angles exclusively. If removing a border changes nothing about comprehension, remove it. If removing a table header or a section grouping makes data harder to scan, it was structural.
