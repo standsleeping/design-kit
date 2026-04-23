@@ -81,8 +81,22 @@
   cursor: pointer;
 }
 
+/* Row-level outline (not per-cell shadows) stays independent of column
+   order, hidden columns, last-row rules, and stacked mode, so it can't
+   drift out of sync with DOM structure.
+   Uses --color-hover-outline, a token whose contract is "visible against
+   --color-hover-bg in every theme," rather than --color-border (which
+   collapses to the hover-bg value in several theme dark modes). */
 .dk-table tbody tr.dk-table-clickable:hover {
   background: var(--color-hover-bg);
+  outline: var(--border-width-thin) solid var(--color-hover-outline);
+  outline-offset: -1px;
+}
+
+.dk-table tbody tr.dk-table-clickable[aria-selected="true"] {
+  background: var(--color-selected-bg);
+  outline: var(--border-width-thin) solid var(--color-hover-outline);
+  outline-offset: -1px;
 }
 
 .dk-table tbody tr.dk-table-clickable:focus-within {
