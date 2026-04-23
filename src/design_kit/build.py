@@ -5,6 +5,7 @@ import shutil
 import time
 from pathlib import Path
 
+from design_kit.contrast_self_test import run as run_contrast_audit
 from design_kit.logging import get_logger
 from design_kit.preview import generate_preview_html
 from design_kit.token_css import generate_token_css
@@ -29,6 +30,23 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     css_path = output_dir / "tokens.css"
     css_path.write_text(css, encoding="utf-8")
     logger.info(f"Generated {css_path}")
+
+    audit_results, audit_report = run_contrast_audit(css_path)
+    audit_failures = [r for r in audit_results if not r.passed]
+    if audit_failures:
+        logger.error(
+            f"Token-pair contrast audit found {len(audit_failures)} failure(s)"
+        )
+        print(audit_report)
+        for f in audit_failures:
+            logger.error(
+                f"  --{f.pair.a} x --{f.pair.b} ({f.theme}): "
+                f"{f.ratio:.2f} < {f.pair.min_ratio} - {f.pair.reason}"
+            )
+        raise RuntimeError(
+            f"tokens.css violates {len(audit_failures)} palette contract(s)"
+        )
+    logger.info(f"Contrast audit passed ({len(audit_results)} checks)")
 
     html = generate_preview_html()
     html_path = output_dir / "preview.html"
