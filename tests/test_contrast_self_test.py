@@ -11,7 +11,10 @@ from pathlib import Path
 
 import pytest
 
+from design_kit.contrast import Pair
 from design_kit.contrast_self_test import (
+    CODE_PAIRS,
+    STANDARD_PAIRS,
     _discover_themes,
     _theme_css,
     run,
@@ -140,3 +143,22 @@ def test_run_report_names_each_theme(tmp_path: Path) -> None:
     _, report = run(path)
     assert "=== theme: strict ===" in report
     assert "=== theme: collision ===" in report
+
+
+def test_standard_pairs_is_public_pair_tuple() -> None:
+    """STANDARD_PAIRS is a public, non-empty tuple of Pair entries that
+    consumers can compose with their own local pair lists."""
+    assert isinstance(STANDARD_PAIRS, tuple)
+    assert STANDARD_PAIRS
+    assert all(isinstance(p, Pair) for p in STANDARD_PAIRS)
+
+
+def test_code_pairs_isolates_syntax_tokens() -> None:
+    """CODE_PAIRS holds the --color-syntax-* and --color-code-bg adjacencies
+    so consumers without code blocks can omit it without `audit()` erroring
+    on unknown tokens. STANDARD_PAIRS must be free of those tokens."""
+    standard_tokens = {p.a for p in STANDARD_PAIRS} | {p.b for p in STANDARD_PAIRS}
+    code_only = {"color-code-bg"} | {
+        t for p in CODE_PAIRS for t in (p.a, p.b) if t.startswith("color-syntax-")
+    }
+    assert code_only.isdisjoint(standard_tokens)

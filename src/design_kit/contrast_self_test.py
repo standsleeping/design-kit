@@ -3,7 +3,10 @@
 Declares adjacency pairs that must hold across every theme design-kit ships.
 Run from build.py after dist/tokens.css is generated; failures block the build.
 
-Consumers declare their own pair lists for surfaces they compose locally.
+Consumers using design-kit's tokens can import `STANDARD_PAIRS` (universal
+adjacencies: text, borders, focus, hover, selected) and `CODE_PAIRS` (only
+needed if they render syntax-highlighted code blocks) and compose them with
+their own local pair lists.
 """
 
 from __future__ import annotations
@@ -13,9 +16,10 @@ from pathlib import Path
 
 from design_kit.contrast import Pair, Result, audit, format_report
 
-# Pairs that design-kit itself guarantees across every bundled theme.
-# Floors follow the vocabulary documented in contrast.py.
-SELF_PAIRS: tuple[Pair, ...] = (
+# Universal adjacencies. Any consumer using design-kit's semantic tokens
+# inherits these surfaces, so the audit is meaningful without further
+# declaration. Floors follow the vocabulary documented in contrast.py.
+STANDARD_PAIRS: tuple[Pair, ...] = (
     # Text readability on page background
     Pair("color-bg", "color-text", 4.5, "body text readable"),
     Pair("color-bg", "color-text-muted", 4.5, "muted text readable"),
@@ -46,7 +50,14 @@ SELF_PAIRS: tuple[Pair, ...] = (
         "selected outline visible on selected fill",
     ),
     Pair("color-selected-bg", "color-text", 4.5, "text readable on selected"),
-    # Code blocks
+)
+
+
+# Code-block adjacencies. Split from STANDARD_PAIRS because consumers that
+# don't render code shouldn't need to define --color-code-bg or
+# --color-syntax-* — `audit()` errors on unknown tokens, so the split lets
+# them opt in.
+CODE_PAIRS: tuple[Pair, ...] = (
     Pair("color-code-bg", "color-text", 4.5, "code text readable"),
     Pair("color-code-bg", "color-syntax-keyword", 4.5, "keyword readable"),
     Pair("color-code-bg", "color-syntax-string", 4.5, "string literal readable"),
@@ -54,6 +65,11 @@ SELF_PAIRS: tuple[Pair, ...] = (
     Pair("color-code-bg", "color-syntax-comment", 3.0, "comment readable (softer)"),
     Pair("color-code-bg", "color-syntax-punctuation", 3.0, "punctuation readable"),
 )
+
+
+# Design-kit ships every token in its bundled themes, so the self-audit
+# composes both sets.
+_SELF_PAIRS: tuple[Pair, ...] = STANDARD_PAIRS + CODE_PAIRS
 
 
 # Per-theme floor overrides. A theme may declare that specific pairs hold at
@@ -84,13 +100,13 @@ _THEME_FLOOR_OVERRIDES: dict[str, dict[tuple[str, str], float]] = {
 
 
 def _pairs_for_theme(theme: str) -> tuple[Pair, ...]:
-    """Return SELF_PAIRS with any theme-specific floor relaxations applied."""
+    """Return _SELF_PAIRS with any theme-specific floor relaxations applied."""
     overrides = _THEME_FLOOR_OVERRIDES.get(theme)
     if not overrides:
-        return SELF_PAIRS
+        return _SELF_PAIRS
     return tuple(
         Pair(p.a, p.b, overrides.get((p.a, p.b), p.min_ratio), p.reason)
-        for p in SELF_PAIRS
+        for p in _SELF_PAIRS
     )
 
 
