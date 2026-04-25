@@ -1,6 +1,6 @@
 export const metadata = {
   name: 'ResponsiveTable',
-  description: 'Mobile-first table with column-priority hiding, card-stack fallback, sticky headers, horizontal scroll affordances, and configurable width strategy',
+  description: 'Mobile-first table with column-priority hiding, card-stack fallback, sticky headers, horizontal scroll affordances, annotation-aware cells (sentences + sidenotes + presence dots), and configurable width strategy',
   category: 'data-display',
 };
 
@@ -16,6 +16,8 @@ export const propTypes = {
   emptyMessage: { type: 'string', default: 'No rows' },
   rowKey: { type: 'string', default: 'id' },
   clampLines: { type: 'number', default: 0 },
+  rowClickable: { type: 'boolean', default: true },
+  initialMode: { type: 'enum', default: 'wide', options: ['narrow', 'medium', 'wide'] },
 };
 
 const DEFAULT_COLUMNS = [
@@ -30,6 +32,78 @@ const SAMPLE_ROWS = [
   { id: 'b2', name: 'Billing pipeline', role: 'Worker',  status: 'Degraded',    note: 'Backlog growing slowly' },
   { id: 'c3', name: 'Ingest worker',    role: 'Worker',  status: 'Healthy',     note: 'Lag under threshold' },
   { id: 'd4', name: 'Search index',     role: 'Service', status: 'Maintenance', note: 'Reindex in progress' },
+];
+
+const ANNOTATION_COLUMNS = [
+  { key: 'term',     label: 'Term',     priority: 1, primary: true, nowrap: true },
+  { key: 'gloss',    label: 'Gloss',    priority: 1, type: 'sentences' },
+  {
+    key: 'scope',
+    label: 'Scope',
+    priority: 2,
+    type: 'presence',
+    categories: [
+      { key: 'lexical',  label: 'Lexical' },
+      { key: 'syntactic', label: 'Syntactic' },
+      { key: 'semantic', label: 'Semantic' },
+      { key: 'runtime',  label: 'Runtime' },
+    ],
+  },
+];
+
+const ANNOTATION_ROWS = [
+  {
+    id: 'bind',
+    term: 'Binding',
+    gloss: [
+      { text: 'A binding associates a name with a value.' },
+      {
+        text: 'In Lean, `let x := 2` introduces a binding whose scope is the expression that follows.',
+        sidenote: {
+          label: 'Let-bindings',
+          body: { html: '<p>Let-bindings are non-recursive by default. For recursive definitions use <code>let rec</code> or a top-level <code>def</code>.</p>' },
+        },
+      },
+      {
+        text: 'Bindings shadow earlier ones with the same name.',
+        sidenote: {
+          label: 'Shadowing',
+          body: { html: '<p>Shadowing is legal but can obscure the source of a name. Lean will warn if the shadow is unused.</p>' },
+        },
+      },
+    ],
+    scope: ['lexical', 'semantic'],
+  },
+  {
+    id: 'prop',
+    term: 'Proposition',
+    gloss: [
+      { text: 'A proposition is a type whose inhabitants are proofs.' },
+      {
+        text: 'Propositions live in the universe `Prop`, which is definitionally proof-irrelevant.',
+        sidenote: {
+          label: 'Proof irrelevance',
+          body: { html: '<p>Any two proofs of the same proposition are definitionally equal. This lets the compiler erase proofs at runtime without changing program meaning.</p>' },
+        },
+      },
+    ],
+    scope: ['semantic'],
+  },
+  {
+    id: 'tactic',
+    term: 'Tactic',
+    gloss: [
+      {
+        text: 'A tactic is an imperative step that incrementally constructs a proof term.',
+        sidenote: {
+          label: 'Tactic vs. term mode',
+          body: { html: '<p>Term mode writes the proof directly; tactic mode scripts its construction. Both produce the same proof term once elaborated.</p>' },
+        },
+      },
+      { text: 'Tactics run in a monad that tracks the current goal and hypotheses.' },
+    ],
+    scope: ['syntactic', 'semantic', 'runtime'],
+  },
 ];
 
 export const variants = [
@@ -113,6 +187,16 @@ export const variants = [
     },
   },
   {
+    name: 'annotated',
+    description: 'Sentence-per-line cells with sidenote references (inline disclosure when wide, bottom-sheet popup when narrow) and presence-dot membership indicators',
+    props: {
+      caption: 'Lean vocabulary',
+      columns: ANNOTATION_COLUMNS,
+      rows: ANNOTATION_ROWS,
+      rowClickable: false,
+    },
+  },
+  {
     name: 'empty',
     description: 'Empty state',
     props: { columns: DEFAULT_COLUMNS, rows: [] },
@@ -167,16 +251,104 @@ function applyFloor(td, column) {
   }
 }
 
+function sidenoteRef(note, ctx) {
+  const index = ctx.sidenoteIndex++;
+  const id = `${ctx.tableId}-sn-${index}`;
+  ctx.sidenoteStore.set(id, note);
+  const ref = document.createElement('button');
+  ref.type = 'button';
+  ref.className = 'dk-sn-ref';
+  ref.dataset.snId = id;
+  ref.dataset.testid = 'sidenote-ref';
+  ref.setAttribute('aria-label', `Sidenote ${index + 1}`);
+  ref.setAttribute('aria-expanded', 'false');
+  ref.textContent = String(index + 1);
+  return ref;
+}
+
+function renderTextContent(td, value, column, ctx, isStacked) {
+  let text;
+  let sidenote = null;
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    text = value.text ?? '';
+    sidenote = value.sidenote ?? null;
+  } else {
+    text = value === null || value === undefined || value === '' ? '—' : String(value);
+  }
+
+  if (ctx.clampLines > 0 && !isStacked) {
+    const inner = document.createElement('span');
+    inner.className = 'dk-table-cell';
+    inner.textContent = text;
+    td.append(inner);
+    if (sidenote) td.append(sidenoteRef(sidenote, ctx));
+    return;
+  }
+  td.append(document.createTextNode(text));
+  if (sidenote) td.append(sidenoteRef(sidenote, ctx));
+}
+
+function renderSentencesContent(td, value, ctx) {
+  const sentences = Array.isArray(value) ? value : [];
+  if (sentences.length === 0) {
+    td.textContent = '—';
+    return;
+  }
+  const list = document.createElement('ol');
+  list.className = 'dk-sentences';
+  for (const s of sentences) {
+    const li = document.createElement('li');
+    li.className = 'dk-sentence';
+    const text = typeof s === 'string' ? s : (s?.text ?? '');
+    li.append(document.createTextNode(text));
+    if (s && typeof s === 'object' && s.sidenote) {
+      li.append(' ');
+      li.append(sidenoteRef(s.sidenote, ctx));
+    }
+    list.append(li);
+  }
+  td.append(list);
+}
+
+function renderPresenceContent(td, column, value) {
+  const categories = Array.isArray(column.categories) ? column.categories : [];
+  const present = new Set(Array.isArray(value) ? value : []);
+  if (categories.length === 0) {
+    td.textContent = '—';
+    return;
+  }
+  const wrap = document.createElement('span');
+  wrap.className = 'dk-presence';
+  wrap.setAttribute('role', 'list');
+  for (const cat of categories) {
+    const dot = document.createElement('span');
+    const isPresent = present.has(cat.key);
+    dot.className = isPresent ? 'dk-presence-dot dk-presence-dot-on' : 'dk-presence-dot';
+    dot.dataset.testid = 'presence-dot';
+    dot.dataset.category = cat.key;
+    dot.dataset.present = String(isPresent);
+    dot.setAttribute('role', 'listitem');
+    dot.setAttribute('title', `${cat.label}: ${isPresent ? 'present' : 'absent'}`);
+    dot.setAttribute('aria-label', `${cat.label}: ${isPresent ? 'present' : 'absent'}`);
+    wrap.append(dot);
+  }
+  td.append(wrap);
+}
+
+let tableInstanceCounter = 0;
+
 export function render(props = {}) {
   const p = { ...defaults(), ...props };
   const columns = Array.isArray(p.columns) && p.columns.length > 0 ? p.columns : DEFAULT_COLUMNS;
   const rows = Array.isArray(p.rows) ? p.rows : [];
+  const tableId = `dk-rt-${++tableInstanceCounter}`;
 
-  let mode = 'wide';
+  let mode = p.initialMode;
   let containerWidth = 0;
 
   const wrap = document.createElement('div');
   wrap.className = 'dk-table-wrap';
+  wrap.dataset.dkTable = tableId;
 
   const scrollHost = document.createElement('div');
   if (p.scroll === 'off') {
@@ -185,6 +357,15 @@ export function render(props = {}) {
     scrollHost.className = 'dk-table-scroll';
   }
   wrap.append(scrollHost);
+
+  const sidenoteStore = new Map();
+  // Sidenote overlay state — tagged variant. Only one of these shapes is ever live:
+  //   { kind: 'closed' }
+  //   { kind: 'inline', id, ref, panel }
+  //   { kind: 'popup',  id, ref, popup, backdrop }
+  // Extraction candidate: when a second component needs annotations, lift the
+  // overlay (state + open/close/toggle + keydown) into components/sidenote-overlay.js.
+  let sidenoteState = { kind: 'closed' };
 
   const updateOverflowAffordances = () => {
     if (p.scroll !== 'affordance') {
@@ -200,12 +381,149 @@ export function render(props = {}) {
     wrap.setAttribute('data-overflow-right', String(right));
   };
 
+  // Body contract: Node (trusted by construction), { html: string } (trusted markup,
+  // explicit opt-in), { text: string } or bare string (treated as plain text — safe default).
+  const appendNoteBody = (container, body) => {
+    if (body instanceof Node) {
+      container.append(body);
+    } else if (body && typeof body === 'object' && typeof body.html === 'string') {
+      container.innerHTML = body.html;
+    } else if (body && typeof body === 'object' && typeof body.text === 'string') {
+      container.textContent = body.text;
+    } else if (typeof body === 'string') {
+      container.textContent = body;
+    }
+  };
+
+  const closeSidenote = () => {
+    if (sidenoteState.kind === 'closed') return;
+    const ref = sidenoteState.ref;
+    if (sidenoteState.kind === 'inline') {
+      sidenoteState.panel.remove();
+    } else {
+      const { popup, backdrop } = sidenoteState;
+      popup.classList.remove('dk-sn-visible');
+      backdrop.classList.remove('dk-sn-visible');
+      const done = () => {
+        popup.remove();
+        backdrop.remove();
+      };
+      popup.addEventListener('transitionend', done, { once: true });
+    }
+    ref.setAttribute('aria-expanded', 'false');
+    sidenoteState = { kind: 'closed' };
+  };
+
+  const buildSidenoteBody = (note) => {
+    const body = document.createElement('div');
+    body.className = 'dk-sn-body';
+    if (note.label) {
+      const label = document.createElement('span');
+      label.className = 'dk-sn-label';
+      label.textContent = note.label;
+      body.append(label);
+    }
+    const content = document.createElement('div');
+    content.className = 'dk-sn-content';
+    appendNoteBody(content, note.body);
+    body.append(content);
+    return body;
+  };
+
+  const openInline = (id, ref, note) => {
+    const host = ref.closest('.dk-sentence') ?? ref.parentElement;
+    if (!host) return;
+    const panel = document.createElement('div');
+    panel.className = 'dk-sn-inline';
+    panel.dataset.testid = 'sidenote-inline';
+    panel.append(buildSidenoteBody(note));
+    host.append(panel);
+    sidenoteState = { kind: 'inline', id, ref, panel };
+  };
+
+  const openPopup = (id, ref, note) => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'dk-sn-backdrop';
+    backdrop.dataset.testid = 'sidenote-backdrop';
+    backdrop.addEventListener('click', closeSidenote);
+
+    const popup = document.createElement('div');
+    popup.className = 'dk-sn-popup';
+    popup.dataset.testid = 'sidenote-popup';
+    popup.setAttribute('role', 'dialog');
+    popup.setAttribute('aria-label', note.label || 'Sidenote');
+
+    const header = document.createElement('div');
+    header.className = 'dk-sn-popup-header';
+    const label = document.createElement('span');
+    label.className = 'dk-sn-label';
+    label.textContent = note.label || 'Sidenote';
+    header.append(label);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'dk-sn-close';
+    close.dataset.testid = 'sidenote-close';
+    close.setAttribute('aria-label', 'Close sidenote');
+    close.textContent = '×';
+    close.addEventListener('click', closeSidenote);
+    header.append(close);
+    popup.append(header);
+
+    const content = document.createElement('div');
+    content.className = 'dk-sn-popup-body';
+    appendNoteBody(content, note.body);
+    popup.append(content);
+
+    document.body.append(backdrop);
+    document.body.append(popup);
+    sidenoteState = { kind: 'popup', id, ref, popup, backdrop };
+
+    requestAnimationFrame(() => {
+      backdrop.classList.add('dk-sn-visible');
+      popup.classList.add('dk-sn-visible');
+      close.focus();
+    });
+  };
+
+  const toggleSidenote = (ref) => {
+    const id = ref.dataset.snId;
+    if (!id) return;
+    if (sidenoteState.kind !== 'closed' && sidenoteState.id === id) {
+      closeSidenote();
+      return;
+    }
+    closeSidenote();
+    const note = sidenoteStore.get(id);
+    if (!note) return;
+    ref.setAttribute('aria-expanded', 'true');
+    if (mode === 'wide') openInline(id, ref, note);
+    else openPopup(id, ref, note);
+  };
+
+  const onScrollHostClick = (e) => {
+    const ref = e.target.closest('.dk-sn-ref');
+    if (!ref || !scrollHost.contains(ref)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    toggleSidenote(ref);
+  };
+
+  const onDocKeydown = (e) => {
+    if (e.key === 'Escape' && sidenoteState.kind !== 'closed') {
+      e.preventDefault();
+      const ref = sidenoteState.ref;
+      closeSidenote();
+      ref?.focus();
+    }
+  };
+
   const rebuild = () => {
+    closeSidenote();
+    sidenoteStore.clear();
     scrollHost.innerHTML = '';
+
     const stacked = p.narrowMode === 'stack' && mode === 'narrow';
-    if (stacked) {
-      scrollHost.className = 'dk-table-scroll-host';
-    } else if (p.scroll === 'off') {
+    if (stacked || p.scroll === 'off') {
       scrollHost.className = 'dk-table-scroll-host';
     } else {
       scrollHost.className = 'dk-table-scroll';
@@ -244,6 +562,12 @@ export function render(props = {}) {
     table.append(thead);
 
     const tbody = document.createElement('tbody');
+    const ctx = {
+      tableId,
+      sidenoteIndex: 0,
+      sidenoteStore,
+      clampLines: p.clampLines,
+    };
 
     if (rows.length === 0) {
       const tr = document.createElement('tr');
@@ -256,34 +580,26 @@ export function render(props = {}) {
     } else {
       rows.forEach((row, index) => {
         const tr = document.createElement('tr');
-        tr.classList.add('dk-table-clickable');
-        tr.tabIndex = 0;
-        const dispatch = () => {
-          tr.dispatchEvent(new CustomEvent('responsive-table:row-click', {
-            bubbles: true,
-            detail: { row, index, key: row?.[p.rowKey] ?? null },
-          }));
-        };
-        tr.addEventListener('click', dispatch);
-        tr.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            dispatch();
-          }
-        });
+        if (p.rowClickable) {
+          tr.classList.add('dk-table-clickable');
+          tr.tabIndex = 0;
+          const dispatch = () => {
+            tr.dispatchEvent(new CustomEvent('responsive-table:row-click', {
+              bubbles: true,
+              detail: { row, index, key: row?.[p.rowKey] ?? null },
+            }));
+          };
+          tr.addEventListener('click', dispatch);
+          tr.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              dispatch();
+            }
+          });
+        }
 
         for (const c of cols) {
           const td = document.createElement('td');
-          const value = row?.[c.key];
-          const text = value === null || value === undefined || value === '' ? '\u2014' : String(value);
-          if (p.clampLines > 0 && !stacked) {
-            const inner = document.createElement('span');
-            inner.className = 'dk-table-cell';
-            inner.textContent = text;
-            td.append(inner);
-          } else {
-            td.textContent = text;
-          }
           td.className = `dk-table-td${alignClass(c.align)}`;
           if (c.nowrap) td.classList.add('dk-table-nowrap');
           if (stacked) {
@@ -291,6 +607,13 @@ export function render(props = {}) {
             if (c.primary) td.setAttribute('data-primary', 'true');
           }
           if (p.widthStrategy === 'floor') applyFloor(td, c);
+
+          const value = row?.[c.key];
+          const type = c.type ?? 'text';
+          if (type === 'sentences') renderSentencesContent(td, value, ctx);
+          else if (type === 'presence') renderPresenceContent(td, c, value);
+          else renderTextContent(td, value, c, ctx, stacked);
+
           tr.append(td);
         }
         tbody.append(tr);
@@ -323,13 +646,18 @@ export function render(props = {}) {
 
   const onScroll = () => updateOverflowAffordances();
   scrollHost.addEventListener('scroll', onScroll, { passive: true });
+  scrollHost.addEventListener('click', onScrollHostClick);
+  document.addEventListener('keydown', onDocKeydown);
 
   const cleanup = () => {
+    closeSidenote();
     if (observer) {
       observer.disconnect();
       observer = null;
     }
     scrollHost.removeEventListener('scroll', onScroll);
+    scrollHost.removeEventListener('click', onScrollHostClick);
+    document.removeEventListener('keydown', onDocKeydown);
   };
 
   return { node: wrap, cleanup };

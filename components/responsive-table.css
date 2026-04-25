@@ -206,3 +206,199 @@
 .dk-table-stacked td[data-primary="true"][data-label]::before {
   display: none;
 }
+
+/* --- Sentence-per-line cells (type: 'sentences') --- */
+
+.dk-sentences {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  counter-reset: dk-sentence;
+}
+
+.dk-sentence {
+  display: block;
+  position: relative;
+  line-height: var(--font-line-height-normal, 1.5);
+}
+
+/* --- Sidenote references (inline superscript button) --- */
+
+.dk-sn-ref {
+  display: inline-block;
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0.15em;
+  margin: 0 0.1em;
+  font-family: var(--typography-mono);
+  --mono: 1;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-link);
+  vertical-align: super;
+  line-height: 0;
+}
+
+.dk-sn-ref:hover {
+  color: var(--color-text);
+}
+
+.dk-sn-ref:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.dk-sn-ref[aria-expanded="true"] {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+/* --- Sidenote inline disclosure (wide mode) --- */
+
+.dk-sn-inline {
+  display: block;
+  margin-top: var(--spacing-sm);
+  padding-left: var(--spacing-md);
+  border-left: var(--border-width-thin) solid var(--color-link);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.dk-sn-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.dk-sn-label {
+  font-family: var(--typography-mono);
+  --mono: 1;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+  color: var(--color-text);
+}
+
+.dk-sn-content {
+  display: block;
+  line-height: var(--font-line-height-normal, 1.5);
+}
+
+.dk-sn-content :first-child { margin-top: 0; }
+.dk-sn-content :last-child { margin-bottom: 0; }
+.dk-sn-content code {
+  font-family: var(--typography-mono);
+  --mono: 1;
+  font-size: var(--font-size-2xs);
+  color: var(--color-link);
+}
+
+/* --- Sidenote bottom-sheet popup (narrow / medium mode) --- */
+
+.dk-sn-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: var(--color-overlay, rgba(0, 0, 0, 0.35));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.dk-sn-backdrop.dk-sn-visible {
+  opacity: 1;
+}
+
+.dk-sn-popup {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-top: var(--border-width-thin) solid var(--color-border);
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  font-family: var(--typography-prop);
+  font-size: var(--font-size-sm);
+}
+
+.dk-sn-popup.dk-sn-visible {
+  transform: translateY(0);
+}
+
+.dk-sn-popup-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background: var(--color-bg);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.dk-sn-close {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  padding: var(--spacing-xs);
+}
+
+.dk-sn-close:hover {
+  color: var(--color-text);
+}
+
+.dk-sn-close:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.dk-sn-popup-body {
+  padding: var(--spacing-xl);
+  line-height: var(--font-line-height-normal, 1.5);
+}
+
+.dk-sn-popup-body :first-child { margin-top: 0; }
+.dk-sn-popup-body :last-child { margin-bottom: 0; }
+.dk-sn-popup-body code {
+  font-family: var(--typography-mono);
+  --mono: 1;
+  font-size: var(--font-size-xs);
+  color: var(--color-link);
+}
+
+/* --- Presence dots (type: 'presence') --- */
+
+.dk-presence {
+  display: inline-flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+  line-height: 1;
+}
+
+.dk-presence-dot {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  border: var(--border-width-thin) solid var(--color-hover-outline);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.dk-presence-dot-on {
+  background: var(--color-link);
+  border-color: var(--color-link);
+}
