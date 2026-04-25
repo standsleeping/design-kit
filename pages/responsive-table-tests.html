@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>ResponsiveTable Behavior Tests · design-kit</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components/responsive-table.css">
+<style>
+  body {
+    margin: 0;
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+  }
+  h1 {
+    font-size: var(--font-size-lg);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    margin: 0 0 var(--spacing-md) 0;
+  }
+  .summary { padding: 0 0 var(--spacing-lg); margin-bottom: var(--spacing-lg); }
+  .summary-ok { color: var(--color-success); }
+  .summary-fail { color: var(--color-danger); }
+  .results table { width: 100%; border-collapse: collapse; }
+  .results th, .results td {
+    text-align: left;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+  }
+  .results th {
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+  }
+  .pass { color: var(--color-success); }
+  .fail { color: var(--color-danger); }
+  .failure-detail { color: var(--color-danger); white-space: pre-wrap; word-break: break-word; }
+  .mounts { position: fixed; left: -99999px; top: 0; }
+  .mount-wide { width: 800px; }
+  .mount-narrow { width: 240px; }
+</style>
+</head>
+<body>
+<h1>ResponsiveTable Behavior Tests</h1>
+<div class="summary" data-summary>Running…</div>
+<div class="results">
+  <table>
+    <thead><tr><th>Case</th><th>Result</th><th>Detail</th></tr></thead>
+    <tbody data-results></tbody>
+  </table>
+</div>
+
+<div class="mounts" aria-hidden="true">
+  <div id="mount-wide" class="mount-wide"></div>
+  <div id="mount-narrow" class="mount-narrow"></div>
+</div>
+
+<script type="module">
+const MOD_URL = `./components/responsive-table.js?v={{CACHE_BUST}}`;
+
+const cases = [];
+const record = (name, pass, detail = '') => {
+  cases.push({ name, pass, detail });
+  const summary = document.querySelector('[data-summary]');
+  if (summary) summary.textContent = `Running… ${cases.length} checks, ${cases.filter(c => !c.pass).length} failing`;
+};
+
+async function block(name, fn) {
+  try { await fn(); }
+  catch (err) { record(`${name} threw`, false, `${err.name}: ${err.message}\n${err.stack?.slice(0, 400) ?? ''}`); }
+}
+
+// Use setTimeout instead of rAF so tests run even in a hidden/throttled tab.
+const nextFrame = () => new Promise((r) => setTimeout(r, 50));
+
+// Poll until predicate returns truthy or timeout elapses.
+async function waitFor(predicate, { timeoutMs = 2000, stepMs = 16 } = {}) {
+  const start = performance.now();
+  while (performance.now() - start < timeoutMs) {
+    const v = predicate();
+    if (v) return v;
+    await new Promise((r) => setTimeout(r, stepMs));
+  }
+  return predicate();
+}
+
+function dispatchEscape() {
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+}
+
+// Fire a synthetic transitionend so the close path completes deterministically
+// without waiting for the real CSS transition (250 ms).
+function fakeTransitionEnd(el) {
+  el.dispatchEvent(new TransitionEvent('transitionend', { bubbles: true, propertyName: 'transform' }));
+}
+
+async function mount(mod, container, props) {
+  container.innerHTML = '';
+  const { node, cleanup } = mod.render(props);
+  container.append(node);
+  // Let ResizeObserver deliver at least one entry for the observed wrap
+  // so mode reflects the actual container width.
+  await nextFrame();
+  await nextFrame();
+  return { node, cleanup };
+}
+
+async function main() {
+  const summary = document.querySelector('[data-summary]');
+  const resultsBody = document.querySelector('[data-results]');
+
+  let mod;
+  try {
+    mod = await import(MOD_URL);
+  } catch (err) {
+    summary.textContent = `Failed to import responsive-table.js: ${err.message}`;
+    summary.classList.add('summary-fail');
+    document.body.dataset.testStatus = 'fail';
+    return;
+  }
+
+  const annotated = mod.variants.find((v) => v.name === 'annotated');
+  if (!annotated) {
+    summary.textContent = 'annotated variant not found';
+    summary.classList.add('summary-fail');
+    document.body.dataset.testStatus = 'fail';
+    return;
+  }
+
+  const wideMount = document.getElementById('mount-wide');
+  const narrowMount = document.getElementById('mount-narrow');
+
+  // ---- Shared: testid hooks rendered at all ---------------------------------
+  await block('testid hooks', async () => {
+    const { node, cleanup } = await mount(mod, wideMount, annotated.props);
+    record(
+      'sidenote-ref testids present',
+      node.querySelectorAll('[data-testid="sidenote-ref"]').length === 4,
+      `found ${node.querySelectorAll('[data-testid="sidenote-ref"]').length}, expected 4`,
+    );
+    record(
+      'presence-dot testids present',
+      node.querySelectorAll('[data-testid="presence-dot"]').length === 12,
+      `found ${node.querySelectorAll('[data-testid="presence-dot"]').length}, expected 12`,
+    );
+    record(
+      'presence dots carry category + present metadata',
+      [...node.querySelectorAll('[data-testid="presence-dot"]')].every(
+        (d) => d.dataset.category && (d.dataset.present === 'true' || d.dataset.present === 'false'),
+      ),
+      'at least one dot missing category/present dataset',
+    );
+    record(
+      'annotated variant has no clickable rows (rowClickable=false)',
+      node.querySelectorAll('.dk-table-clickable').length === 0,
+      `unexpected .dk-table-clickable count: ${node.querySelectorAll('.dk-table-clickable').length}`,
+    );
+    cleanup();
+  });
+
+  // ---- Wide: inline disclosure path ----------------------------------------
+  await block('wide inline path', async () => {
+    const { node, cleanup } = await mount(mod, wideMount, annotated.props);
+    const refs = node.querySelectorAll('[data-testid="sidenote-ref"]');
+
+    refs[0].click();
+    const inlineAfterOpen = node.querySelectorAll('[data-testid="sidenote-inline"]').length;
+    record(
+      'wide: clicking ref opens inline panel',
+      inlineAfterOpen === 1 && refs[0].getAttribute('aria-expanded') === 'true',
+      `inline=${inlineAfterOpen}, ref0 aria-expanded=${refs[0].getAttribute('aria-expanded')}`,
+    );
+
+    refs[1].click();
+    const stillOne = node.querySelectorAll('[data-testid="sidenote-inline"]').length;
+    record(
+      'wide: switching to another ref leaves only one panel open',
+      stillOne === 1
+        && refs[0].getAttribute('aria-expanded') === 'false'
+        && refs[1].getAttribute('aria-expanded') === 'true',
+      `panels=${stillOne}, ref0=${refs[0].getAttribute('aria-expanded')}, ref1=${refs[1].getAttribute('aria-expanded')}`,
+    );
+
+    dispatchEscape();
+    const panelsAfterEsc = node.querySelectorAll('[data-testid="sidenote-inline"]').length;
+    record(
+      'wide: Escape closes panel and returns focus to originating ref',
+      panelsAfterEsc === 0
+        && refs[1].getAttribute('aria-expanded') === 'false'
+        && document.activeElement === refs[1],
+      `panels=${panelsAfterEsc}, focus.testid=${document.activeElement?.dataset?.testid}, snId=${document.activeElement?.dataset?.snId}`,
+    );
+
+    refs[0].click();
+    refs[0].click();
+    record(
+      'wide: clicking same ref twice toggles closed',
+      node.querySelectorAll('[data-testid="sidenote-inline"]').length === 0
+        && refs[0].getAttribute('aria-expanded') === 'false',
+      'toggle-closed path',
+    );
+    cleanup();
+  });
+
+  // ---- Narrow: column reshape ----------------------------------------------
+  await block('narrow column reshape', async () => {
+    const { node, cleanup } = await mount(mod, narrowMount, {
+      ...annotated.props,
+      initialMode: 'narrow',
+    });
+    // term + gloss are both priority 1; scope (priority 2) is hidden at narrow.
+    record(
+      'narrow: priority-2 column is hidden',
+      node.querySelectorAll('tbody tr:first-child td').length === 2
+        && node.querySelectorAll('[data-testid="presence-dot"]').length === 0,
+      `first-row cells=${node.querySelectorAll('tbody tr:first-child td').length}, presence-dots=${node.querySelectorAll('[data-testid="presence-dot"]').length}`,
+    );
+    cleanup();
+  });
+
+  // ---- Medium: popup path ---------------------------------------------------
+  await block('medium popup path', async () => {
+    const { node, cleanup } = await mount(mod, narrowMount, {
+      ...annotated.props,
+      initialMode: 'medium',
+    });
+    const refs = node.querySelectorAll('[data-testid="sidenote-ref"]');
+
+    record(
+      'medium: sidenote refs visible in gloss column',
+      refs.length > 0,
+      `ref count=${refs.length}`,
+    );
+
+    refs[0].click();
+    await nextFrame();
+    const popup = document.querySelector('[data-testid="sidenote-popup"]');
+    const backdrop = document.querySelector('[data-testid="sidenote-backdrop"]');
+    // Note: the dk-sn-visible class is applied in a requestAnimationFrame
+    // callback, which is throttled in hidden tabs — check DOM attachment only.
+    record(
+      'medium: clicking ref opens popup + backdrop',
+      !!popup && !!backdrop && refs[0].getAttribute('aria-expanded') === 'true',
+      `popup=${!!popup}, backdrop=${!!backdrop}, expanded=${refs[0].getAttribute('aria-expanded')}`,
+    );
+
+    record(
+      'medium: popup has dialog role and aria-label',
+      popup?.getAttribute('role') === 'dialog' && !!popup?.getAttribute('aria-label'),
+      `role=${popup?.getAttribute('role')}, aria-label=${popup?.getAttribute('aria-label')}`,
+    );
+
+    // Close via backdrop click
+    backdrop.click();
+    fakeTransitionEnd(popup);
+    record(
+      'medium: backdrop click closes popup (after transitionend)',
+      !document.querySelector('[data-testid="sidenote-popup"]')
+        && !document.querySelector('[data-testid="sidenote-backdrop"]')
+        && refs[0].getAttribute('aria-expanded') === 'false',
+      'popup/backdrop still in DOM after transitionend',
+    );
+
+    // Re-open and close via the X button
+    refs[0].click();
+    await nextFrame();
+    const popup2 = document.querySelector('[data-testid="sidenote-popup"]');
+    const closeBtn = document.querySelector('[data-testid="sidenote-close"]');
+    closeBtn.click();
+    fakeTransitionEnd(popup2);
+    record(
+      'medium: close button closes popup',
+      !document.querySelector('[data-testid="sidenote-popup"]'),
+      'popup still in DOM after close',
+    );
+
+    // Re-open and close via Escape
+    refs[0].click();
+    await nextFrame();
+    const popup3 = document.querySelector('[data-testid="sidenote-popup"]');
+    dispatchEscape();
+    fakeTransitionEnd(popup3);
+    record(
+      'medium: Escape closes popup and returns focus to ref',
+      !document.querySelector('[data-testid="sidenote-popup"]')
+        && document.activeElement === refs[0],
+      `focus=${document.activeElement?.dataset?.testid}`,
+    );
+
+    cleanup();
+  });
+
+  // ---- Body contract: { text } stays literal, { html } becomes markup -------
+  await block('body contract', async () => {
+    const customProps = {
+      ...annotated.props,
+      initialMode: 'medium',
+      rows: [
+        {
+          id: 'x',
+          term: 'X',
+          gloss: [
+            {
+              text: 'Safe.',
+              sidenote: { label: 'L', body: { text: '<b>literal</b>' } },
+            },
+            {
+              text: 'Trusted.',
+              sidenote: { label: 'L', body: { html: '<b data-testid="body-bold">markup</b>' } },
+            },
+          ],
+          scope: [],
+        },
+      ],
+    };
+
+    const { node, cleanup } = await mount(mod, narrowMount, customProps);
+    const refs = node.querySelectorAll('[data-testid="sidenote-ref"]');
+
+    refs[0].click();
+    await nextFrame();
+    const popupText = document.querySelector('[data-testid="sidenote-popup"]');
+    const literalRendered = popupText.querySelector('.dk-sn-popup-body').innerHTML.includes('&lt;b&gt;literal&lt;/b&gt;');
+    record(
+      'body contract: { text } is rendered as plain text (escaped)',
+      literalRendered,
+      `popup body HTML: ${popupText.querySelector('.dk-sn-popup-body').innerHTML}`,
+    );
+    dispatchEscape();
+    fakeTransitionEnd(popupText);
+    await nextFrame();
+
+    refs[1].click();
+    await nextFrame();
+    const popupHtml = document.querySelector('[data-testid="sidenote-popup"]');
+    const bolded = popupHtml.querySelector('[data-testid="body-bold"]');
+    record(
+      'body contract: { html } is rendered as markup',
+      bolded?.tagName === 'B' && bolded?.textContent === 'markup',
+      `bolded element=${bolded?.tagName}, text=${bolded?.textContent}`,
+    );
+    dispatchEscape();
+    fakeTransitionEnd(popupHtml);
+    cleanup();
+  });
+
+  // ---- Default variant still has clickable rows (rowClickable=true default) -
+  await block('default variant rowClickable', async () => {
+    const defaults = mod.variants.find((v) => v.name === 'default');
+    const { node, cleanup } = await mount(mod, wideMount, defaults.props);
+    record(
+      'default variant has clickable rows (rowClickable default = true)',
+      node.querySelectorAll('.dk-table-clickable').length > 0,
+      `clickable rows=${node.querySelectorAll('.dk-table-clickable').length}`,
+    );
+    cleanup();
+  });
+
+  // ---- Report ---------------------------------------------------------------
+  const total = cases.length;
+  const failed = cases.filter((c) => !c.pass).length;
+  for (const c of cases) {
+    const row = document.createElement('tr');
+    if (c.pass) {
+      row.innerHTML = `<td>${escapeHTML(c.name)}</td><td class="pass">PASS</td><td></td>`;
+    } else {
+      row.innerHTML = `<td>${escapeHTML(c.name)}</td><td class="fail">FAIL</td><td class="failure-detail">${escapeHTML(c.detail)}</td>`;
+    }
+    resultsBody.append(row);
+  }
+
+  if (failed === 0) {
+    summary.textContent = `All ${total} ResponsiveTable behavior checks pass.`;
+    summary.classList.add('summary-ok');
+  } else {
+    summary.textContent = `${failed} of ${total} checks failed.`;
+    summary.classList.add('summary-fail');
+  }
+  document.body.dataset.testStatus = failed === 0 ? 'pass' : 'fail';
+  document.body.dataset.testTotal = String(total);
+  document.body.dataset.testFailures = String(failed);
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+main().catch((err) => {
+  const summary = document.querySelector('[data-summary]');
+  summary.textContent = `Fatal: ${err.message}`;
+  summary.classList.add('summary-fail');
+  document.body.dataset.testStatus = 'fail';
+});
+</script>
+</body>
+</html>
