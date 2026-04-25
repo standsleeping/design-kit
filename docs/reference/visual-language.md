@@ -194,6 +194,28 @@ Horizontal padding belongs on the container; children handle only vertical spaci
 
 When a child needs the `padding` shorthand for vertical values, use longhand properties (`padding-top`, `padding-bottom`) to avoid clobbering the zero horizontal padding.
 
+### Scroll containers
+
+Scroll containers (`overflow-y: auto`) whose content height can change during user interaction must reserve the scrollbar gutter. Without it, a collapse/expand, filter, lazy-load, or tab swap that crosses the overflow threshold makes the bar appear or disappear, and the content-box width changes by the bar's width on every toggle. The result is a horizontal jitter on every interaction.
+
+```css
+.scroll-region {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+```
+
+The track is transparent so the reserved gutter never reads as a visible stripe when the thumb is short, and so nested scroll containers don't bleed the wrong surface color:
+
+```css
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+```
+
+Skip the gutter reservation when content is static (always or never overflows) or when `overflow-y: scroll` is set with content guaranteed to fill it (bar is permanent, gutter is permanent).
+
 ### Structural ornament patterns
 
 These plaintext devices replace graphical decoration within the monospace grid.
