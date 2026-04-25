@@ -92,7 +92,7 @@ def test_relative_luminance_black_is_0() -> None:
 
 
 def test_audit_runs_declared_pairs_across_themes() -> None:
-    """End-to-end: parse → resolve per theme → compute contrast → Result list."""
+    """End-to-end: caller parses → audit resolves per theme and returns Result list."""
     css = """
     :root {
       --color-bg: light-dark(var(--gray-50), var(--gray-700));
@@ -102,7 +102,7 @@ def test_audit_runs_declared_pairs_across_themes() -> None:
     }
     """
     pairs = [Pair("color-bg", "color-text", 4.5, "body text")]
-    results = audit(css, pairs)
+    results = audit(parse_tokens(css), pairs)
     assert len(results) == 2  # one pair × 2 themes
     assert {r.theme for r in results} == {"light", "dark"}
     assert all(r.passed for r in results)
@@ -117,7 +117,20 @@ def test_audit_flags_collision_as_failure() -> None:
     }
     """
     pairs = [Pair("color-a", "color-b", 1.05, "distinct surfaces")]
-    results = audit(css, pairs)
+    results = audit(parse_tokens(css), pairs)
     dark = next(r for r in results if r.theme == "dark")
     assert dark.ratio == pytest.approx(1.0, abs=0.001)
     assert not dark.passed
+
+
+def test_audit_accepts_any_mapping() -> None:
+    """`audit` takes Mapping[str, str], not a parsed-from-CSS dict specifically.
+    Callers can build the token map however they like (synthesized, loaded
+    from a sidecar, merged across stylesheets) as long as the result is a
+    flat token table for one palette."""
+    tokens = {
+        "color-a": "light-dark(#ffffff, #000000)",
+        "color-b": "light-dark(#000000, #ffffff)",
+    }
+    results = audit(tokens, [Pair("color-a", "color-b", 4.5, "max contrast")])
+    assert all(r.ratio == pytest.approx(21.0, abs=0.01) for r in results)

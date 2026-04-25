@@ -12,7 +12,7 @@ compose) and call `audit()`. `format_report()` renders results as a table.
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Literal
 
@@ -37,7 +37,7 @@ def parse_tokens(css: str) -> dict[str, str]:
     return out
 
 
-def resolve(token: str, theme: Theme, tokens: dict[str, str]) -> str:
+def resolve(token: str, theme: Theme, tokens: Mapping[str, str]) -> str:
     """Resolve a semantic token to a concrete #hex value in the given theme.
 
     Follows var() chains and picks the light or dark branch of light-dark().
@@ -133,17 +133,20 @@ class Result:
 
 
 def audit(
-    css: str,
+    tokens: Mapping[str, str],
     pairs: Sequence[Pair],
     themes: Sequence[Theme] = ("light", "dark"),
 ) -> list[Result]:
-    """Resolve each declared pair against each theme and compute WCAG contrast.
+    """Resolve each declared pair in each light/dark mode and compute WCAG contrast.
 
-    Multi-theme palettes (per-theme override blocks like
-    `[data-color-theme="..."]`) are handled by passing the CSS for one
-    theme-block at a time; this function treats the token map as flat.
+    `tokens` must be the *effective* token map for one palette: a flat mapping
+    from token name to raw value (literal hex, `var(...)`, or `light-dark(...)`).
+    Use `parse_tokens` on a single-palette stylesheet — or on a slice of a
+    multi-palette stylesheet — to produce it. Audit does not parse CSS; that
+    boundary belongs to the caller, who is responsible for choosing the right
+    scope. Mixing definitions from multiple palettes into one map will
+    silently audit a fictional palette.
     """
-    tokens = parse_tokens(css)
     results: list[Result] = []
     for pair in pairs:
         for theme in themes:

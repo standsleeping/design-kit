@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from design_kit.contrast import Pair, Result, audit, format_report
+from design_kit.contrast import Pair, Result, audit, format_report, parse_tokens
 
 # Universal adjacencies. Any consumer using design-kit's semantic tokens
 # inherits these surfaces, so the audit is meaningful without further
@@ -168,7 +168,7 @@ def run(css_path: Path) -> tuple[list[Result], str]:
     report_sections: list[str] = []
     for theme in themes:
         theme_css = _theme_css(css, theme, default_theme)
-        results = audit(theme_css, _pairs_for_theme(theme))
+        results = audit(parse_tokens(theme_css), _pairs_for_theme(theme))
         all_results.extend(results)
         report_sections.append(f"=== theme: {theme} ===\n{format_report(results)}")
     return all_results, "\n\n".join(report_sections)
