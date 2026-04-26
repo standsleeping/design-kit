@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Scroll Container Patterns · design-kit</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-mono);
+    --mono: 1;
+    font-size: var(--font-size-xs);
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    flex-shrink: 0;
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-xl);
+  }
+  header h1 {
+    margin: 0;
+    font-family: var(--typography-mono);
+    --mono: 1;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+  }
+  header p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-family: var(--typography-prop);
+    --mono: 0;
+    font-size: var(--font-size-sm);
+  }
+  header .toggles { margin-left: auto; display: flex; gap: var(--spacing-md); }
+  header button {
+    appearance: none;
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: var(--border-width-thin) solid var(--color-border);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font: inherit;
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    cursor: pointer;
+  }
+  header button[aria-pressed="true"] { background: var(--color-hover-bg); }
+
+  .grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--border-width-thin);
+    background: var(--color-border);
+  }
+
+  .panel {
+    background: var(--color-bg);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+  }
+  .panel-header {
+    flex-shrink: 0;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+  }
+  .panel-title {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-2xs);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-xs);
+  }
+  .panel-note {
+    font-family: var(--typography-prop);
+    --mono: 0;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  /* ----- The three scroll patterns ----- */
+
+  /* Shared list shell */
+  .list { display: flex; flex-direction: column; }
+  .list-item {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    cursor: pointer;
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+  }
+  .list-item:hover { background: var(--color-hover-bg); }
+  .list-item[aria-selected="true"] { background: var(--color-hover-bg); }
+
+  /* Pattern A: overflow-y: auto. Bar appears only when needed; layout shifts. */
+  .scroll-auto {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* Pattern B: scrollbar-gutter: stable. Gutter reserved; hover cut off. */
+  .scroll-stable {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+
+  /* Pattern C: overflow-y: scroll + tinted track.
+     The track is always rendered AND tinted, so the rail is visible whether
+     or not content overflows. Hover cut-off then reads as "ends at the
+     scrollbar," not "truncated."
+     scrollbar-color (standard CSS, thumb track) drives Chromium 121+ and
+     Firefox; ::-webkit-scrollbar-* fall back for older WebKit / Safari.
+     Track tinted via --color-border, thumb via --color-hover-outline; both
+     pairs are contrast-audited against --color-bg in every theme. */
+  .scroll-permanent {
+    flex: 1;
+    min-height: 0;
+    overflow-y: scroll;
+    scrollbar-color: var(--color-hover-outline) var(--color-border);
+    scrollbar-width: thin;
+  }
+  .scroll-permanent::-webkit-scrollbar { width: 8px; }
+  .scroll-permanent::-webkit-scrollbar-track { background: var(--color-border); }
+  .scroll-permanent::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Scroll Container Patterns</h1>
+  <p>Hover the items, then toggle content length to compare shift behavior across the three patterns.</p>
+  <div class="toggles">
+    <button data-toggle="length" aria-pressed="false">Long content</button>
+    <button data-toggle="theme" aria-pressed="false">Dark</button>
+  </div>
+</header>
+
+<div class="grid">
+
+  <section class="panel">
+    <div class="panel-header">
+      <div class="panel-title">A. overflow-y: auto</div>
+      <div class="panel-note">Default. Hover paints to the right edge when no bar; toggling content length shifts the layout when the bar appears or disappears.</div>
+    </div>
+    <div class="scroll-auto" data-list></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div class="panel-title">B. scrollbar-gutter: stable</div>
+      <div class="panel-note">Current rule. Never shifts, but the hover background is visibly cut off where the (often invisible) gutter sits.</div>
+    </div>
+    <div class="scroll-stable" data-list></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div class="panel-title">C. overflow-y: scroll + tinted track</div>
+      <div class="panel-note">Proposed. Never shifts. The rail is always rendered, so the hover cut-off aligns with a visible scrollbar rather than empty space.</div>
+    </div>
+    <div class="scroll-permanent" data-list></div>
+  </section>
+
+</div>
+
+<script>
+  const baseItems = [
+    'Resource', 'Sandbox', 'Session', 'Tool', 'Schema',
+    'Adapter', 'Binding', 'Channel', 'Driver', 'Endpoint',
+    'Filter', 'Gateway', 'Handler', 'Index', 'Job',
+    'Kernel', 'Loader', 'Module', 'Namespace', 'Operator',
+    'Pipeline', 'Queue', 'Registry', 'Stream', 'Target',
+  ];
+  // Duplicate to guarantee overflow even on tall viewports
+  const items = [...baseItems, ...baseItems.map((s) => s + '_2'), ...baseItems.map((s) => s + '_3')];
+  const shortCount = 4;
+
+  function render(length) {
+    const slice = length === 'long' ? items : items.slice(0, shortCount);
+    document.querySelectorAll('[data-list]').forEach((host) => {
+      host.innerHTML = '';
+      const list = document.createElement('div');
+      list.className = 'list';
+      slice.forEach((label, i) => {
+        const row = document.createElement('div');
+        row.className = 'list-item';
+        if (i === 2) row.setAttribute('aria-selected', 'true');
+        row.textContent = label;
+        list.appendChild(row);
+      });
+      host.appendChild(list);
+    });
+  }
+
+  const lenBtn = document.querySelector('[data-toggle="length"]');
+  let length = 'short';
+  lenBtn.addEventListener('click', () => {
+    length = length === 'short' ? 'long' : 'short';
+    lenBtn.setAttribute('aria-pressed', String(length === 'long'));
+    lenBtn.textContent = length === 'long' ? 'Short content' : 'Long content';
+    render(length);
+  });
+
+  const themeBtn = document.querySelector('[data-toggle="theme"]');
+  themeBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.style.colorScheme === 'dark';
+    document.documentElement.style.colorScheme = isDark ? 'light' : 'dark';
+    themeBtn.setAttribute('aria-pressed', String(!isDark));
+    themeBtn.textContent = isDark ? 'Dark' : 'Light';
+  });
+
+  render(length);
+</script>
+
+</body>
+</html>
