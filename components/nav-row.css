@@ -1,0 +1,32 @@
+.dk-nav-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  column-gap: var(--spacing-xs);
+  row-gap: var(--spacing-xs);
+  container-type: inline-size;
+}
+
+.dk-nav-row-label {
+  flex: 0 0 auto;
+}
+
+.dk-nav-row-meta {
+  flex: 0 0 auto;
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+}
+
+.dk-nav-row-trailing {
+  margin-left: auto;
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+}
+
+@container (max-width: 200px) {
+  .dk-nav-row-trailing {
+    width: 100%;
+    margin-left: 0;
+  }
+}
