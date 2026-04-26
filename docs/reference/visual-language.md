@@ -196,25 +196,26 @@ When a child needs the `padding` shorthand for vertical values, use longhand pro
 
 ### Scroll containers
 
-Scroll containers (`overflow-y: auto`) whose content height can change during user interaction must reserve the scrollbar gutter. Without it, a collapse/expand, filter, lazy-load, or tab swap that crosses the overflow threshold makes the bar appear or disappear, and the content-box width changes by the bar's width on every toggle. The result is a horizontal jitter on every interaction.
+Scroll containers whose content height can change during user interaction must reserve the scrollbar gutter. Without it, a collapse/expand, filter, lazy-load, or tab swap that crosses the overflow threshold makes the bar appear or disappear, and the content-box width changes by the bar's width on every toggle. The result is a horizontal jitter on every interaction.
+
+For scroll containers that contain interactive rows with hover or selected backgrounds (sidebars, lists, menus, tree views), use `overflow-y: scroll` with a tinted track:
 
 ```css
 .scroll-region {
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-}
-```
-
-The track is transparent so the reserved gutter never reads as a visible stripe when the thumb is short, and so nested scroll containers don't bleed the wrong surface color:
-
-```css
-html {
+  overflow-y: scroll;
+  scrollbar-color: var(--color-hover-outline) var(--color-border);
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
 }
+.scroll-region::-webkit-scrollbar { width: 8px; }
+.scroll-region::-webkit-scrollbar-track { background: var(--color-border); }
+.scroll-region::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
 ```
 
-Skip the gutter reservation when content is static (always or never overflows) or when `overflow-y: scroll` is set with content guaranteed to fill it (bar is permanent, gutter is permanent).
+The bar is permanent and the track is painted, so the rail is always visible on the right edge. Hover and selection backgrounds end at the rail rather than appearing to be truncated. Layout never shifts because the bar's space is always allocated. The two color tokens are both contrast-audited against `--color-bg` in every theme.
+
+For scroll containers without interactive backgrounds (long-form documents, code blocks), the cut-off concern doesn't apply: use `overflow-y: auto` with `scrollbar-gutter: stable` instead, and let the global `html { scrollbar-color: var(--color-border) transparent }` rule paint a transparent track so the reserved gutter doesn't read as a visible stripe.
+
+Skip both forms when content is static (always or never overflows): plain `overflow: hidden` or no overflow rule at all is sufficient.
 
 ### Structural ornament patterns
 
