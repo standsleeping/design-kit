@@ -173,6 +173,7 @@
     },
     "z": {
       "sticky": 10,
+      "chrome": 20,
       "overlay": 1000
     }
   },
