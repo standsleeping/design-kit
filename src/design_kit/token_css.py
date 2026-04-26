@@ -262,6 +262,7 @@ DEFAULTS_LAYER = """\
   th, td { padding: var(--spacing-sm) var(--spacing-lg); text-align: left; border-bottom: 1px solid var(--color-border); }
   th { font-family: var(--typography-mono); --mono: 1; font-weight: var(--font-weight-semibold); font-size: var(--font-size-xs); border-bottom-width: var(--border-width-medium); border-bottom-color: var(--color-gray-400); }
   caption { font-family: var(--typography-mono); --mono: 1; font-size: var(--font-size-xs); color: var(--color-text-muted); text-align: left; padding-bottom: var(--spacing-md); text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); }
+  .content-table { border-collapse: separate; border-spacing: 0; }
   .content-table th { position: sticky; top: 0; background: var(--color-bg); z-index: var(--z-sticky); }
   .data-table { overflow-x: auto; }
   @media (max-width: 600px) { th, td { padding: var(--spacing-xs); font-size: var(--font-size-xs); } }
