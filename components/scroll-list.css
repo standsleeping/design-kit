@@ -2,7 +2,12 @@
    The scrollbar is always rendered with a tinted track, so hover and
    selected backgrounds end at a visible rail rather than appearing
    truncated. Layout never shifts because the bar's space is always
-   allocated. See docs/reference/visual-language.md "Scroll containers". */
+   allocated.
+
+   This is a component-specific treatment, not the project-wide scroll
+   container rule. General scroll containers use overflow-y: auto with
+   scrollbar-gutter: stable; see docs/reference/visual-language.md
+   "Scroll containers". */
 
 .dk-scroll-list {
   display: flex;
