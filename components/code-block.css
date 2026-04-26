@@ -21,7 +21,7 @@
 }
 
 .dk-code-block-tab {
-  padding: var(--spacing-xs) 0;
+  padding: var(--spacing-xs);
   font-size: var(--font-size-xs);
   font-family: var(--typography-mono);
   color: var(--color-text-muted);
@@ -39,7 +39,7 @@
 
 .dk-code-block-tab:focus-visible {
   outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 .dk-code-block-tab-active {
@@ -81,7 +81,7 @@
 
 .dk-code-block-copy:focus-visible {
   outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 .dk-code-block-copy-copied {
