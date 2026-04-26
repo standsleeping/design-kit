@@ -213,6 +213,8 @@ Skip the gutter when content is static (always or never overflows): plain `overf
 
 The `scroll-list` component uses a different treatment (always-on bar with a tinted rail) for its specific interaction pattern; see the component itself, not this rule, for that variant.
 
+When a scroll container holds both a sticky chrome bar (app bar, section header) at `top: 0` and sticky cell content (`<thead>` cells, sub-section headers) at `top: <chrome-height>`, give the chrome a higher stacking layer than the in-flow stickies. Same `z-index` plus DOM order means the later element (the table header) paints over the chrome in the overlap band, and content briefly appears to sit above the bar before disappearing under it. Use `--z-chrome` for the bar and `--z-sticky` for in-content stickies; both stay below `--z-overlay`.
+
 ### Structural ornament patterns
 
 These plaintext devices replace graphical decoration within the monospace grid.
