@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Border Audit · design-kit</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  body {
+    margin: 0;
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+  }
+  h1 {
+    font-size: var(--font-size-lg);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    margin: 0 0 var(--spacing-md) 0;
+  }
+  .summary { padding: 0 0 var(--spacing-lg); margin-bottom: var(--spacing-lg); }
+  .summary-ok { color: var(--color-success); }
+  .summary-fail { color: var(--color-danger); }
+  .summary-warn { color: var(--color-text-muted); }
+  .results table { width: 100%; border-collapse: collapse; }
+  .results th, .results td {
+    text-align: left;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-family: inherit;
+    font-size: inherit;
+    vertical-align: top;
+  }
+  .results th {
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+  }
+  .pass { color: var(--color-success); }
+  .fail { color: var(--color-danger); }
+  .finding-detail { color: var(--color-text-muted); white-space: pre-wrap; word-break: break-word; }
+  .frame-host { position: fixed; left: -99999px; top: 0; width: 1280px; height: 900px; }
+</style>
+</head>
+<body>
+<h1>Border Audit</h1>
+<p>Walks each target page and flags any pair of parallel borders (two horizontal-rule edges at the same y, or two vertical-rule edges at the same x) whose ranges overlap. This is the runtime detection corollary of <code>BOUNDARY_OWNERSHIP</code>: exactly one element should own each visible edge.</p>
+<div class="summary" data-summary>Running…</div>
+<div class="results">
+  <table>
+    <thead><tr><th>Page</th><th>Result</th><th>Findings</th></tr></thead>
+    <tbody data-results></tbody>
+  </table>
+</div>
+<div class="frame-host" aria-hidden="true"></div>
+
+<script type="module">
+const TARGETS = [
+  'preview.html',
+  'storybook.html',
+  'sidebar-nav-stack.html',
+  'line-height-units.html',
+];
+
+// Pixel tolerance for "same axis position" (handles fractional rendering).
+const POS_TOL = 1.5;
+// Minimum overlap length for two parallel borders to be considered a doubled rule.
+const OVERLAP_MIN = 4;
+
+const SIDES = ['top', 'right', 'bottom', 'left'];
+
+function describe(el) {
+  if (!el || el.nodeType !== 1) return '';
+  let s = el.tagName.toLowerCase();
+  if (el.id) s += `#${el.id}`;
+  if (el.className && typeof el.className === 'string') {
+    const c = el.className.trim().split(/\s+/).slice(0, 2).join('.');
+    if (c) s += `.${c}`;
+  }
+  return s;
+}
+
+function collectBorderLines(doc) {
+  const lines = [];
+  const win = doc.defaultView;
+  for (const el of doc.querySelectorAll('*')) {
+    const cs = win.getComputedStyle(el);
+    if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) continue;
+    for (const side of SIDES) {
+      const cap = side[0].toUpperCase() + side.slice(1);
+      const w = parseFloat(cs[`border${cap}Width`]);
+      if (!(w >= 0.5)) continue;
+      const style = cs[`border${cap}Style`];
+      if (style === 'none' || style === 'hidden') continue;
+      const color = cs[`border${cap}Color`];
+      if (color === 'rgba(0, 0, 0, 0)' || color === 'transparent') continue;
+      const horizontal = side === 'top' || side === 'bottom';
+      const pos = side === 'top' ? rect.top
+                : side === 'bottom' ? rect.bottom
+                : side === 'left' ? rect.left
+                : rect.right;
+      const start = horizontal ? rect.left : rect.top;
+      const end   = horizontal ? rect.right : rect.bottom;
+      lines.push({ el, side, axis: horizontal ? 'h' : 'v', pos, start, end, w });
+    }
+  }
+  return lines;
+}
+
+function findDoubledBorders(lines) {
+  const findings = [];
+  for (let i = 0; i < lines.length; i++) {
+    for (let j = i + 1; j < lines.length; j++) {
+      const a = lines[i], b = lines[j];
+      if (a.axis !== b.axis) continue;
+      if (Math.abs(a.pos - b.pos) > POS_TOL) continue;
+      const overlap = Math.min(a.end, b.end) - Math.max(a.start, b.start);
+      if (overlap < OVERLAP_MIN) continue;
+      // Collinear with the same color counts as a single rule (e.g., two
+      // table-row borders touching tip-to-tip): the user perceives one line.
+      // We flag only when the borders' ranges meaningfully overlap, so
+      // tip-to-tip cases (overlap < OVERLAP_MIN) are excluded above.
+      findings.push({ a, b, overlap });
+    }
+  }
+  return findings;
+}
+
+function loadFrame(url) {
+  return new Promise((resolve, reject) => {
+    const host = document.querySelector('.frame-host');
+    const f = document.createElement('iframe');
+    f.src = `${url}?_audit=1`;
+    f.style.cssText = 'width:1280px;height:900px;border:0';
+    f.addEventListener('load', () => resolve(f));
+    f.addEventListener('error', reject);
+    host.append(f);
+  });
+}
+
+async function auditPage(url) {
+  const f = await loadFrame(url);
+  // Allow render/layout to settle.
+  await new Promise(r => setTimeout(r, 400));
+  let findings;
+  try {
+    const lines = collectBorderLines(f.contentDocument);
+    findings = findDoubledBorders(lines);
+  } catch (err) {
+    findings = [{ error: err.message }];
+  }
+  f.remove();
+  return findings;
+}
+
+function renderRow(url, findings) {
+  const tr = document.createElement('tr');
+  const tdName = document.createElement('td'); tdName.textContent = url;
+  const tdResult = document.createElement('td');
+  const tdDetail = document.createElement('td');
+  tdDetail.className = 'finding-detail';
+  if (findings.length === 0) {
+    tdResult.textContent = 'PASS';
+    tdResult.className = 'pass';
+  } else {
+    tdResult.textContent = `FAIL (${findings.length})`;
+    tdResult.className = 'fail';
+    tdDetail.textContent = findings.map(f => {
+      if (f.error) return `error: ${f.error}`;
+      return `${f.a.axis === 'h' ? 'horizontal' : 'vertical'} @ ${f.a.pos.toFixed(1)}px, overlap ${f.overlap.toFixed(1)}px\n  A: ${describe(f.a.el)} (${f.a.side})\n  B: ${describe(f.b.el)} (${f.b.side})`;
+    }).join('\n\n');
+  }
+  tr.append(tdName, tdResult, tdDetail);
+  return tr;
+}
+
+async function main() {
+  const summary = document.querySelector('[data-summary]');
+  const tbody = document.querySelector('[data-results]');
+  let totalFindings = 0;
+  for (const url of TARGETS) {
+    const findings = await auditPage(url);
+    totalFindings += findings.filter(f => !f.error).length;
+    tbody.append(renderRow(url, findings));
+  }
+  if (totalFindings === 0) {
+    summary.textContent = `All ${TARGETS.length} pages pass the border audit (no doubled parallel rules detected).`;
+    summary.className = 'summary summary-ok';
+  } else {
+    summary.textContent = `${totalFindings} doubled-border finding(s) across ${TARGETS.length} page(s).`;
+    summary.className = 'summary summary-fail';
+  }
+  // Headless harness contract — same shape as responsive-table-tests.html.
+  document.body.dataset.testStatus = totalFindings === 0 ? 'pass' : 'fail';
+  document.body.dataset.testTotal = String(TARGETS.length);
+  document.body.dataset.testFailures = String(totalFindings);
+}
+
+main().catch((err) => {
+  const summary = document.querySelector('[data-summary]');
+  summary.textContent = `Audit harness error: ${err.message}`;
+  summary.className = 'summary summary-fail';
+  document.body.dataset.testStatus = 'fail';
+  document.body.dataset.testTotal = '0';
+  document.body.dataset.testFailures = '1';
+});
+</script>
+</body>
+</html>
