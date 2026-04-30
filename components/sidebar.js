@@ -6,10 +6,12 @@ export const metadata = {
 
 export const propTypes = {
   side: { type: 'enum', default: 'left', options: ['left', 'right'] },
+  mode: { type: 'enum', default: 'inline', options: ['inline', 'overlay'] },
+  displayState: { type: 'enum', default: 'expanded', options: ['expanded', 'icon', 'hidden'] },
   width: { type: 'number', default: 280 },
   minWidth: { type: 'number', default: 200 },
   maxWidth: { type: 'number', default: 500 },
-  collapsed: { type: 'boolean', default: false },
+  iconWidth: { type: 'number', default: 56 },
   resizable: { type: 'boolean', default: false },
 };
 
@@ -58,20 +60,62 @@ export const variants = [
       main: { component: 'MenuItem', props: { label: 'Drag my edge' } },
     },
   },
+  {
+    name: 'state-icon',
+    description: 'Icon state (inline mode) — sidebar shrinks to iconWidth so children render icon-only',
+    props: { width: 240, displayState: 'icon' },
+    slots: {
+      main: [
+        { component: 'MenuItem', props: { label: 'Inbox', icon: '⊞' } },
+        { component: 'MenuItem', props: { label: 'Users', icon: '☻' } },
+      ],
+    },
+  },
+  {
+    name: 'overlay-expanded',
+    description: 'Overlay mode, slid in over content; positioned absolute with transform-based animation',
+    props: { width: 240, mode: 'overlay', displayState: 'expanded' },
+    slots: {
+      main: { component: 'MenuItem', props: { label: 'Sliding sidebar' } },
+    },
+  },
+  {
+    name: 'overlay-hidden',
+    description: 'Overlay mode, slid off-screen via translateX(-100%); the toggle would slide it back in',
+    props: { width: 240, mode: 'overlay', displayState: 'hidden' },
+    slots: {
+      main: { component: 'MenuItem', props: { label: 'Hidden until toggled' } },
+    },
+  },
 ];
 
 export function render(props = {}) {
   const side = props.side ?? propTypes.side.default;
+  const mode = props.mode ?? propTypes.mode.default;
+  const displayState = props.displayState ?? propTypes.displayState.default;
   const width = props.width ?? propTypes.width.default;
   const minWidth = props.minWidth ?? propTypes.minWidth.default;
   const maxWidth = props.maxWidth ?? propTypes.maxWidth.default;
-  const collapsed = props.collapsed ?? propTypes.collapsed.default;
+  const iconWidth = props.iconWidth ?? propTypes.iconWidth.default;
   const resizable = props.resizable ?? propTypes.resizable.default;
 
   const root = document.createElement('div');
-  root.className = `dk-sidebar dk-sidebar-${side}`;
-  if (collapsed) root.classList.add('dk-sidebar-collapsed');
-  root.style.width = collapsed ? '0' : `${width}px`;
+  root.className = `dk-sidebar dk-sidebar-${side} dk-sidebar-mode-${mode}`;
+  root.dataset.state = displayState;
+  root.style.setProperty('--dk-sidebar-icon-width', `${iconWidth}px`);
+
+  // Width: in inline mode, icon state shrinks to iconWidth; hidden state is 0.
+  // In overlay mode, the sidebar always renders at `width` and slides via
+  // transform (the CSS picks the transform from data-state).
+  if (mode === 'overlay') {
+    root.style.width = `${width}px`;
+  } else if (displayState === 'icon') {
+    root.style.width = `${iconWidth}px`;
+  } else if (displayState === 'hidden') {
+    root.style.width = '0';
+  } else {
+    root.style.width = `${width}px`;
+  }
 
   const header = document.createElement('div');
   header.className = 'dk-sidebar-header';

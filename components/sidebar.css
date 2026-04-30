@@ -6,8 +6,12 @@
   overflow: hidden;
   height: 100%;
   min-width: 0;
-  transition: width 0.2s ease-out;
+  transition: width 0.2s ease-out, transform 0.2s ease-out;
   border-right: var(--border-width-thin) solid var(--color-border);
+  /* icon-button-sm (24px) + 2 * spacing-md (8px) wraps cleanly; consumers can
+     override per-shell to tune the icon-strip width. */
+  --dk-sidebar-icon-width: 56px;
+  background: var(--color-bg);
 }
 
 .dk-sidebar-right {
@@ -15,9 +19,50 @@
   border-left: var(--border-width-thin) solid var(--color-border);
 }
 
-.dk-sidebar-collapsed {
+/* Inline mode rules. Width comes from the data-state value. */
+.dk-sidebar-mode-inline[data-state="icon"] {
+  width: var(--dk-sidebar-icon-width) !important;
+  transition: width 0.15s ease-in;
+}
+
+.dk-sidebar-mode-inline[data-state="hidden"] {
   width: 0 !important;
   transition: width 0.15s ease-in;
+}
+
+/* Overlay mode rules. Width is fixed (the expanded width); state controls
+   transform. The slide is GPU-accelerated and doesn't reflow content. */
+.dk-sidebar-mode-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-overlay, 1000);
+  transform: translateX(0);
+}
+
+.dk-sidebar-mode-overlay.dk-sidebar-right {
+  left: auto;
+  right: 0;
+}
+
+.dk-sidebar-mode-overlay[data-state="hidden"] {
+  transform: translateX(-100%);
+  transition: transform 0.18s ease-in;
+}
+
+.dk-sidebar-mode-overlay.dk-sidebar-right[data-state="hidden"] {
+  transform: translateX(100%);
+}
+
+/* Hide the resizer when not at full width. */
+.dk-sidebar[data-state="icon"] .dk-sidebar-resizer,
+.dk-sidebar[data-state="hidden"] .dk-sidebar-resizer {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dk-sidebar { transition: none; }
 }
 
 .dk-sidebar-header,
