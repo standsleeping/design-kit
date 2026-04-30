@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Sidebar + NavStack · design-kit</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components/sidebar.css">
+<link rel="stylesheet" href="components/nav-stack.css">
+<link rel="stylesheet" href="components/icon-button.css">
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+    overflow: hidden;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shell-backdrop {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--color-text) 30%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-out;
+    z-index: calc(var(--z-overlay, 1000) - 1);
+  }
+  .shell-backdrop[data-visible="true"] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shell-backdrop { transition: none; }
+  }
+
+  .pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--color-bg);
+  }
+
+  /* --dk-chrome-bar-h: derived from icon-button-sm (24px) + 2 * spacing-md
+     (8px) = 40px = 2.5rem; this is the smallest height that lets a button-bar
+     and a text-only bar coexist without the icon-button overflowing. Pinning
+     both panes' chrome bars to this token keeps the cross-pane structural
+     rule continuous (see ADJACENT_BAR_BASELINE). */
+  .pane-bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    height: var(--dk-chrome-bar-h, 2.5rem);
+    box-sizing: border-box;
+  }
+
+  .pane-bar-title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    letter-spacing: var(--font-letter-spacing-normal);
+  }
+
+  .pane-body {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  /* Container owns horizontal inset; section borders run full-bleed. */
+  .pane-section {
+    padding: var(--spacing-2xl);
+  }
+
+  .pane-section + .pane-section {
+    border-top: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .pane-body-empty {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  /* "Panel toggle" glyph: small bordered rectangle with a vertical bar
+     suggesting a sidebar pane. Matches the Linear-style reference glyph. */
+  .panel-toggle-glyph {
+    display: inline-block;
+    width: 1.1em;
+    height: 0.8em;
+    border: var(--border-width-thin) solid currentColor;
+    position: relative;
+    vertical-align: middle;
+  }
+  .panel-toggle-glyph::before {
+    content: '';
+    position: absolute;
+    left: 0.25em;
+    top: 0;
+    bottom: 0;
+    width: var(--border-width-thin);
+    background: currentColor;
+  }
+
+  .event-log-title {
+    font-size: var(--font-size-2xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .event-log-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    max-height: 16em;
+    overflow-y: auto;
+  }
+
+  .event-log-list li {
+    color: var(--color-text-muted);
+  }
+
+  .event-log-list li b {
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    margin-right: var(--spacing-sm);
+  }
+
+  .matrix-title {
+    font-size: var(--font-size-2xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: var(--spacing-lg) var(--spacing-2xl);
+  }
+
+  .matrix-cell {
+    height: 360px;
+    display: flex;
+    /* No border here — the sidebar's own border-right + the nav-stack's
+       internal rules provide the structural framing. Doubled borders are
+       a BOUNDARY_OWNERSHIP violation. */
+  }
+
+  .matrix-cell-label {
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    margin-bottom: var(--spacing-xs);
+  }
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+  <div class="shell-backdrop" id="shell-backdrop"></div>
+  <div id="sidebar-mount"></div>
+  <div class="pane">
+    <div class="pane-bar">
+      <button type="button"
+              class="dk-icon-button dk-icon-button-sm"
+              id="panel-toggle"
+              aria-label="Toggle sidebar">
+        <span class="panel-toggle-glyph" aria-hidden="true"></span>
+      </button>
+      <span class="pane-bar-title" id="pane-title">Pools</span>
+    </div>
+    <div class="pane-body">
+      <section class="pane-section">
+        <div id="pane-content" class="pane-body-empty">
+          Click a sidebar item to populate this pane.
+          Use the toggle in the bar above to collapse.
+        </div>
+      </section>
+
+      <section class="pane-section">
+        <div class="event-log-title">Event Log</div>
+        <ul class="event-log-list" id="event-log"></ul>
+      </section>
+
+      <section class="pane-section">
+        <div class="matrix-title">All four states</div>
+        <div class="matrix-grid">
+          <div>
+            <div class="matrix-cell-label">Root, expanded</div>
+            <div class="matrix-cell" data-cell="re"></div>
+          </div>
+          <div>
+            <div class="matrix-cell-label">Settings, expanded</div>
+            <div class="matrix-cell" data-cell="se"></div>
+          </div>
+          <div>
+            <div class="matrix-cell-label">Root, icon</div>
+            <div class="matrix-cell" data-cell="ri"></div>
+          </div>
+          <div>
+            <div class="matrix-cell-label">Settings, icon</div>
+            <div class="matrix-cell" data-cell="si"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+const cb = '{{CACHE_BUST}}';
+const sidebarMod  = await import(`./components/sidebar.js?v=${cb}`);
+const navStackMod = await import(`./components/nav-stack.js?v=${cb}`);
+
+const LEVELS = [
+  {
+    id: 'root',
+    title: 'comphost',
+    items: [
+      { kind: 'item',           id: 'pools',    label: 'Pools',    selected: true },
+      { kind: 'item',           id: 'entities', label: 'Entities' },
+      { kind: 'item',           id: 'metrics',  label: 'Metrics' },
+      { kind: 'branch',         id: 'settings', label: 'Settings', branchTo: 'settings' },
+      { kind: 'section-header', id: 'wl',       label: 'Watchlist' },
+      { kind: 'section-item',   id: 'w1', label: 'production-east' },
+      { kind: 'section-item',   id: 'w2', label: 'staging-replicas' },
+      { kind: 'section-item',   id: 'w3', label: 'analytics-warehouse' },
+      { kind: 'section-item',   id: 'w4', label: 'edge-cache-eu (degraded)' },
+      { kind: 'section-item',   id: 'w5', label: 'metrics-ingest' },
+      { kind: 'section-item',   id: 'w6', label: 'auth-gateway' },
+    ],
+  },
+  {
+    id: 'settings',
+    title: 'Settings',
+    items: [
+      { kind: 'item', id: 'profile',   label: 'Profile', selected: true },
+      { kind: 'item', id: 'workspace', label: 'Workspace' },
+      { kind: 'item', id: 'tokens',    label: 'Tokens' },
+      { kind: 'item', id: 'agents',    label: 'Agents' },
+      { kind: 'item', id: 'billing',   label: 'Billing' },
+    ],
+  },
+];
+
+// --- Interactive shell ---
+const sidebarMount = document.getElementById('sidebar-mount');
+const paneTitle    = document.getElementById('pane-title');
+const paneContent  = document.getElementById('pane-content');
+const eventLog     = document.getElementById('event-log');
+const panelToggle  = document.getElementById('panel-toggle');
+const backdrop     = document.getElementById('shell-backdrop');
+
+const EXPANDED_WIDTH = 240;
+const ICON_WIDTH = 56;
+const BREAK_MEDIUM = 1024;
+const BREAK_NARROW = 640;
+
+const sidebar = sidebarMod.render({ width: EXPANDED_WIDTH, iconWidth: ICON_WIDTH });
+const navStack = navStackMod.render({ levels: LEVELS, initialPath: ['root'] });
+sidebar.querySelector('[data-slot="main"]').append(navStack);
+sidebarMount.append(sidebar);
+
+navStack.addEventListener('nav-stack:select', (e) => {
+  paneTitle.textContent = e.detail.label;
+  paneContent.classList.remove('pane-body-empty');
+  paneContent.textContent = `Selected: ${e.detail.label} (${e.detail.kind})`;
+  logEvent('select', e.detail);
+  // On narrow viewports the overlay should dismiss after a selection,
+  // mirroring how phone-style drawers behave.
+  if (tier() === 'narrow') {
+    userOverride = 'hidden';
+    applyState();
+  }
+});
+navStack.addEventListener('nav-stack:branch', (e) => logEvent('branch', e.detail));
+navStack.addEventListener('nav-stack:back',   (e) => logEvent('back',   e.detail));
+
+function logEvent(name, detail) {
+  const li = document.createElement('li');
+  const tag = document.createElement('b');
+  tag.textContent = `nav-stack:${name}`;
+  li.append(tag, document.createTextNode(JSON.stringify(detail)));
+  eventLog.prepend(li);
+  while (eventLog.children.length > 20) eventLog.lastChild.remove();
+}
+
+// Viewport-aware mode/displayState with user-override latch.
+// Tier transitions reset the override so each viewport gets its auto-default.
+function tier() {
+  const w = window.innerWidth;
+  if (w >= BREAK_MEDIUM) return 'wide';
+  if (w >= BREAK_NARROW) return 'medium';
+  return 'narrow';
+}
+
+function autoState(t) {
+  if (t === 'wide')   return { mode: 'inline',  displayState: 'expanded' };
+  if (t === 'medium') return { mode: 'inline',  displayState: 'icon'     };
+  return                     { mode: 'overlay', displayState: 'hidden'   };
+}
+
+// What the toggle flips to in each tier (the "the user wants to see more"
+// or "the user wants to dismiss" intent).
+function toggleTarget(current) {
+  if (current.mode === 'overlay') {
+    return current.displayState === 'hidden' ? 'expanded' : 'hidden';
+  }
+  return current.displayState === 'icon' ? 'expanded' : 'icon';
+}
+
+let currentTier = tier();
+let userOverride = null; // null | 'expanded' | 'icon' | 'hidden'
+
+function effectiveState() {
+  const auto = autoState(currentTier);
+  if (userOverride === null) return auto;
+  return { mode: auto.mode, displayState: userOverride };
+}
+
+function applyState() {
+  const s = effectiveState();
+  sidebar.classList.remove('dk-sidebar-mode-inline', 'dk-sidebar-mode-overlay');
+  sidebar.classList.add(`dk-sidebar-mode-${s.mode}`);
+  sidebar.dataset.state = s.displayState;
+  sidebar.style.width = (s.mode === 'inline' && s.displayState === 'icon')
+    ? `${ICON_WIDTH}px`
+    : `${EXPANDED_WIDTH}px`;
+  backdrop.dataset.visible = (s.mode === 'overlay' && s.displayState !== 'hidden') ? 'true' : 'false';
+}
+
+window.addEventListener('resize', () => {
+  const t = tier();
+  if (t !== currentTier) {
+    currentTier = t;
+    userOverride = null;
+    applyState();
+  }
+});
+
+panelToggle.addEventListener('click', () => {
+  userOverride = toggleTarget(effectiveState());
+  applyState();
+});
+
+backdrop.addEventListener('click', () => {
+  if (effectiveState().mode !== 'overlay') return;
+  userOverride = 'hidden';
+  applyState();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const s = effectiveState();
+  if (s.mode === 'overlay' && s.displayState !== 'hidden') {
+    userOverride = 'hidden';
+    applyState();
+  }
+});
+
+applyState();
+
+// --- Static four-cell matrix ---
+function fillCell(selector, { state, path }) {
+  const cell = document.querySelector(`[data-cell="${selector}"]`);
+  cell.innerHTML = '';
+  const sb = sidebarMod.render({ width: 240, iconWidth: 56, displayState: state });
+  const ns = navStackMod.render({ levels: LEVELS, initialPath: path });
+  sb.querySelector('[data-slot="main"]').append(ns);
+  sb.style.height = '100%';
+  cell.append(sb);
+}
+fillCell('re', { state: 'expanded', path: ['root'] });
+fillCell('se', { state: 'expanded', path: ['root', 'settings'] });
+fillCell('ri', { state: 'icon',     path: ['root'] });
+fillCell('si', { state: 'icon',     path: ['root', 'settings'] });
+</script>
+</body>
+</html>
