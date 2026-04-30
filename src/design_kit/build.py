@@ -5,10 +5,12 @@ import shutil
 import time
 from pathlib import Path
 
+from design_kit.border_audit import AuditOutcome, run_border_audit
 from design_kit.contrast_self_test import run as run_contrast_audit
 from design_kit.logging import get_logger
 from design_kit.preview import generate_preview_html
 from design_kit.token_css import generate_token_css
+from design_kit.token_leak_audit import LeakAuditOutcome, run_token_leak_audit
 
 logger = get_logger(__name__)
 
@@ -81,3 +83,33 @@ def build(tokens_path: Path, output_dir: Path) -> None:
         logger.info(f"Generated {manifest_path} ({len(manifest)} components)")
     else:
         logger.warning(f"Components directory not found: {COMPONENTS_DIR}")
+
+    leak_result = run_token_leak_audit(COMPONENTS_DIR)
+    if leak_result.outcome == LeakAuditOutcome.FAILED:
+        logger.error(
+            f"Token-leak audit found {len(leak_result.leaks)} raw-color literal(s) "
+            f"in component CSS"
+        )
+        for leak in leak_result.leaks:
+            logger.error(f"  {leak.file}:{leak.line}: {leak.value} — {leak.snippet}")
+        raise RuntimeError(
+            f"Token-leak audit found {len(leak_result.leaks)} raw-color literal(s); "
+            f"see TOKEN_DRIVEN_DESIGN — components consume colors via var(--color-*)"
+        )
+    logger.info("Token-leak audit passed")
+
+    audit = run_border_audit(output_dir)
+    if audit.outcome == AuditOutcome.FAILED:
+        logger.error(
+            f"Border audit found {len(audit.findings)} doubled-border finding(s)"
+        )
+        for f in audit.findings:
+            logger.error(f"  {f.page}: {f.detail}")
+        raise RuntimeError(
+            f"Border audit found {len(audit.findings)} doubled-border finding(s); "
+            f"see BOUNDARY_OWNERSHIP — exactly one element should own each visible edge"
+        )
+    if audit.outcome == AuditOutcome.SKIPPED:
+        logger.warning(f"Border audit skipped: {audit.reason}")
+    else:
+        logger.info("Border audit passed")
