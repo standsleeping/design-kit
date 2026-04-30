@@ -305,7 +305,7 @@
   position: fixed;
   inset: 0;
   z-index: 99;
-  background: var(--color-overlay, rgba(0, 0, 0, 0.35));
+  background: var(--color-overlay, rgba(0, 0, 0, 0.35)); /* token-leak: ok — fallback awaiting --color-overlay token */
   opacity: 0;
   transition: opacity 0.2s ease;
 }
