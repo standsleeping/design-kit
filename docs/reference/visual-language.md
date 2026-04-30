@@ -98,6 +98,36 @@ Introduce a concept, then show its configuration, then demonstrate usage. This t
 
 Multi-step procedures use numbered lists where order matters. Each step is a single action; compound steps are broken apart. Steps can contain code blocks, and each code block shows only what that step adds or changes. Avoid presenting a complete configuration at step one; build it up across steps so the reader can follow the accumulation.
 
+## Navigation Patterns
+
+### Drill-down navigation (navigation stack)
+
+Hierarchical menus follow the iOS-style navigation stack pattern: a stack of menu levels, push by tapping a row marked with a chevron (`›`), pop via a `Back` row at the top. Levels are independent — each renders a flat list of items with its own section structure. State is the path through levels, not a tree expansion. This is the model used by `nav-stack`.
+
+The stack and the visible chrome are orthogonal. A user can drill into a sublevel and then collapse the sidebar; the stack is preserved so re-expanding restores the same level. Conversely, a viewport-driven auto-collapse doesn't pop the stack.
+
+### Sidebar tri-state
+
+A collapsible sidebar has three display states, not two: `expanded` (full width with labels), `icon` (narrow strip with a single uppercase letter or glyph per row), and `hidden` (off-screen via transform in overlay mode, or zero width in inline mode). Inline mode supports `expanded` and `icon`; overlay mode supports `expanded` and `hidden`. The tri-state encoding (rather than a boolean `collapsed`) makes nonsensical combinations explicit and lets the same prop drive both inline and overlay behaviors.
+
+The state propagates to children via `[data-state]` attribute selectors. A sidebar with `data-state="icon"` causes nav-stack and similar children to render their icon-only treatment automatically — the consumer doesn't wire two props in lockstep.
+
+### Active indicator: flush left-border
+
+The current item in a sidebar nav uses a purple left-border indicator (`border-width-medium`, `color-link`) flush with the container's left edge. The indicator stays in icon mode (the row is centered around its icon, but the border indicator sits at the edge regardless). Hover and focus get muted background fills; the purple border is reserved for the active item.
+
+### Auto-collapse on viewport shrink
+
+A workspace shell with a sidebar typically auto-compresses on smaller viewports. A common breakpoint set:
+
+| Viewport | Sidebar behavior |
+|---|---|
+| ≥1024px | inline + expanded |
+| 640–1024px | inline + icon strip |
+| <640px | overlay + hidden (toggle slides it in over content) |
+
+User toggles act as a *latched override* — once the user manually picks a state, that choice wins until the viewport crosses a breakpoint, which resets the override. Selecting an item in overlay mode also auto-dismisses (phone-drawer convention).
+
 ## Token Application Guide
 
 ### When to use each axis setting

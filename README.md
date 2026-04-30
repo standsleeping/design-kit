@@ -74,3 +74,21 @@ uv run pytest
 ```
 
 The contract-tests page also runs in the browser at `/contract-tests.html` and asserts every registered component conforms to the four-export module shape. Unreachable pools are reported as warnings, not contract failures.
+
+## Build-time audits
+
+`design-kit build` runs three automated audits before exiting:
+
+| Audit | Implementation | Catches |
+|---|---|---|
+| Token-pair contrast | `src/design_kit/contrast_self_test.py` (Python, parses `tokens.css`) | Foreground/background pairs that fail WCAG ratios across themes |
+| Token leak | `src/design_kit/token_leak_audit.py` (Python, scans `components/*.css`) | Raw color literals (hex codes, `rgb()`, `hsl()`, etc.) in component CSS instead of `var(--color-*)` references — see `TOKEN_DRIVEN_DESIGN`. A trailing `/* token-leak: ok */` comment on the same line acts as an explicit allowlist for legitimate exceptions. |
+| Doubled parallel borders | `src/design_kit/border_audit.py` (headless Chromium via Playwright, runs `pages/border-audit.html`) | Two elements drawing the same edge — see `BOUNDARY_OWNERSHIP` in `system-principles` |
+
+The border audit requires Playwright with a Chromium binary. Both come with the project's dev dependencies (`uv sync`); the binary is fetched once via:
+
+```bash
+uv run playwright install chromium
+```
+
+If Playwright or the Chromium binary is unavailable, the audit is skipped with a warning and the build still completes — token-only builds in CI environments without browser tooling continue to work. A doubled-border finding fails the build (exit 1) with a locator report (page, axis, position, overlap length) so the violation is fixable from the log.
