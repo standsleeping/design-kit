@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Sticky TOC · design-kit</title>
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sticky-toc.css?{{CACHE_BUST}}">
+<style>
+  html, body { margin: 0; }
+  html { scrollbar-width: none; }
+  html::-webkit-scrollbar { display: none; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-body);
+    --mono: 0;
+    line-height: var(--font-line-height-relaxed);
+  }
+
+  article {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-lg);
+  }
+
+  article h1 {
+    font-family: var(--typography-mono);
+    --mono: 1;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    margin: 0 0 var(--spacing-lg);
+    line-height: var(--font-line-height-tight);
+  }
+
+  article h2 {
+    font-family: var(--typography-mono);
+    --mono: 1;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    margin: var(--spacing-2xl) 0 var(--spacing-md);
+    line-height: var(--font-line-height-tight);
+    scroll-margin-top: 3.5rem;
+  }
+
+  article p {
+    margin: 0 0 var(--spacing-md);
+  }
+
+  article code {
+    font-family: var(--typography-mono);
+    --mono: 1;
+    font-size: 0.92em;
+  }
+
+  .filler {
+    min-height: 80vh;
+  }
+</style>
+</head>
+<body>
+<nav id="sticky-toc-host" aria-label="Page sections"></nav>
+<article>
+  <h1 id="top">Lean by Example</h1>
+  <p>A compact tour of the Lean 4 language, drawn from Chapter 2 of <em>Theorem Proving in Lean 4</em>. Tap the bar above to expand the table of contents; tap a link to jump.</p>
+
+  <h2 id="repl">Type-checking in the REPL</h2>
+  <p>The simplest way to interact with Lean is through its REPL. Type an expression, and Lean reports its type. <code>#check 1 + 2</code> shows that the expression has type <code>Nat</code>.</p>
+  <div class="filler"></div>
+
+  <h2 id="basics">The basic types</h2>
+  <p>Lean ships with the usual primitive types: <code>Nat</code>, <code>Int</code>, <code>String</code>, <code>Bool</code>. Each is a term-level inhabitant of the type <code>Type</code>.</p>
+  <div class="filler"></div>
+
+  <h2 id="building">Building types from types</h2>
+  <p>Function types are written with arrows: <code>Nat → Nat</code>. Product types are pairs: <code>Nat × String</code>. Sum types are tagged unions: <code>Nat ⊕ String</code>.</p>
+  <div class="filler"></div>
+
+  <h2 id="application">Application and currying</h2>
+  <p>Function application is written by juxtaposition. <code>f x y</code> means <code>(f x) y</code>: apply <code>f</code> to <code>x</code>, then apply the result to <code>y</code>. All multi-argument functions are curried.</p>
+  <div class="filler"></div>
+
+  <h2 id="lambdas">Lambdas</h2>
+  <p>Anonymous functions use <code>fun</code>: <code>fun x => x + 1</code> is a function that adds one. Lambdas with multiple parameters desugar into nested single-parameter lambdas.</p>
+  <div class="filler"></div>
+
+  <h2 id="defs">Defining functions</h2>
+  <p>Top-level definitions use <code>def</code>: <code>def double (x : Nat) : Nat := 2 * x</code>. The body comes after <code>:=</code>. Lean infers types where it can.</p>
+  <div class="filler"></div>
+
+  <h2 id="universes">Types are objects</h2>
+  <p>In Lean, types are themselves values. <code>Nat</code> has type <code>Type</code>; <code>Type</code> has type <code>Type 1</code>; the universe hierarchy continues upward to avoid Russell-style paradoxes.</p>
+  <div class="filler"></div>
+
+  <h2 id="dependent">Dependent arrows and products</h2>
+  <p>Dependent function types let the return type depend on the argument: <code>(n : Nat) → Vector α n</code>. Dependent products generalize pairs to sigma types.</p>
+  <div class="filler"></div>
+
+  <h2 id="reference">Reference card</h2>
+  <p>A quick lookup table for the syntax introduced in the previous sections. Bookmark it for use while working through the exercises.</p>
+  <div class="filler"></div>
+</article>
+
+<script type="module">
+  import { render } from './components/sticky-toc.js?{{CACHE_BUST}}';
+
+  const host = document.getElementById('sticky-toc-host');
+  const { node } = render({
+    label: 'On this page',
+    items: [
+      { href: '#top',         label: 'Top',                level: 0 },
+      { href: '#repl',        label: 'REPL',               level: 0 },
+      { href: '#basics',      label: 'Basic types',        level: 0 },
+      { href: '#building',    label: 'Building types',     level: 0 },
+      { href: '#application', label: 'Application',        level: 0 },
+      { href: '#lambdas',     label: 'Lambdas',            level: 0 },
+      { href: '#defs',        label: 'Defining functions', level: 0 },
+      { href: '#universes',   label: 'Types as objects',   level: 0 },
+      { href: '#dependent',   label: 'Dependent types',    level: 0 },
+      { href: '#reference',   label: 'Reference card',     level: 0 },
+    ],
+  });
+  host.replaceWith(node);
+</script>
+</body>
+</html>
