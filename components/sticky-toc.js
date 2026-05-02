@@ -59,6 +59,20 @@ export const variants = [
       ],
     },
   },
+  {
+    name: 'with-tldr',
+    description: 'Each item carries an optional one-line summary, shown beneath the active item',
+    props: {
+      expanded: true,
+      title: 'Propositions as Types',
+      items: [
+        { href: '#s1', label: 'Passage 1', level: 0, tldr: 'Three separate languages: code, assertions, proofs' },
+        { href: '#s2', label: 'Passage 2', level: 0, tldr: 'Dependent type theory unifies all three' },
+        { href: '#s3', label: 'Passage 3', level: 0, tldr: 'Prop and constructors build claims from claims' },
+        { href: '#s4', label: 'Passage 4', level: 0, tldr: 'Proof p: a type for each proposition' },
+      ],
+    },
+  },
 ];
 
 export function render(props = {}) {
@@ -207,6 +221,14 @@ export function render(props = {}) {
     });
 
     li.append(link);
+
+    if (item.tldr) {
+      const tldr = document.createElement('span');
+      tldr.className = 'dk-sticky-toc-tldr';
+      tldr.textContent = item.tldr;
+      li.append(tldr);
+    }
+
     list.append(li);
 
     const id = (item.href ?? '').replace(/^#/, '');

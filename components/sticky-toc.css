@@ -138,6 +138,20 @@
   outline-offset: -2px;
 }
 
+.dk-sticky-toc-tldr {
+  display: none;
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--font-line-height-base);
+  color: var(--color-text);
+  padding: 0 var(--spacing-lg) var(--spacing-sm) calc(var(--spacing-lg) + var(--spacing-md));
+}
+
+.dk-sticky-toc-item-active .dk-sticky-toc-tldr {
+  display: block;
+}
+
 .dk-sticky-toc-dismiss {
   align-self: flex-end;
   display: inline-flex;
@@ -206,6 +220,10 @@
   .dk-sticky-toc-responsive .dk-sticky-toc-link {
     font-size: var(--font-size-xs);
     padding: 2px 0 2px var(--spacing-md);
+  }
+
+  .dk-sticky-toc-responsive .dk-sticky-toc-tldr {
+    padding: 2px 0 var(--spacing-sm) var(--spacing-xl);
   }
 
   .dk-sticky-toc-responsive .dk-sticky-toc-dismiss {
