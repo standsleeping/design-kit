@@ -12,6 +12,7 @@ export const propTypes = {
   expanded: { type: 'boolean', default: false },
   responsive: { type: 'boolean', default: false },
   title: { type: 'string', default: '' },
+  back: { type: 'object', default: null },
 };
 
 export const variants = [
@@ -60,6 +61,21 @@ export const variants = [
     },
   },
   {
+    name: 'with-back-link',
+    description: 'A back-link slot above the items list, separated by a thin border',
+    props: {
+      expanded: true,
+      title: 'Lean by Example',
+      back: { href: '/', label: 'Posts' },
+      items: [
+        { href: '#top', label: 'Top', level: 0 },
+        { href: '#repl', label: 'REPL', level: 0 },
+        { href: '#basics', label: 'Basic types', level: 0 },
+        { href: '#building', label: 'Building types', level: 0 },
+      ],
+    },
+  },
+  {
     name: 'with-tldr',
     description: 'Each item carries an optional one-line summary, shown beneath the active item',
     props: {
@@ -81,6 +97,7 @@ export function render(props = {}) {
   let expanded = props.expanded ?? propTypes.expanded.default;
   const responsive = props.responsive ?? propTypes.responsive.default;
   const title = props.title ?? propTypes.title.default;
+  const back = props.back ?? propTypes.back.default;
   const panelId = `dk-sticky-toc-panel-${++nextId}`;
 
   const root = document.createElement('nav');
@@ -109,6 +126,14 @@ export function render(props = {}) {
   const panel = document.createElement('div');
   panel.className = 'dk-sticky-toc-panel';
   panel.id = panelId;
+
+  if (back && back.href) {
+    const backEl = document.createElement('a');
+    backEl.className = 'dk-sticky-toc-back';
+    backEl.href = back.href;
+    backEl.textContent = back.label ?? 'Back';
+    panel.append(backEl);
+  }
 
   if (title) {
     const titleEl = document.createElement('div');

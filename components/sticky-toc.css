@@ -185,6 +185,27 @@
   padding: 0 0 var(--spacing-md);
 }
 
+.dk-sticky-toc-back {
+  display: block;
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide, 0.05em);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+  transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
+}
+
+.dk-sticky-toc-back:hover { color: var(--color-text); }
+.dk-sticky-toc-back:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+}
+.dk-sticky-toc-back::before { content: "\2190 \00a0"; }
+
 /* Responsive layout: at wide viewports, instances marked
    .dk-sticky-toc-responsive switch from a sticky top bar to a fixed
    left rail. Same DOM, same items, same active-tracking. */
@@ -232,5 +253,10 @@
 
   .dk-sticky-toc-responsive .dk-sticky-toc-title {
     display: block;
+  }
+
+  .dk-sticky-toc-responsive .dk-sticky-toc-back {
+    padding: 0 0 var(--spacing-md);
+    margin-bottom: var(--spacing-md);
   }
 }
