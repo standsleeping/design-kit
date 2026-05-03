@@ -37,6 +37,11 @@
   border-radius: var(--radius-sm);
 }
 
+.dk-icon-button-sm .dk-icon {
+  width: var(--font-size-sm);
+  height: var(--font-size-sm);
+}
+
 .dk-icon-button-default {
   width: 32px;
   height: 32px;
