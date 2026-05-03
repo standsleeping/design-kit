@@ -7,6 +7,7 @@ from pathlib import Path
 
 from design_kit.border_audit import AuditOutcome, run_border_audit
 from design_kit.contrast_self_test import run as run_contrast_audit
+from design_kit.icon_registry import REGISTRY_FILENAME, generate_registry
 from design_kit.logging import get_logger
 from design_kit.preview import generate_preview_html
 from design_kit.token_css import generate_token_css
@@ -18,7 +19,7 @@ COMPONENTS_DIR = Path("components")
 PAGES_DIR = Path("pages")
 # Runtime / infrastructure JS files that live alongside components but are
 # not themselves contract-conformant components.
-NON_COMPONENT_JS = {"storybook.js"}
+NON_COMPONENT_JS = {"storybook.js", REGISTRY_FILENAME}
 
 
 def build(tokens_path: Path, output_dir: Path) -> None:
@@ -27,6 +28,11 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     Also copies component JS files so the preview can import them.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    if COMPONENTS_DIR.is_dir() and (COMPONENTS_DIR / "icons").is_dir():
+        generate_registry(COMPONENTS_DIR)
+    else:
+        logger.warning("Skipping icon registry: components/icons/ not found")
 
     css = generate_token_css(tokens_path)
     css_path = output_dir / "tokens.css"

@@ -318,6 +318,7 @@ UTILITIES_LAYER = """\
   .border-b { border-bottom: var(--border-width-thin) solid var(--color-border); }
   .border-b-heavy { border-bottom: var(--border-width-medium) solid var(--color-gray-400); }
   .hover-bg:hover { background: var(--color-hover-bg); }
+  .dk-icon { width: 1em; height: 1em; display: inline-block; vertical-align: -0.125em; flex-shrink: 0; fill: currentColor; }
 }"""
 
 

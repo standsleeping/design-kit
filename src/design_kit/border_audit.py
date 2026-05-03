@@ -148,7 +148,10 @@ def run_border_audit(dist_dir: Path) -> AuditResult:
                         "detail: r.children[2].textContent.trim() }))"
                     )
                     return AuditResult.failed(
-                        [BorderFinding(page=r["page"], detail=r["detail"]) for r in rows]
+                        [
+                            BorderFinding(page=r["page"], detail=r["detail"])
+                            for r in rows
+                        ]
                     )
                 finally:
                     browser.close()
