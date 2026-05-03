@@ -92,3 +92,8 @@ uv run playwright install chromium
 ```
 
 If Playwright or the Chromium binary is unavailable, the audit is skipped with a warning and the build still completes — token-only builds in CI environments without browser tooling continue to work. A doubled-border finding fails the build (exit 1) with a locator report (page, axis, position, overlap length) so the violation is fixable from the log.
+
+## Credits
+
+- **Radix Icons** — Curated 28-icon subset under `components/icons/`. MIT License, Copyright © 2022 WorkOS. See `components/icons/LICENSE` and the upstream project: https://github.com/radix-ui/icons
+- **Recursive** — Variable font powering all typography. Designed by Stephen Nixon / Arrow Type. SIL Open Font License 1.1; loaded via Google Fonts (not redistributed). https://www.recursive.design/
