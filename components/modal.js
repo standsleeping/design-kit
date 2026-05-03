@@ -1,3 +1,5 @@
+import { icon as buildIcon } from './icons.js';
+
 let nextId = 0;
 
 export const metadata = {
@@ -74,7 +76,8 @@ export function render(props = {}) {
   closeBtn.type = 'button';
   closeBtn.className = 'dk-modal-close';
   closeBtn.setAttribute('aria-label', 'Close');
-  closeBtn.textContent = '\u2715';
+  const closeSvg = buildIcon('cross-1');
+  if (closeSvg) closeBtn.append(closeSvg); else closeBtn.textContent = '\u2715';
 
   header.append(titleEl, closeBtn);
 

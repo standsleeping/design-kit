@@ -66,8 +66,8 @@ export const variants = [
     props: { width: 240, displayState: 'icon' },
     slots: {
       main: [
-        { component: 'MenuItem', props: { label: 'Inbox', icon: '⊞' } },
-        { component: 'MenuItem', props: { label: 'Users', icon: '☻' } },
+        { component: 'MenuItem', props: { label: 'Inbox', icon: 'bell' } },
+        { component: 'MenuItem', props: { label: 'Users', icon: 'gear' } },
       ],
     },
   },

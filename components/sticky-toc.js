@@ -1,3 +1,5 @@
+import { icon as buildIcon } from './icons.js';
+
 let nextId = 0;
 
 export const metadata = {
@@ -118,7 +120,8 @@ export function render(props = {}) {
   const chevron = document.createElement('span');
   chevron.className = 'dk-sticky-toc-chevron';
   chevron.setAttribute('aria-hidden', 'true');
-  chevron.textContent = '[+]';
+  const expandSvg = buildIcon('chevron-down');
+  if (expandSvg) chevron.append(expandSvg); else chevron.textContent = '[+]';
 
   summary.append(currentEl, chevron);
   root.append(summary);
@@ -131,7 +134,12 @@ export function render(props = {}) {
     const backEl = document.createElement('a');
     backEl.className = 'dk-sticky-toc-back';
     backEl.href = back.href;
-    backEl.textContent = back.label ?? 'Back';
+    const backSvg = buildIcon('arrow-left');
+    if (backSvg) backEl.append(backSvg);
+    const backLabel = document.createElement('span');
+    backLabel.className = 'dk-sticky-toc-back-label';
+    backLabel.textContent = back.label ?? 'Back';
+    backEl.append(backLabel);
     panel.append(backEl);
   }
 
@@ -154,7 +162,8 @@ export function render(props = {}) {
   const dismissIcon = document.createElement('span');
   dismissIcon.className = 'dk-sticky-toc-chevron';
   dismissIcon.setAttribute('aria-hidden', 'true');
-  dismissIcon.textContent = '[−]';
+  const dismissSvg = buildIcon('chevron-up');
+  if (dismissSvg) dismissIcon.append(dismissSvg); else dismissIcon.textContent = '[−]';
   dismiss.append(dismissIcon);
   panel.append(dismiss);
 

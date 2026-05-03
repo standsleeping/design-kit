@@ -1,3 +1,5 @@
+import { icon as buildIcon } from './icons.js';
+
 export const metadata = {
   name: 'ResponsiveTable',
   description: 'Mobile-first table with column-priority hiding, card-stack fallback, sticky headers, horizontal scroll affordances, annotation-aware cells (sentences + sidenotes + presence dots), and configurable width strategy',
@@ -464,7 +466,8 @@ export function render(props = {}) {
     close.className = 'dk-sn-close';
     close.dataset.testid = 'sidenote-close';
     close.setAttribute('aria-label', 'Close sidenote');
-    close.textContent = '×';
+    const closeSvg = buildIcon('cross-1');
+    if (closeSvg) close.append(closeSvg); else close.textContent = '×';
     close.addEventListener('click', closeSidenote);
     header.append(close);
     popup.append(header);

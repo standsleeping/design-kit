@@ -1,6 +1,8 @@
+import { icon as buildIcon } from './icons.js';
+
 export const metadata = {
   name: 'MenuItem',
-  description: 'Selectable navigation row with optional icon',
+  description: 'Selectable navigation row with optional icon. Pass a Radix icon name or any string for a literal glyph.',
   category: 'navigation',
 };
 
@@ -15,7 +17,7 @@ export const variants = [
   { name: 'default', description: 'Default state', props: { label: 'Menu Item' } },
   { name: 'selected', description: 'Currently selected item', props: { label: 'Selected Item', selected: true } },
   { name: 'disabled', description: 'Disabled/inactive item', props: { label: 'Disabled Item', disabled: true } },
-  { name: 'with-icon', description: 'Menu item with leading icon', props: { label: 'Dashboard', icon: '▸' } },
+  { name: 'with-icon', description: 'Menu item with leading Radix icon', props: { label: 'Dashboard', icon: 'file-text' } },
 ];
 
 export function render(props = {}) {
@@ -33,7 +35,12 @@ export function render(props = {}) {
     const iconEl = document.createElement('span');
     iconEl.className = 'dk-menu-item-icon';
     iconEl.setAttribute('aria-hidden', 'true');
-    iconEl.textContent = icon;
+    const svg = buildIcon(icon);
+    if (svg) {
+      iconEl.append(svg);
+    } else {
+      iconEl.textContent = icon;
+    }
     root.append(iconEl);
   }
 

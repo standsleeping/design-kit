@@ -186,7 +186,9 @@
 }
 
 .dk-sticky-toc-back {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
@@ -204,7 +206,6 @@
   outline: 2px solid var(--color-focus-ring);
   outline-offset: -2px;
 }
-.dk-sticky-toc-back::before { content: "\2190 \00a0"; }
 
 /* Responsive layout: at wide viewports, instances marked
    .dk-sticky-toc-responsive switch from a sticky top bar to a fixed

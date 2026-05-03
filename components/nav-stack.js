@@ -1,3 +1,5 @@
+import { icon as buildIcon } from './icons.js';
+
 export const metadata = {
   name: 'NavStack',
   description: 'Drill-down navigation: a stack of menu levels with branch (push) and back (pop) semantics; renders icon-only when its own displayState is "icon" or when nested inside a sidebar in icon state',
@@ -9,7 +11,7 @@ export const propTypes = {
   initialPath: { type: 'array', default: [] },
   displayState: { type: 'enum', default: 'expanded', options: ['expanded', 'icon'] },
   backLabel: { type: 'string', default: 'Back' },
-  backIcon: { type: 'string', default: '‹' },
+  backIcon: { type: 'string', default: 'chevron-left' },
 };
 
 const DEMO_LEVELS = [
@@ -17,21 +19,21 @@ const DEMO_LEVELS = [
     id: 'root',
     title: 'Workspace',
     items: [
-      { kind: 'item',           id: 'pools',    label: 'Pools', selected: true },
-      { kind: 'item',           id: 'entities', label: 'Entities' },
-      { kind: 'branch',         id: 'settings', label: 'Settings', branchTo: 'settings' },
+      { kind: 'item',           id: 'pools',    label: 'Pools',    icon: 'dots-horizontal', selected: true },
+      { kind: 'item',           id: 'entities', label: 'Entities', icon: 'file-text' },
+      { kind: 'branch',         id: 'settings', label: 'Settings', icon: 'gear', branchTo: 'settings' },
       { kind: 'section-header', id: 'wl',       label: 'Watchlist' },
-      { kind: 'section-item',   id: 'w1', label: 'production-east' },
-      { kind: 'section-item',   id: 'w2', label: 'staging-replicas' },
+      { kind: 'section-item',   id: 'w1', label: 'production-east',  icon: 'bell' },
+      { kind: 'section-item',   id: 'w2', label: 'staging-replicas', icon: 'bell' },
     ],
   },
   {
     id: 'settings',
     title: 'Settings',
     items: [
-      { kind: 'item', id: 'profile',   label: 'Profile', selected: true },
-      { kind: 'item', id: 'workspace', label: 'Workspace' },
-      { kind: 'item', id: 'tokens',    label: 'Tokens' },
+      { kind: 'item', id: 'profile',   label: 'Profile',   icon: 'file-text', selected: true },
+      { kind: 'item', id: 'workspace', label: 'Workspace', icon: 'code' },
+      { kind: 'item', id: 'tokens',    label: 'Tokens',    icon: 'link-1' },
     ],
   },
 ];
@@ -75,7 +77,8 @@ function renderHeader(root, level, depth, backLabel, backIcon) {
     const iconEl = document.createElement('span');
     iconEl.className = 'dk-nav-stack-back-icon';
     iconEl.setAttribute('aria-hidden', 'true');
-    iconEl.textContent = backIcon;
+    const backSvg = buildIcon(backIcon);
+    if (backSvg) iconEl.append(backSvg); else iconEl.textContent = backIcon;
     const labelEl = document.createElement('span');
     labelEl.className = 'dk-nav-stack-back-label';
     labelEl.textContent = backLabel;
@@ -122,7 +125,16 @@ function renderItem(root, item) {
   const iconEl = document.createElement('span');
   iconEl.className = 'dk-nav-stack-icon';
   iconEl.setAttribute('aria-hidden', 'true');
-  iconEl.textContent = item.icon ?? (item.label ?? '').charAt(0).toUpperCase();
+  if (item.icon) {
+    const svg = buildIcon(item.icon);
+    if (svg) {
+      iconEl.append(svg);
+    } else {
+      iconEl.textContent = item.icon;
+    }
+  } else {
+    iconEl.textContent = (item.label ?? '').charAt(0).toUpperCase();
+  }
   btn.append(iconEl);
 
   const labelEl = document.createElement('span');
@@ -134,7 +146,8 @@ function renderItem(root, item) {
     const chev = document.createElement('span');
     chev.className = 'dk-nav-stack-chevron';
     chev.setAttribute('aria-hidden', 'true');
-    chev.textContent = '›';
+    const chevSvg = buildIcon('chevron-right');
+    if (chevSvg) chev.append(chevSvg); else chev.textContent = '›';
     btn.append(chev);
   }
 
