@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from design_kit.icon_registry import CURATED_ICONS, ICON_CATEGORIES, normalise_svg
 from design_kit.token_css import GOOGLE_FONTS_LINK
 
 
@@ -20,6 +21,7 @@ def generate_preview_html() -> str:
         _section_spacing(),
         _section_borders(),
         _section_tables(),
+        _section_icons(),
     ]
     main_content = "\n".join(sections)
 
@@ -239,6 +241,45 @@ def generate_preview_html() -> str:
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
     }}
+    .icon-category-blurb {{
+      font-family: var(--typography-mono);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      margin-bottom: 0.5lh;
+    }}
+    .icon-table {{
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--typography-mono);
+      font-size: var(--font-size-xs);
+    }}
+    .icon-table th,
+    .icon-table td {{
+      text-align: left;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-bottom: var(--border-width-thin) solid var(--color-border);
+      vertical-align: top;
+    }}
+    .icon-table th {{
+      font-weight: var(--font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: var(--font-letter-spacing-wide);
+      color: var(--color-text-muted);
+    }}
+    .icon-table td.icon-cell {{
+      width: 32px;
+      font-size: 20px;
+      color: var(--color-text);
+      text-align: center;
+    }}
+    .icon-table td.icon-name {{
+      width: 12em;
+      color: var(--color-text);
+    }}
+    .icon-table td.icon-guidance {{
+      --mono: 0;
+      color: var(--color-text);
+    }}
   </style>
 </head>
 <body>
@@ -287,6 +328,7 @@ def _sidebar() -> str:
         <a class="nav-link" href="#spacing">Spacing</a>
         <a class="nav-link" href="#borders">Borders</a>
         <a class="nav-link" href="#tables">Tables</a>
+        <a class="nav-link" href="#icons">Icons</a>
       </div>
 
       <div class="nav-section">
@@ -635,6 +677,81 @@ def _section_borders() -> str:
         </div>
       </div>
 
+    </div>"""
+
+
+def _section_icons() -> str:
+    """Render the curated Radix icon registry grouped by category.
+
+    Reads each SVG from components/icons/ and inlines it so the preview
+    is self-contained (no extra fetches at view time).
+    """
+    from pathlib import Path
+
+    icons_dir = Path("components") / "icons"
+
+    by_category: dict[str, list[tuple[str, str]]] = {}
+    for entry in CURATED_ICONS:
+        by_category.setdefault(entry.category, []).append((entry.name, entry.guidance))
+
+    blocks: list[str] = []
+    for category_name, category_blurb in ICON_CATEGORIES:
+        rows = by_category.get(category_name, [])
+        if not rows:
+            continue
+        row_html: list[str] = []
+        for name, guidance in rows:
+            svg_path = icons_dir / f"{name}.svg"
+            svg = (
+                normalise_svg(svg_path.read_text(encoding="utf-8"), with_class=True)
+                if svg_path.is_file()
+                else ""
+            )
+            row_html.append(
+                f"""\
+              <tr>
+                <td class="icon-cell">{svg}</td>
+                <td class="icon-name"><code>{name}</code></td>
+                <td class="icon-guidance">{guidance}</td>
+              </tr>"""
+            )
+        rows_block = "\n".join(row_html)
+        blocks.append(
+            f"""\
+      <div class="subsection">
+        <div class="subsection-heading">{category_name}</div>
+        <div class="icon-category-blurb">{category_blurb}</div>
+        <table class="icon-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>When to use</th>
+            </tr>
+          </thead>
+          <tbody>
+{rows_block}
+          </tbody>
+        </table>
+      </div>"""
+        )
+
+    body = "\n\n".join(blocks)
+
+    return f"""\
+    <div class="section">
+      {_heading("icons", "Icons")}
+
+      <div class="subsection">
+        <div class="demo-label">
+          Curated Radix Icons (MIT, WorkOS). Pass a name (e.g. <code>chevron-down</code>)
+          to any component that accepts an <code>icon</code> prop;
+          unknown names fall back to literal text. Color via <code>currentColor</code>;
+          size via the parent's <code>font-size</code> through <code>.dk-icon</code>.
+        </div>
+      </div>
+
+{body}
     </div>"""
 
 
