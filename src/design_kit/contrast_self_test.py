@@ -42,6 +42,7 @@ STANDARD_PAIRS: tuple[Pair, ...] = (
     ),
     Pair("color-hover-bg", "color-text", 4.5, "text readable on hover"),
     Pair("color-hover-bg", "color-link", 4.5, "link readable on hover"),
+    Pair("color-hover-bg", "color-border", 1.3, "row separator visible under hover fill"),
     # Selected state composition — same contract, different surface
     Pair(
         "color-selected-bg",
@@ -50,6 +51,7 @@ STANDARD_PAIRS: tuple[Pair, ...] = (
         "selected outline visible on selected fill",
     ),
     Pair("color-selected-bg", "color-text", 4.5, "text readable on selected"),
+    Pair("color-selected-bg", "color-border", 1.3, "row separator visible under selected fill"),
 )
 
 
@@ -64,6 +66,7 @@ CODE_PAIRS: tuple[Pair, ...] = (
     Pair("color-code-bg", "color-syntax-function", 4.5, "function name readable"),
     Pair("color-code-bg", "color-syntax-comment", 3.0, "comment readable (softer)"),
     Pair("color-code-bg", "color-syntax-punctuation", 3.0, "punctuation readable"),
+    Pair("color-code-bg", "color-border", 1.3, "boundary-rail visible on code-bg surface"),
 )
 
 
@@ -95,6 +98,9 @@ _THEME_FLOOR_OVERRIDES: dict[str, dict[tuple[str, str], float]] = {
         ("color-code-bg", "color-syntax-string"): 2.5,
         ("color-code-bg", "color-syntax-function"): 2.9,
         ("color-code-bg", "color-syntax-comment"): 2.0,
+        ("color-code-bg", "color-border"): 1.0,
+        ("color-hover-bg", "color-border"): 1.0,
+        ("color-selected-bg", "color-border"): 1.0,
     },
 }
 
