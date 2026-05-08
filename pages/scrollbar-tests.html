@@ -124,16 +124,17 @@
      The track is always rendered AND tinted, so the rail is visible whether
      or not content overflows. Hover cut-off then reads as "ends at the
      scrollbar," not "truncated."
-     scrollbar-color (standard CSS, thumb track) drives Chromium 121+ and
-     Firefox; ::-webkit-scrollbar-* fall back for older WebKit / Safari.
+     Style only via ::-webkit-scrollbar-*: setting scrollbar-color or
+     scrollbar-width on Chromium 121+ disables these pseudos and falls back
+     to the platform default, which on macOS is an overlay bar with no
+     resting-state track. Firefox renders its native scrollbar without the
+     tint — the documented degradation.
      Track tinted via --color-border, thumb via --color-hover-outline; both
      pairs are contrast-audited against --color-bg in every theme. */
   .scroll-permanent {
     flex: 1;
     min-height: 0;
     overflow-y: scroll;
-    scrollbar-color: var(--color-hover-outline) var(--color-border);
-    scrollbar-width: thin;
   }
   .scroll-permanent::-webkit-scrollbar { width: 8px; }
   .scroll-permanent::-webkit-scrollbar-track { background: var(--color-border); }
