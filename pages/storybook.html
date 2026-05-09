@@ -82,6 +82,9 @@
   .storybook-nav,
   .storybook-inspector {
     overflow-y: auto;
+    /* Clip resize-handle's intentional 3px overflow (right: -3px / left: -3px)
+       so it doesn't trigger horizontal scroll. */
+    overflow-x: hidden;
     padding: var(--spacing-lg);
     font-family: var(--typography-mono);
     font-size: var(--font-size-xs);
@@ -214,8 +217,20 @@
 
   .storybook-component-link.is-active {
     color: var(--color-link);
-    background: var(--color-focus-ring-light);
+    background: var(--color-selected-bg);
     border-left-color: var(--color-link);
+  }
+
+  .storybook-component-link-has-example {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+  }
+
+  .storybook-component-link-example-marker {
+    color: var(--color-link);
+    font-weight: var(--font-weight-semibold);
   }
 
   .storybook-width-control {
@@ -253,6 +268,29 @@
     color: var(--color-text);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
+  }
+
+  .storybook-component-example {
+    font-family: inherit;
+    font-size: inherit;
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-link);
+    text-decoration: none;
+    border-bottom: var(--border-width-thin) solid transparent;
+  }
+
+  .storybook-component-example:hover {
+    border-bottom-color: var(--color-link);
+  }
+
+  .storybook-component-example:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .storybook-component-example[hidden] {
+    display: none;
   }
 
   .storybook-axes-control {
@@ -641,6 +679,7 @@
       </label>
       <input type="number" min="0" max="800" value="0" data-storybook-height-number placeholder="auto">
       <span class="storybook-component-name" data-storybook-component-name></span>
+      <a class="storybook-component-example" data-storybook-component-example target="_blank" rel="noopener noreferrer" hidden></a>
     </div>
     <div class="storybook-axes-control" aria-label="Font axes">
       <label>
