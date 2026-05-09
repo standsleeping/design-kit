@@ -7,6 +7,10 @@ from pathlib import Path
 
 from design_kit.border_audit import AuditOutcome, run_border_audit
 from design_kit.contrast_self_test import run as run_contrast_audit
+from design_kit.focus_ring_audit import (
+    FocusRingAuditOutcome,
+    run_focus_ring_audit,
+)
 from design_kit.icon_registry import REGISTRY_FILENAME, generate_registry
 from design_kit.logging import get_logger
 from design_kit.preview import generate_preview_html
@@ -103,6 +107,22 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             f"see TOKEN_DRIVEN_DESIGN — components consume colors via var(--color-*)"
         )
     logger.info("Token-leak audit passed")
+
+    focus_result = run_focus_ring_audit(COMPONENTS_DIR)
+    if focus_result.outcome == FocusRingAuditOutcome.FAILED:
+        logger.error(
+            f"Focus-ring audit found {len(focus_result.violations)} outwardly "
+            f"offset focus ring(s) in component CSS"
+        )
+        for v in focus_result.violations:
+            logger.error(f"  {v.file}:{v.line}: {v.selector} — {v.snippet}")
+        raise RuntimeError(
+            f"Focus-ring audit found {len(focus_result.violations)} outwardly "
+            f"offset focus ring(s); see FOCUS_RING_INSIDE_CLIPPED_CONTAINER — "
+            f"use negative outline-offset, or mark genuinely standalone "
+            f"controls with /* focus-ring: standalone */"
+        )
+    logger.info("Focus-ring audit passed")
 
     audit = run_border_audit(output_dir)
     if audit.outcome == AuditOutcome.FAILED:
