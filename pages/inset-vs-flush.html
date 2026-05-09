@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Inset vs Flush · design-kit</title>
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/luminance-toggle.css?{{CACHE_BUST}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+  body {
+    font-family: var(--typography-mono);
+    --mono: 1;
+    color: var(--color-text);
+    background: var(--color-bg);
+  }
+
+  /* ---- Page shell ---- */
+  .demo {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .demo-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    flex-shrink: 0;
+  }
+  .demo-title {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+  .demo-controls { margin-left: auto; }
+
+  .demo-split {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 0;
+  }
+
+  /* ---- Pane (a content surface — inset by definition) ---- */
+  .pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .pane + .pane {
+    border-left: var(--border-width-thin) solid var(--color-border);
+  }
+  /* Boundary-rail demands a visible boundary; the scrollbar sits flush
+     against this rule, completing the "scrollbar IS the column edge" contract. */
+  .pane-flush {
+    border-right: var(--border-width-thin) solid var(--color-border);
+  }
+  .pane-header {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    flex-shrink: 0;
+  }
+  .pane-eyebrow {
+    font-size: var(--font-size-2xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-xs);
+  }
+  .pane-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin: 0;
+    line-height: var(--font-line-height-tight);
+  }
+  .pane-tagline {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin: var(--spacing-sm) 0 0;
+    --mono: 0;
+    line-height: var(--font-line-height-relaxed);
+  }
+  .pane-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  /* Each pane embodies its mode at every level, including its own scrollbar. */
+  .pane-inset .pane-body {
+    scrollbar-gutter: stable;
+  }
+  .pane-flush .pane-body {
+    overflow-y: scroll;
+    scrollbar-color: var(--color-hover-outline) var(--color-border);
+    scrollbar-width: thin;
+  }
+  .pane-flush .pane-body::-webkit-scrollbar { width: 8px; }
+  .pane-flush .pane-body::-webkit-scrollbar-track { background: var(--color-border); }
+  .pane-flush .pane-body::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
+
+  /* ---- Section inside a pane ---- */
+  .section {
+    padding: var(--spacing-xl);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+  }
+  .section-label {
+    font-size: var(--font-size-2xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-md);
+  }
+  .section-blurb {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin: calc(var(--spacing-md) * -1 + var(--spacing-xs)) 0 var(--spacing-md);
+    --mono: 0;
+    line-height: var(--font-line-height-relaxed);
+  }
+
+  /* ============================================================
+     INSET TREATMENT (left pane)
+     ============================================================ */
+
+  .inset-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  .inset-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border: var(--border-width-thin) solid var(--color-border);
+    background: var(--color-bg);
+    font-size: var(--font-size-sm);
+  }
+  .inset-row-active {
+    border-color: var(--color-link);
+    background: var(--color-selected-bg);
+    color: var(--color-link);
+  }
+  .inset-row-meta {
+    margin-left: auto;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  /* Inset scroll surface — invisible-gutter scrollbar mode.
+     The bordered card owns its own boundary; the scrollbar lives inside.
+     Recessed background (code-bg) so the card surface reads against the
+     section bg, not just via a 1px outline. */
+  .inset-scroll {
+    border: var(--border-width-thin) solid var(--color-border);
+    background: var(--color-code-bg);
+    max-height: 220px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+  .inset-scroll-row {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-size: var(--font-size-xs);
+    display: flex;
+    justify-content: space-between;
+  }
+  .inset-scroll-row:last-child { border-bottom: none; }
+  .inset-scroll-row span:last-child {
+    color: var(--color-text-muted);
+  }
+
+  /* ============================================================
+     FLUSH TREATMENT (right pane)
+     ============================================================ */
+
+  /* Flush list extends edge-to-edge by reversing the section's horizontal
+     padding; rows then own that horizontal inset themselves. */
+  .flush-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0 calc(var(--spacing-xl) * -1);
+  }
+  .flush-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-left: var(--border-width-medium) solid transparent;
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    background: transparent;
+    font-size: var(--font-size-sm);
+  }
+  .flush-row:last-child { border-bottom: none; }
+  .flush-row-active {
+    border-left-color: var(--color-link);
+    background: var(--color-selected-bg);
+    color: var(--color-link);
+  }
+  .flush-row-meta {
+    margin-left: auto;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  /* Frame holds the top/bottom rules; they span the full pane width
+     (including the dead zone to the right of the inner scrollbar). */
+  .flush-scroll-frame {
+    border-top: var(--border-width-thin) solid var(--color-border);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    margin: var(--spacing-md) calc(var(--spacing-xl) * -1) 0;
+  }
+
+  /* Nested boundary-rail inside a flush column — same gutter colors as the
+     pane's outer rail (inherited via scrollbar-color). The 2rem right margin
+     creates the mandatory dead zone between the two rails so they don't read
+     as a single thickened bar (visual-language §Scroll containers). */
+  .flush-scroll {
+    display: flex;
+    flex-direction: column;
+    max-height: 220px;
+    overflow-y: scroll;
+    margin-right: var(--spacing-3xl);
+  }
+  .flush-scroll::-webkit-scrollbar { width: 8px; }
+  .flush-scroll::-webkit-scrollbar-track { background: var(--color-border); }
+  .flush-scroll::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
+
+  /* Section containing the frame surrenders its own bottom padding+border
+     to the frame; the contract that follows surrenders its top padding so
+     it butts up against the frame's bottom rule. */
+  .section-frame-host {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .section-after-frame {
+    padding-top: 0;
+  }
+  .flush-scroll-row {
+    padding: var(--spacing-sm) var(--spacing-xl);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-size: var(--font-size-xs);
+    display: flex;
+    justify-content: space-between;
+  }
+  .flush-scroll-row:last-child { border-bottom: none; }
+  .flush-scroll-row span:last-child {
+    color: var(--color-text-muted);
+  }
+
+  /* ---- Contract footer ---- */
+  .contract {
+    padding: var(--spacing-xl);
+  }
+  .contract dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--spacing-xs) var(--spacing-md);
+    margin: 0;
+  }
+  .contract dt {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+  }
+  .contract dd {
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+<div class="demo">
+  <header class="demo-header">
+    <span class="demo-title">Inset vs Flush</span>
+    <div class="demo-controls" id="luminance-mount" aria-label="Luminance mode"></div>
+  </header>
+
+  <div class="demo-split">
+
+    <!-- ============= LEFT: INSET ============= -->
+    <section class="pane pane-inset">
+      <header class="pane-header">
+        <div class="pane-eyebrow">Mode A · Surfaces</div>
+        <h2 class="pane-title">Inset</h2>
+        <p class="pane-tagline">Bounded objects with four borders, square corners, square internal padding. Each owns its boundary and floats in its parent's gutter.</p>
+      </header>
+
+      <div class="pane-body">
+
+        <section class="section">
+          <div class="section-label">Same rows · inset cards</div>
+          <p class="section-blurb">Each row carries its own four-side border. Siblings are separated by gutter, not by a shared rule.</p>
+          <div class="inset-list">
+            <div class="inset-row inset-row-active">Pools <span class="inset-row-meta">12</span></div>
+            <div class="inset-row">Entities <span class="inset-row-meta">348</span></div>
+            <div class="inset-row">Settings <span class="inset-row-meta">›</span></div>
+            <div class="inset-row">production-east <span class="inset-row-meta">healthy</span></div>
+            <div class="inset-row">staging-replicas <span class="inset-row-meta">degraded</span></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-label">Invisible-gutter scrollbar</div>
+          <p class="section-blurb">Bar appears intermittently inside the bordered card. <code>scrollbar-gutter: stable</code> reserves the space so layout never shifts. Inherits the html-level transparent track.</p>
+          <div class="inset-scroll">
+            <div class="inset-scroll-row"><span>Cron job</span><span>daily</span></div>
+            <div class="inset-scroll-row"><span>Build pipeline</span><span>success</span></div>
+            <div class="inset-scroll-row"><span>Deployment</span><span>production</span></div>
+            <div class="inset-scroll-row"><span>Test suite</span><span>247 passing</span></div>
+            <div class="inset-scroll-row"><span>Lint</span><span>clean</span></div>
+            <div class="inset-scroll-row"><span>Type check</span><span>clean</span></div>
+            <div class="inset-scroll-row"><span>Bundle size</span><span>142 kb</span></div>
+            <div class="inset-scroll-row"><span>Coverage</span><span>87%</span></div>
+            <div class="inset-scroll-row"><span>Dependencies</span><span>up to date</span></div>
+            <div class="inset-scroll-row"><span>License audit</span><span>clean</span></div>
+            <div class="inset-scroll-row"><span>Security scan</span><span>0 issues</span></div>
+            <div class="inset-scroll-row"><span>Accessibility</span><span>AA</span></div>
+          </div>
+        </section>
+
+        <section class="section contract">
+          <div class="section-label">Contract</div>
+          <dl>
+            <dt>Border</dt><dd>Four sides, thin, square corners</dd>
+            <dt>Padding</dt><dd>Square (xl–3xl token range)</dd>
+            <dt>Sibling gap</dt><dd>Gutter (parent's flex/grid gap)</dd>
+            <dt>Scroll mode</dt><dd>Invisible-gutter (auto + scrollbar-gutter: stable)</dd>
+            <dt>Used for</dt><dd>Modals, code blocks, expandable cards, preview cards</dd>
+          </dl>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- ============= RIGHT: FLUSH ============= -->
+    <section class="pane pane-flush">
+      <header class="pane-header">
+        <div class="pane-eyebrow">Mode B · Items</div>
+        <h2 class="pane-title">Flush</h2>
+        <p class="pane-tagline">Rows inside a surface or pane. Full-bleed background, no four-side border, separated from siblings by a single shared rule.</p>
+      </header>
+
+      <div class="pane-body">
+
+        <section class="section">
+          <div class="section-label">Same rows · flush items</div>
+          <p class="section-blurb">Rows extend pane edge-to-edge. The active row carries a left border (medium, color-link) and a full-bleed selected-bg fill.</p>
+          <div class="flush-list">
+            <div class="flush-row flush-row-active">Pools <span class="flush-row-meta">12</span></div>
+            <div class="flush-row">Entities <span class="flush-row-meta">348</span></div>
+            <div class="flush-row">Settings <span class="flush-row-meta">›</span></div>
+            <div class="flush-row">production-east <span class="flush-row-meta">healthy</span></div>
+            <div class="flush-row">staging-replicas <span class="flush-row-meta">degraded</span></div>
+          </div>
+        </section>
+
+        <section class="section section-frame-host">
+          <div class="section-label">Nested boundary-rail · 2rem dead zone</div>
+          <p class="section-blurb">Two boundary-rails along the same scroll-line — the inner list and the pane itself — share the same gutter colors. They're disambiguated by the 2rem horizontal dead zone between their tracks (visual-language minimum: 1rem). Adjacent rails without that gap would read as a single thickened bar.</p>
+          <div class="flush-scroll-frame">
+            <div class="flush-scroll">
+              <div class="flush-scroll-row"><span>Cron job</span><span>daily</span></div>
+              <div class="flush-scroll-row"><span>Build pipeline</span><span>success</span></div>
+              <div class="flush-scroll-row"><span>Deployment</span><span>production</span></div>
+              <div class="flush-scroll-row"><span>Test suite</span><span>247 passing</span></div>
+              <div class="flush-scroll-row"><span>Lint</span><span>clean</span></div>
+              <div class="flush-scroll-row"><span>Type check</span><span>clean</span></div>
+              <div class="flush-scroll-row"><span>Bundle size</span><span>142 kb</span></div>
+              <div class="flush-scroll-row"><span>Coverage</span><span>87%</span></div>
+              <div class="flush-scroll-row"><span>Dependencies</span><span>up to date</span></div>
+              <div class="flush-scroll-row"><span>License audit</span><span>clean</span></div>
+              <div class="flush-scroll-row"><span>Security scan</span><span>0 issues</span></div>
+              <div class="flush-scroll-row"><span>Accessibility</span><span>AA</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section contract section-after-frame">
+          <div class="section-label">Contract</div>
+          <dl>
+            <dt>Border</dt><dd>Single shared rule (top, bottom, or left)</dd>
+            <dt>Padding</dt><dd>Asymmetric inline (sm–md vertical, xl horizontal owned by container)</dd>
+            <dt>Sibling gap</dt><dd>None — rows touch, separated by the rule</dd>
+            <dt>Active state</dt><dd>Left border (medium, color-link) + selected-bg fill, full-bleed</dd>
+            <dt>Scroll mode</dt><dd>Boundary-rail (scroll + tinted track) when bar is the column edge; otherwise invisible-gutter</dd>
+            <dt>Used for</dt><dd>Nav rows, scroll-list rows, sticky-toc entries, table rows, menu items</dd>
+          </dl>
+        </section>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script type="module">
+  import { render } from './components/luminance-toggle.js?{{CACHE_BUST}}';
+  const mount = document.getElementById('luminance-mount');
+  let stored = null;
+  try { stored = localStorage.getItem('dk-luminance'); } catch {}
+  const initial = stored === 'light' || stored === 'dark' ? stored : 'auto';
+  if (initial === 'auto') {
+    document.documentElement.removeAttribute('data-luminance');
+  } else {
+    document.documentElement.setAttribute('data-luminance', initial);
+  }
+  mount.append(render({ value: initial }));
+</script>
+</body>
+</html>
