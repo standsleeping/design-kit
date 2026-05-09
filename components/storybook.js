@@ -191,7 +191,18 @@ function renderComponentList(listEl, registry, active, onSelect, showPoolHeaders
     if (entry.pool === active?.pool && entry.mod.metadata.name === active?.mod.metadata.name) {
       link.classList.add('is-active');
     }
-    link.textContent = entry.mod.metadata.name;
+    const nameEl = document.createElement('span');
+    nameEl.textContent = entry.mod.metadata.name;
+    link.append(nameEl);
+    if (entry.mod.metadata.examplePage) {
+      link.classList.add('storybook-component-link-has-example');
+      const marker = document.createElement('span');
+      marker.className = 'storybook-component-link-example-marker';
+      marker.setAttribute('aria-hidden', 'true');
+      marker.textContent = '›';
+      link.append(marker);
+      link.title = `${entry.mod.metadata.name} has an example page`;
+    }
     link.addEventListener('click', (e) => {
       e.preventDefault();
       onSelect(entry);
@@ -615,6 +626,7 @@ async function main() {
     list: document.querySelector('[data-storybook-list]'),
     poolFilter: document.querySelector('[data-storybook-pool-filter]'),
     name: document.querySelector('[data-storybook-component-name]'),
+    example: document.querySelector('[data-storybook-component-example]'),
     widthSlider: document.querySelector('[data-storybook-width-slider]'),
     widthNumber: document.querySelector('[data-storybook-width-number]'),
     heightSlider: document.querySelector('[data-storybook-height-slider]'),
@@ -695,6 +707,17 @@ async function main() {
       });
     }
     el.name.textContent = active.mod.metadata.name;
+    if (el.example) {
+      const examplePage = active.mod.metadata.examplePage;
+      if (examplePage) {
+        el.example.hidden = false;
+        el.example.href = examplePage;
+        el.example.textContent = 'Example →';
+      } else {
+        el.example.hidden = true;
+        el.example.removeAttribute('href');
+      }
+    }
     renderVariants(el.variants, active, width, height, registry, cleanups, overrides, sizeOverrides, variantCallbacks);
     renderPropsForm();
     updateFooter();

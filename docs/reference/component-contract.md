@@ -26,6 +26,7 @@ All four exports are required. A file missing any export is skipped by the story
 | `name` | string | yes | PascalCase; unique within a pool; used as the display label and URL slug |
 | `description` | string | yes | One sentence; fits on one line in the component list |
 | `category` | string | yes | Free-form; the storybook groups components by string equality |
+| `examplePage` | string | no | Path to an example page that demos this component in a realistic layout (e.g. `'sticky-toc.html'`). Resolved relative to the page hosting the storybook. When set, the storybook surfaces a `›` marker in the nav and an `EXAMPLE →` link in the component header. Multiple components may point at the same page (e.g. composition recipes). |
 
 Category values are not enumerated. Projects choose their own vocabulary (`navigation`, `actions`, `forms`, `data-display`). The storybook does not enforce a taxonomy.
 
