@@ -5,6 +5,9 @@
   background: var(--color-bg);
 }
 
+/* Transient-thumb scroll mode (visual-language §Scroll containers).
+   Canonical implementation: horizontal overflow inside a wide table.
+   The track stays transparent; only the thumb is ever visible. */
 .dk-table-scroll {
   overflow-x: auto;
   scrollbar-color: var(--color-gray-400) transparent;
@@ -250,7 +253,7 @@
 
 .dk-sn-ref:focus-visible {
   outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 .dk-sn-ref[aria-expanded="true"] {
@@ -363,7 +366,7 @@
 
 .dk-sn-close:focus-visible {
   outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 .dk-sn-popup-body {
