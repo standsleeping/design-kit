@@ -78,6 +78,26 @@ Prefer icon-only controls where the action is universally understood (clipboard 
 
 All interactive elements use the same gray palette as surrounding chrome. The only color exception is focus rings and active-state indicators, which use the standard interactive color (purple-500) for accessibility.
 
+### 11. Surfaces are inset, items are flush
+
+Two visual modes coexist; role determines which.
+
+**The asymmetry is ownership.** A *surface* owns its own boundary — it draws four borders and floats in its parent's gutter. An *item* doesn't own a boundary; the *column* it lives in does. The column's edge comes from a sibling rule, the parent's border, or a boundary-rail scrollbar. Get the ownership right and every downstream choice (scrollbar mode, active indicator, padding role, background) follows.
+
+| Property | Surface (inset) | Item (flush) |
+|---|---|---|
+| Boundary | Self-owned: four borders, square corners | Column-owned: shared rule with siblings |
+| Background | May recess (e.g., `--color-code-bg`) so the card reads as a distinct surface against the page | Page bg by default; active state uses full-bleed `--color-selected-bg` |
+| Padding | Square (xl–3xl), owned by the surface | Asymmetric inline (sm–md vertical); horizontal owned by the container |
+| Sibling separation | Gutter (parent's flex/grid gap) | None — siblings touch; the rule between them does the separating |
+| Active indicator | Border-color shift on the four-side border + `--color-selected-bg` fill | Single-side border (left for vertical lists, bottom for horizontal) at `--border-width-medium`, `--color-link` + full-bleed `--color-selected-bg` |
+| Scrollbar | Invisible-gutter, inside the surface | Boundary-rail at the column edge, against a visible rule |
+| Examples | Modals, code blocks, expandable cards, preview cards | Menu items, nav rows, scroll-list rows, sticky-toc entries, collapsible-section headers, table rows |
+
+The most common drift is treating an item as a surface — a row with four borders and a radius. Even when the radius token resolves to 0, the four drawn lines still leak card vocabulary into a row context. Ask whether the element's neighbors are siblings of the same kind (item) or distinct content blocks (surface).
+
+See `pages/inset-vs-flush.html` for the canonical side-by-side rendering.
+
 ## Content Patterns for Developer Documentation
 
 These are structural patterns for presenting technical content. They describe information architecture, not visual styling; the principles above govern how they look.
@@ -106,15 +126,29 @@ Hierarchical menus follow the iOS-style navigation stack pattern: a stack of men
 
 The stack and the visible chrome are orthogonal. A user can drill into a sublevel and then collapse the sidebar; the stack is preserved so re-expanding restores the same level. Conversely, a viewport-driven auto-collapse doesn't pop the stack.
 
+**All rows share a horizontal channel.** Every row in a level — the back row, section headers, and items — shares the same left inset (same padding-left + same `border-left-medium-transparent` indicator slot). The back row is the *first item* of the level, not a separate header element with different padding rules. When the chrome strip wrapping a row needs a height (to feel like a chrome bar at root level when there's only a title), use `min-height`, not `height`; a fixed pixel height creates dead vertical space when the contained content is shorter.
+
 ### Sidebar tri-state
 
 A collapsible sidebar has three display states, not two: `expanded` (full width with labels), `icon` (narrow strip with a single uppercase letter or glyph per row), and `hidden` (off-screen via transform in overlay mode, or zero width in inline mode). Inline mode supports `expanded` and `icon`; overlay mode supports `expanded` and `hidden`. The tri-state encoding (rather than a boolean `collapsed`) makes nonsensical combinations explicit and lets the same prop drive both inline and overlay behaviors.
 
 The state propagates to children via `[data-state]` attribute selectors. A sidebar with `data-state="icon"` causes nav-stack and similar children to render their icon-only treatment automatically — the consumer doesn't wire two props in lockstep.
 
-### Active indicator: flush left-border
+### Selected-item indicators
 
-The current item in a sidebar nav uses a purple left-border indicator (`border-width-medium`, `color-link`) flush with the container's left edge. The indicator stays in icon mode (the row is centered around its icon, but the border indicator sits at the edge regardless). Hover and focus get muted background fills; the purple border is reserved for the active item.
+Selected-item indicators are flush with the container's edge regardless of the row's inner padding. The bordered axis is a single side; never two or four. The active treatment is reserved for *items* (Principle 11), never *surfaces*.
+
+| Container axis | Indicator | Examples |
+|---|---|---|
+| Vertical (sidebar, list, drill-down nav) | Left border (`border-width-medium`, `color-link`) plus optional `color-selected-bg` fill (full-bleed) | `dk-nav-stack`, `dk-sticky-toc`, `dk-scroll-list`, sidebar component links |
+| Horizontal (tab bar, segmented control, code-block tabs) | Bottom border (`border-width-medium`, `color-link`) plus color shift on the label | `dk-tab-bar`, `dk-code-block` tabs |
+| Tabular row (table body) | Row-level outline (`border-width-thin`, `color-hover-outline`) plus `color-selected-bg` fill | `dk-table` clickable rows |
+
+Hover and focus reuse the same border channel with muted fills; purple is reserved for the active item. Background fill is optional, but if present it must extend to the row's edges (full-bleed); a fill that leaves negative space on the side leaks the inset-card treatment into an item context.
+
+In a sidebar's icon state the row centers around its icon, but the left-border indicator stays at the container's edge regardless.
+
+The active border, the focus ring, hover, and disabled all live on the same element — the focusable child (`<a>`, `<button>`), not on a structural wrapper (`<li>`). Putting the active indicator on the wrapper while the focus ring lives on the link puts the two at different x-coordinates and produces a visible gap between them when both fire. Promote level indents and any decorations into the focusable element so the wrapper stays a pure semantic shell. See `STATE_BELONGS_TO_INTERACTIVE` in system-principles.
 
 ### Auto-collapse on viewport shrink
 
@@ -226,24 +260,37 @@ When a child needs the `padding` shorthand for vertical values, use longhand pro
 
 ### Scroll containers
 
-Scroll containers whose content height can change during user interaction must reserve the scrollbar gutter. Without it, a collapse/expand, filter, lazy-load, or tab swap that crosses the overflow threshold makes the bar appear or disappear, and the content-box width changes by the bar's width on every toggle. The result is a horizontal jitter on every interaction.
+Three scroll-container modes exist. Pick one per overflow region.
 
-Use `overflow-y: auto` with `scrollbar-gutter: stable`:
+| Mode | When to use | Treatment |
+|---|---|---|
+| Invisible-gutter (default) | Vertical scroll inside a content surface; bar may or may not appear depending on content height. The default for any scrollable region not covered by the other two modes. | `overflow-y: auto; scrollbar-gutter: stable;` Inherits the html-level transparent track and `border`-tinted thumb so the reserved gutter does not read as a visible stripe. |
+| Boundary-rail | Vertical scroll where the bar is also a structural column edge — sidebar against main, planning rail against documents. The rail belongs to the boundary, not to the content. **The bar IS the column edge only when there's a visible rule for it to butt against** (typically the parent's `border-right`); without one, the bar floats and reads as recessed. | `overflow-y: scroll;` plus `::-webkit-scrollbar { width: 8px }` with `track` tinted `--color-border` and `thumb` tinted `--color-hover-outline`. Always visible on Chromium/WebKit. Standard `scrollbar-color`/`scrollbar-width` are deliberately omitted: setting either disables `::-webkit-scrollbar` styling on Chromium 121+ and falls back to the platform default, which on macOS is an overlay bar with no resting-state track. Firefox lacks `::-webkit-scrollbar` and renders its native scrollbar without the tint — the documented degradation. Canonical implementation: `dk-scroll-list`. |
+| Transient-thumb | Horizontal overflow inside a wide table or code block. The bar fades with the content; only the thumb is ever visible. | `overflow-x: auto; scrollbar-color: var(--color-gray-400) transparent; scrollbar-width: thin;` Canonical implementation: `dk-table-scroll`. |
 
-```css
-.scroll-region {
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-}
-```
+The invisible-gutter mode requires `scrollbar-gutter: stable` whenever the content height can change during user interaction (collapse/expand, filter, lazy-load, tab swap); without it, the bar appearing or disappearing changes the content-box width by the bar's width on every toggle. See `STABLE_SCROLLBAR_GUTTER`.
 
-The global `html { scrollbar-color: var(--color-border) transparent }` rule paints a transparent track, so the reserved gutter doesn't read as a visible stripe.
+Skip overflow declarations entirely on regions guaranteed never to overflow.
 
-Skip the gutter when content is static (always or never overflows): plain `overflow: hidden` or no overflow rule at all is sufficient.
+Hiding the scrollbar (`scrollbar-width: none`) is not a fourth mode. It removes a structural affordance and violates `BOUNDARY_OWNERSHIP`: the container's edge no longer reads as a scroll surface.
 
-The `scroll-list` component uses a different treatment (always-on bar with a tinted rail) for its specific interaction pattern; see the component itself, not this rule, for that variant.
+**Nested boundary-rails need a dead zone.** Two boundary-rail scrollbars may coexist along the same scroll-line — an inner list inside a flush column whose own outer scrollbar is also boundary-rail — *only* when they are separated by a horizontal dead zone of at least `1rem` between their tracks. Without that gap, the two rails read as a single thickened bar (or a duplicate-edge mistake). Same gutter colors on both is correct: they're the same kind of edge at different levels. The dead zone, not the color, is what disambiguates them.
 
 When a scroll container holds both a sticky chrome bar (app bar, section header) at `top: 0` and sticky cell content (`<thead>` cells, sub-section headers) at `top: <chrome-height>`, give the chrome a higher stacking layer than the in-flow stickies. Same `z-index` plus DOM order means the later element (the table header) paints over the chrome in the overlap band, and content briefly appears to sit above the bar before disappearing under it. Use `--z-chrome` for the bar and `--z-sticky` for in-content stickies; both stay below `--z-overlay`.
+
+### Bookend frame for flush dividers
+
+When a horizontal rule must function as a section divider with no padding gap above or below — typically wrapping a flush scrollable region between two sections — the rule cannot live as a child element's `border`. The child only spans its own width, so its border stops short of the column edge (and stops short of any reserved scrollbar gutter). Wrap the content in a *frame* element that owns the full column width and the divider role:
+
+```html
+<section class="section-frame-host">…blurb…</section>
+<div class="frame">
+  <div class="content">…</div>
+</div>
+<section class="section-after-frame">…next section…</section>
+```
+
+The frame carries the top and bottom rules and extends pane-edge to pane-edge (including any horizontal dead zone reserved for nested boundary-rails). The surrounding sections surrender their adjacent padding to it: the section above zeros its `padding-bottom` and `border-bottom`; the section below zeros its `padding-top`. The frame's bottom rule then serves as the structural section divider with zero gap. Canonical implementation: `pages/inset-vs-flush.html`.
 
 ### Structural ornament patterns
 
@@ -269,5 +316,23 @@ Inline charts follow the same greyscale discipline as the rest of the interface.
 | Filled area | gray-200 (lighter shade beneath the line) |
 | Axes, gridlines, labels | Absent; the surrounding table provides context |
 | Size | Compact; sized to fit within a table row (e.g., 120x24px) |
+
+### Icons
+
+A curated set of 15×15 icons (Radix Icons, vendored under `components/icons/`) covers the system's icon needs. Components that accept an `icon` prop look up the name in `components/icons.js`; unknown names fall back to literal text, so the prop stays backwards-compatible with bare-string glyphs.
+
+Icons size with their host's `font-size` through the `.dk-icon` utility (`width: 1em; height: 1em`); a 32 px button rendering text at `--font-size-sm` shows a 14 px icon. Color flows through `currentColor`, so setting `color: var(--color-text)` on the parent is enough.
+
+The registry is curated, not exhaustive. Five categories cover what a typical interface needs:
+
+| Category | Use for | Examples |
+|---|---|---|
+| direction | Disclosure and navigation arrows | `chevron-down`, `arrow-left` |
+| action | State-changing controls | `cross-1`, `check`, `trash` |
+| navigation | Persistent UI affordances | `hamburger-menu`, `magnifying-glass` |
+| status | Status and meta indicators | `info-circled`, `bell` |
+| content | Resource-type markers | `file-text`, `code` |
+
+The full list with per-icon usage guidance is in the Icons section of `preview.html`. To add an icon, drop the `.svg` into `components/icons/` and append an entry to `CURATED_ICONS` in `src/design_kit/icon_registry.py`; the build regenerates `components/icons.js`.
 
 Charts use no color unless encoding semantic meaning (e.g., a red segment for a threshold breach). The default chart is entirely greyscale. Prefer server-rendered inline SVG over client-side charting libraries; it keeps the page dependency-free and renders instantly.
