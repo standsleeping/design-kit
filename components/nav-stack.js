@@ -4,6 +4,7 @@ export const metadata = {
   name: 'NavStack',
   description: 'Drill-down navigation: a stack of menu levels with branch (push) and back (pop) semantics; renders icon-only when its own displayState is "icon" or when nested inside a sidebar in icon state',
   category: 'navigation',
+  examplePage: 'sidebar-nav-stack.html',
 };
 
 export const propTypes = {

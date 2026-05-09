@@ -6,6 +6,7 @@ export const metadata = {
   name: 'StickyToc',
   description: 'Sticky chrome bar that collapses to show the active section title; expands to a full TOC overlay. Tracks active section via IntersectionObserver. Returns { node, cleanup }.',
   category: 'navigation',
+  examplePage: 'sticky-toc.html',
 };
 
 export const propTypes = {

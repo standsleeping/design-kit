@@ -2,6 +2,7 @@ export const metadata = {
   name: 'Sidebar',
   description: 'Collapsible, resizable sidebar shell; hosts content in [data-slot="header"], [data-slot="main"], and [data-slot="footer"] slots',
   category: 'layout',
+  examplePage: 'sidebar-nav-stack.html',
 };
 
 export const propTypes = {
