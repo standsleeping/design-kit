@@ -1,11 +1,14 @@
+/* Item, not surface (visual-language §11). Vertical selected-row indicator:
+   left border (medium, color-link) + selected-bg fill, both flush to the
+   container edge. */
 .dk-menu-item {
   width: 100%;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border: none;
+  border-left: var(--border-width-medium) solid transparent;
   background: transparent;
   color: var(--color-text-muted);
   font-family: var(--typography-mono);
@@ -22,13 +25,13 @@
 
 .dk-menu-item:focus-visible {
   outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 .dk-menu-item-selected {
-  border-color: var(--color-link);
+  border-left-color: var(--color-link);
   color: var(--color-link);
-  background: var(--color-focus-ring-light);
+  background: var(--color-selected-bg);
 }
 
 .dk-menu-item:disabled {

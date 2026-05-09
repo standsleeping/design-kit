@@ -70,11 +70,15 @@
   flex-shrink: 0;
 }
 
+/* Invisible-gutter scroll mode (visual-language §Scroll containers). The
+   sidebar hosts arbitrary content; an inner component (scroll-list, table)
+   may opt into boundary-rail. Hiding the bar would violate
+   BOUNDARY_OWNERSHIP. */
 .dk-sidebar-main {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-width: none;
+  scrollbar-gutter: stable;
   min-height: 0;
 }
 

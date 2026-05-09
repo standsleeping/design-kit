@@ -8,14 +8,20 @@
   font-size: var(--font-size-xs);
 }
 
+/* Header is a thin chrome strip; its child (title or back) owns padding so
+   the inset matches list items below (visual-language §11). The min-height
+   keeps the title-only case at chrome-bar height; back rows collapse to
+   their own content height. */
 .dk-nav-stack-header {
   flex-shrink: 0;
-  padding: var(--spacing-md);
   border-bottom: var(--border-width-thin) solid var(--color-border);
-  height: var(--dk-chrome-bar-h, 2.5rem);
-  box-sizing: border-box;
   display: flex;
+  align-items: stretch;
+}
+
+.dk-nav-stack-header:not(:has(.dk-nav-stack-back)) {
   align-items: center;
+  min-height: var(--dk-chrome-bar-h, 2.5rem);
 }
 
 .dk-nav-stack-title {
@@ -23,19 +29,23 @@
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   letter-spacing: var(--font-letter-spacing-normal);
-  padding: 0 var(--spacing-sm);
+  /* Match item left edge: items have border-left medium (2) + padding-left md (8). */
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm) calc(var(--spacing-md) + var(--border-width-medium));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Back is the first row of the level — same padding and transparent
+   left-border channel as items so the icon aligns vertically with item content. */
 .dk-nav-stack-back {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
   width: 100%;
-  padding: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   border: none;
+  border-left: var(--border-width-medium) solid transparent;
   background: transparent;
   cursor: pointer;
   font-family: var(--typography-mono);
@@ -70,11 +80,13 @@
   white-space: nowrap;
 }
 
+/* Invisible-gutter scroll mode (visual-language §Scroll containers).
+   scrollbar-width is inherited from the html-level rule. */
 .dk-nav-stack-body {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-width: thin;
+  scrollbar-gutter: stable;
   min-height: 0;
   padding: var(--spacing-sm) 0;
 }
@@ -114,7 +126,7 @@
 .dk-nav-stack-item-selected {
   border-left-color: var(--color-link);
   color: var(--color-text);
-  background: var(--color-hover-bg);
+  background: var(--color-selected-bg);
 }
 
 /* Expanded state: no icon column — nav reads as a flush-left list of labels.
