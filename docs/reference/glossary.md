@@ -24,7 +24,11 @@ A named aesthetic identity expressed as *palette* values mapped to semantic role
 
 ## Container
 
-An element that holds other elements and owns their horizontal inset. Also one of the four padding roles. See `CONTAINER_OWNS_INSET` and `SQUARE_PADDING_DEFAULT`.
+An element that holds other elements and owns both their inset (via its own square `padding`) and the rhythm between them (via its `gap`). Also one of the four padding roles. See `CONTAINER_OWNS_INSET`, `SQUARE_PADDING_DEFAULT`, and `PADDING_IS_INSET_ONLY`.
+
+## Control min-width / min-height
+
+Primitive sizing scales (`--control-min-width-sm` / `-md` / `-lg`, and matching `-min-height-*`) that set a *floor* on interactive controls so short labels still feel clickable without resorting to asymmetric padding. Companion property for the *inline* padding role under `PADDING_IS_INSET_ONLY`: a button gets square `padding` plus a `min-width` floor; the horizontal breathing comes from the floor, not from an asymmetric padding shape.
 
 ## Contrast mode
 
@@ -36,7 +40,7 @@ See *Rule*. Prefer *rule* in new work; *divider* is acceptable when discussing M
 
 ## Flow child
 
-An element inside a flow container (a stack of siblings governed by gap or vertical padding). Flow children use vertical-only padding because the container owns horizontal inset. See `SQUARE_PADDING_DEFAULT`.
+An element inside a flow container (a stack of siblings governed by the container's `gap`). Flow children carry square (or zero) padding; the rhythm between them lives in the parent's `gap`, not in the child's vertical padding. See `SQUARE_PADDING_DEFAULT`, `CONTAINER_OWNS_INSET`, and `PADDING_IS_INSET_ONLY`.
 
 ## Flush list
 
@@ -56,13 +60,13 @@ The negative space between sibling elements, produced by a container's padding p
 
 ## Inline (padding role)
 
-A small control or label within chrome or a container. May use asymmetric padding (more horizontal than vertical) where the text content dominates and the padding itself is invisible. One of the four padding roles. See `SQUARE_PADDING_DEFAULT`.
+A small control or label within chrome or a container — button, badge, pill, table cell. Inline controls carry square padding (small-scale token) plus a `min-width` floor so short labels still feel clickable. The horizontal floor lives in `min-width`, not in asymmetric padding. One of the four padding roles. See `SQUARE_PADDING_DEFAULT` and `PADDING_IS_INSET_ONLY`.
 
 ## Inset
 
 Two related meanings — disambiguate by context.
 
-1. **Padding inset**: horizontal space from a container's edge to its content. "Container owns inset" means horizontal padding belongs to the container, not its children. See `CONTAINER_OWNS_INSET`.
+1. **Padding inset**: the uniform space from a container's edge to its content, expressed as square `padding` on the container. "Container owns inset" means the container's `padding` provides this space once, on all four sides, so children don't carry horizontal padding of their own. See `CONTAINER_OWNS_INSET` and `PADDING_IS_INSET_ONLY`.
 2. **Inset card** (layout mode): a card with four borders, floating in a gutter. Apple's `insetGrouped`. Contrast: *Flush list*.
 
 ## Inset card
@@ -79,7 +83,7 @@ Ambiguous alone; always qualify: *luminance mode* (light/dark) or *contrast mode
 
 ## Padding roles
 
-The four element roles used to pick padding tokens: *container*, *chrome*, *inline*, *flow child*. Identify the role first, then pick a token, then apply square padding unless the role is inline or flow child. See `SQUARE_PADDING_DEFAULT`.
+The four element roles used to pick padding tokens: *container*, *chrome*, *inline*, *flow child*. Identify the role first, then pick a token; padding is always square on every role. The role also determines which companion property carries the asymmetric concern that used to live in padding — `min-width` for inline controls, parent `gap` for flow children. See `SQUARE_PADDING_DEFAULT` and `PADDING_IS_INSET_ONLY`.
 
 ## Pane
 
@@ -111,7 +115,7 @@ See *Rule*.
 
 ## Square padding
 
-Same token on all four sides of an element. The default for containers and chrome. See `SQUARE_PADDING_DEFAULT`. The anti-pattern is *asymmetric padding* (different tokens across sides), which is only legitimate for *inline* or *flow child* roles.
+Same token on all four sides of an element. The shape of padding on every element, regardless of role. Asymmetric padding (different values across sides) is the anti-pattern — the asymmetric concerns it tries to express (horizontal breathing for inline text, vertical rhythm between flow children, top-heavy emphasis) live in `min-width`, `gap`, and `margin` respectively. See `SQUARE_PADDING_DEFAULT` and `PADDING_IS_INSET_ONLY`.
 
 ## Theme
 

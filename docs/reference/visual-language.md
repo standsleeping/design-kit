@@ -88,7 +88,7 @@ Two visual modes coexist; role determines which.
 |---|---|---|
 | Boundary | Self-owned: four borders, square corners | Column-owned: shared rule with siblings |
 | Background | May recess (e.g., `--color-code-bg`) so the card reads as a distinct surface against the page | Page bg by default; active state uses full-bleed `--color-selected-bg` |
-| Padding | Square (xl–3xl), owned by the surface | Asymmetric inline (sm–md vertical); horizontal owned by the container |
+| Padding | Square (xl–3xl), owned by the surface | Square or zero on the item; horizontal inset and vertical rhythm both owned by the container (`padding` + `gap`) |
 | Sibling separation | Gutter (parent's flex/grid gap) | None — siblings touch; the rule between them does the separating |
 | Active indicator | Border-color shift on the four-side border + `--color-selected-bg` fill | Single-side border (left for vertical lists, bottom for horizontal) at `--border-width-medium`, `--color-link` + full-bleed `--color-selected-bg` |
 | Scrollbar | Invisible-gutter, inside the surface | Boundary-rail at the column edge, against a visible rule |
@@ -223,40 +223,47 @@ Tight by default. Use the lower end of the spacing scale for internal padding (x
 | Page margin | 2xl (1.5rem) |
 | Between label and content | xs to sm (0.125-0.25rem) |
 
-### Padding: square by default, role determines scale
+### Padding: always square, role determines scale
 
-**Default to square padding** (same token on all four sides). Asymmetric padding (more horizontal than vertical) is the single most common layout mistake; it makes elements look over-indented and visually unbalanced. Only use asymmetric padding at inline scale where the text content dominates and the padding itself is invisible.
+**Padding is always one token on all four sides.** It represents a box's *inset* — the space from its border to its content — and a box has one inset. Asymmetric padding (`padding: sm md`, `padding: md 0`, `padding: lg md sm`) makes elements look over-indented and visually unbalanced; it also conflates inset with other concerns (horizontal breathing for inline text, vertical rhythm between flow children, top-heavy emphasis) that each belong in their own property.
 
-Before writing any padding declaration, identify the element's role:
+Before writing any padding declaration, identify the element's role. The role picks the *token*, not the shape:
 
-| Role | What it is | Padding | Token range | Examples |
-|------|-----------|---------|-------------|---------|
-| Container | Primary content surface | Square | `xl` to `3xl` | Code blocks, panels, page sections |
-| Chrome | Utility strip attached to a container | Square | `lg` to `xl` | Toolbars, status bars, filter bars |
-| Inline | Small control within chrome or a container | May be asymmetric | `sm` to `md` | Buttons, badges, table cells |
-| Flow child | Element inside a flow container | Vertical only | `xs` to `sm` | List items, derivation steps, stack children |
+| Role | What it is | Token range | Companion property | Examples |
+|------|-----------|-------------|---------------------|---------|
+| Container | Primary content surface | `xl` to `3xl` | — | Code blocks, panels, page sections |
+| Chrome | Utility strip attached to a container | `lg` to `xl` | — | Toolbars, status bars, filter bars |
+| Inline | Small control within chrome or a container | `sm` to `md` | `min-width` for horizontal floor | Buttons, badges, table cells |
+| Flow child | Element inside a flow container | `xs` to `sm` (or `0`) | Parent's `gap` for rhythm | List items, derivation steps, stack children |
 
-The rule: **role first, then token, then square unless inline or flow child.** A toolbar is chrome, not a container; a status bar is chrome, not inline. A list item inside a padded container is a flow child, not a container. Getting the role wrong produces padding that is visibly too large or too small.
+The rule: **role first, then token, padding is always square.** A toolbar is chrome, not a container; a status bar is chrome, not inline. A list item inside a padded container is a flow child, not a container.
+
+Asymmetric concerns migrate out of padding into the property whose name matches the concern:
+
+- **Inline controls** that need horizontal breathing for short labels: square padding plus `min-width: var(--control-min-width-md)` (or `-sm` / `-lg` per context). The horizontal floor lives in `min-width`, where the concern is named.
+- **Flow children** that need vertical rhythm between rows: square (or zero) padding on the child plus `gap` on the parent. The rhythm lives in `gap`, where the concern is named.
+- **Top-heavy or bottom-heavy emphasis** (a section header that wants extra space above it): square padding plus `margin-top`. The layout concern lives in `margin`, where it belongs.
 
 ### Container owns inset, children own flow
 
-Horizontal padding belongs on the container; children handle only vertical spacing (via gap or vertical padding with zero horizontal). This prevents compounding inset when both container and children apply horizontal padding, and ensures all children share a consistent left/right edge without declaring it individually.
+Both inset and rhythm belong to the container. `padding` owns the inset (square, all four sides). `gap` owns the rhythm between siblings. Children own neither — they have square or zero padding and contribute only their content.
 
 ```css
-/* Container sets horizontal inset */
+/* Container owns both inset and rhythm */
 .block {
   display: flex;
   flex-direction: column;
-  padding: 0 var(--spacing-md);
+  padding: var(--spacing-md);   /* inset — square */
+  gap: var(--spacing-sm);       /* rhythm between children */
 }
 
-/* Children set only vertical flow spacing */
+/* Children carry square (or zero) padding */
 .block-item {
-  padding: var(--spacing-sm) 0;
+  padding: 0;                   /* or square, if the row needs its own inset */
 }
 ```
 
-When a child needs the `padding` shorthand for vertical values, use longhand properties (`padding-top`, `padding-bottom`) to avoid clobbering the zero horizontal padding.
+This collapses the older split (`padding: 0 X` on the container, `padding: X 0` on the child) into one property per concern at the container level. Both elements have square padding; the asymmetric flow-rhythm concern has moved into `gap`, where it is named.
 
 ### Scroll containers
 
