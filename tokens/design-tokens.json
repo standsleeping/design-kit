@@ -107,6 +107,18 @@
       "3xl": "2rem",
       "4xl": "3rem"
     },
+    "control": {
+      "min-width": {
+        "sm": "3rem",
+        "md": "5rem",
+        "lg": "8rem"
+      },
+      "min-height": {
+        "sm": "1.5rem",
+        "md": "2rem",
+        "lg": "2.5rem"
+      }
+    },
     "radius": {
       "sm": "0",
       "md": "0",
