@@ -9,9 +9,14 @@
   gap: 1lh;
 }
 
+/* Grid-based centering (NEVER_MARGIN). The container becomes a single-track
+   grid whose track is at most --layout-content-max-width wide and
+   horizontally centered via justify-content. Children stack in the centered
+   track via row gap. */
 .dk-container-centered {
-  max-width: var(--layout-content-max-width, 680px);
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, var(--layout-content-max-width, 680px));
+  justify-content: center;
   padding: var(--spacing-2xl) var(--spacing-xl); /* padding-audit: ok */
   gap: 1lh;
 }

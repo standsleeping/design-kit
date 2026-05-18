@@ -177,13 +177,21 @@
 
 .dk-nav-stack-section-header {
   padding: var(--spacing-md);
-  margin-top: var(--spacing-sm);
   font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: var(--font-letter-spacing-wide);
   border-left: var(--border-width-medium) solid transparent;
+}
+
+/* Structural spacer pseudo (NEVER_MARGIN): non-first section headers carry
+   an in-flow ::before that adds rhythm above the header without escaping
+   into a sibling-collapsing margin. */
+.dk-nav-stack-section-header:not(:first-child)::before {
+  content: "";
+  display: block;
+  height: var(--spacing-sm);
 }
 
 .dk-nav-stack[data-state="icon"] .dk-nav-stack-section-item .dk-nav-stack-icon,
@@ -229,12 +237,20 @@
   /* Active-indicator (border-left) stays — flush at the container edge per DK convention. */
 }
 
+/* Icon state: section-header collapses to a 1px divider rule. The rhythm
+   above and below the rule lives in ::before / ::after structural pseudos
+   so the divider doesn't escape into a margin (NEVER_MARGIN). */
 .dk-nav-stack[data-state="icon"] .dk-nav-stack-section-header,
 .dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-section-header {
-  height: 0;
   padding: 0;
-  margin: var(--spacing-md) 0 var(--spacing-sm);
   border-top: var(--border-width-thin) solid var(--color-border);
   border-left: none;
   font-size: 0;
+}
+
+.dk-nav-stack[data-state="icon"] .dk-nav-stack-section-header::after,
+.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-section-header::after {
+  content: "";
+  display: block;
+  height: var(--spacing-sm);
 }

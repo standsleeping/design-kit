@@ -236,8 +236,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0 0.15em; /* padding-audit: ok */
-  margin: 0 0.1em;
+  padding: 0 0.25em; /* padding-audit: ok */
   font-family: var(--typography-mono);
   --mono: 1;
   font-size: var(--font-size-2xs);
@@ -265,11 +264,19 @@
 
 .dk-sn-inline {
   display: block;
-  margin-top: var(--spacing-sm);
   padding-left: var(--spacing-md); /* padding-audit: ok */
   border-left: var(--border-width-thin) solid var(--color-link);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
+}
+
+/* Structural spacer pseudo (NEVER_MARGIN): in-flow ::before adds rhythm
+   above the inline sidenote box without using sibling-collapsing margin.
+   The border-left extends through the spacer, framing the whole block. */
+.dk-sn-inline::before {
+  content: "";
+  display: block;
+  height: var(--spacing-sm);
 }
 
 .dk-sn-body {

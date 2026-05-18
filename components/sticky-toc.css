@@ -262,8 +262,11 @@
     display: block;
   }
 
+  .dk-sticky-toc-responsive .dk-sticky-toc-panel {
+    gap: var(--spacing-md);
+  }
+
   .dk-sticky-toc-responsive .dk-sticky-toc-back {
     padding: 0 0 var(--spacing-md); /* padding-audit: ok */
-    margin-bottom: var(--spacing-md);
   }
 }
