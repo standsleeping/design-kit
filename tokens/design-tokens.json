@@ -117,6 +117,28 @@
         "sm": "1.5rem",
         "md": "2rem",
         "lg": "2.5rem"
+      },
+      "size": {
+        "xs": "0.875rem",
+        "sm": "1.5rem",
+        "md": "2rem",
+        "lg": "2.5rem"
+      },
+      "touch-target": {
+        "sm": "2.25rem",
+        "md": "2.75rem",
+        "lg": "3.5rem"
+      },
+      "input-width": {
+        "xs": "4.5rem",
+        "sm": "6.25rem",
+        "md": "7.5rem",
+        "lg": "8.75rem"
+      }
+    },
+    "scrollbar": {
+      "width": {
+        "thin": "0.5rem"
       }
     },
     "radius": {
@@ -202,7 +224,11 @@
       "content-max-width": "680px",
       "three-col-sidebar": "240px",
       "toc-width": "200px",
-      "chrome-bar-h": "2.5rem"
+      "chrome-bar-h": "2.5rem",
+      "app-shell-min-height": "20rem",
+      "content-track-width": "13.75rem",
+      "reading-measure-sm": "64ch",
+      "reading-measure-md": "72ch"
     },
     "themes": {
       "mono-purple": {
