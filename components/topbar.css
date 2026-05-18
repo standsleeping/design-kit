@@ -1,0 +1,61 @@
+/* Chrome strip — a fixed-height bar with optional title and start/end
+   content. Used at the top or bottom of any content region (AppShell main,
+   Sidebar header/footer slot, page-local main wrap, icon rail). All chrome
+   strips on the same y-axis form one peer rail (PEER_RAIL): they share
+   --layout-chrome-bar-h as the base row, and read --chrome-bar-rows (set on
+   .dk-app-shell-body) as the multiplier, so the whole rail grows together
+   when a page declares data-chrome-rows="2" or higher. */
+.dk-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
+  padding: var(--spacing-md);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Bottom variant: rail at the bottom of a column. Border switches sides so
+   it separates the strip from the content above. */
+.dk-topbar-bottom {
+  border-bottom: none;
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+
+/* Title takes the remaining horizontal space, pushing any siblings that
+   follow it to the trailing edge. No spacer span needed. */
+.dk-topbar-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Eyebrow variant: 2xs uppercase muted — for "section / breadcrumb" style
+   titles where the strip names a region rather than the page. */
+.dk-topbar-title-eyebrow {
+  font-size: var(--font-size-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+  color: var(--color-text-muted);
+}
+
+.dk-topbar-subtitle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* For strips without a title where start + end content still need to be
+   pushed apart — append a spacer span. */
+.dk-topbar-spacer {
+  flex: 1;
+  min-width: 0;
+}

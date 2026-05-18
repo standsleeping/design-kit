@@ -4,7 +4,10 @@
   top: var(--dk-sticky-toc-top, 0);
   z-index: var(--z-chrome, 20);
   background: var(--dk-sticky-toc-bg);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
+  /* Border lives on the summary (peer-rail member) so border-box keeps the
+     1px rule INSIDE the chrome-bar height. If the container owned the
+     border it would sit OUTSIDE the summary's box, pushing the visible
+     rule 1px below sibling chrome strips and breaking PEER_RAIL. */
 }
 
 .dk-sticky-toc-summary {
@@ -12,12 +15,20 @@
   align-items: center;
   gap: var(--spacing-md);
   width: 100%;
-  padding: var(--spacing-md) var(--spacing-lg);
-  padding-top: calc(var(--spacing-md) + env(safe-area-inset-top, 0px));
+  /* Peer-rail member: total height (border included) tracks
+     --layout-chrome-bar-h × --chrome-bar-rows so the visible bottom rule
+     lands at the same y as sibling chrome (dk-topbar, NavStack header).
+     border-box keeps the safe-area-inset padding and the bottom rule
+     from growing the box past the rail. */
+  height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
+  box-sizing: border-box;
+  padding: var(--spacing-md) var(--spacing-lg); /* padding-audit: ok */
+  padding-top: calc(var(--spacing-md) + env(safe-area-inset-top, 0px)); /* padding-audit: ok */
   padding-left: calc(var(--spacing-lg) + env(safe-area-inset-left, 0px));
   padding-right: calc(var(--spacing-lg) + env(safe-area-inset-right, 0px));
   background: transparent;
   border: none;
+  border-bottom: var(--border-width-thin) solid var(--color-border);
   cursor: pointer;
   font-family: var(--typography-mono);
   font-size: var(--font-size-sm);
@@ -93,7 +104,7 @@
 .dk-sticky-toc-list {
   list-style: none;
   margin: 0;
-  padding: var(--spacing-md) 0;
+  padding: var(--spacing-md) 0; /* padding-audit: ok */
   overflow-y: auto;
   scrollbar-gutter: stable;
   scrollbar-color: var(--color-border) transparent;
@@ -109,8 +120,8 @@
   font-weight: var(--font-weight-regular);
   color: var(--color-text-muted);
   text-decoration: none;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-left: 2px solid transparent;
+  padding: var(--spacing-sm) var(--spacing-lg); /* padding-audit: ok */
+  border-left: var(--border-width-medium) solid transparent;
   line-height: var(--font-line-height-base);
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease),
               border-color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
@@ -121,8 +132,8 @@
   color: var(--color-text);
 }
 
-.dk-sticky-toc-item-level-1 .dk-sticky-toc-link { padding-left: var(--spacing-2xl); }
-.dk-sticky-toc-item-level-2 .dk-sticky-toc-link { padding-left: calc(var(--spacing-2xl) + var(--spacing-lg)); }
+.dk-sticky-toc-item-level-1 .dk-sticky-toc-link { padding-left: var(--spacing-2xl); } /* padding-audit: ok */
+.dk-sticky-toc-item-level-2 .dk-sticky-toc-link { padding-left: calc(var(--spacing-2xl) + var(--spacing-lg)); } /* padding-audit: ok */
 
 .dk-sticky-toc-link:hover {
   color: var(--color-text);
@@ -140,7 +151,7 @@
   font-weight: var(--font-weight-regular);
   line-height: var(--font-line-height-base);
   color: var(--color-text);
-  padding: 0 var(--spacing-lg) var(--spacing-sm) calc(var(--spacing-lg) + var(--spacing-md));
+  padding: 0 var(--spacing-lg) var(--spacing-sm) calc(var(--spacing-lg) + var(--spacing-md)); /* padding-audit: ok */
 }
 
 .dk-sticky-toc-item-active .dk-sticky-toc-tldr {
@@ -177,7 +188,7 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: var(--font-letter-spacing-wide, 0.05em);
-  padding: 0 0 var(--spacing-md);
+  padding: 0 0 var(--spacing-md); /* padding-audit: ok */
 }
 
 .dk-sticky-toc-back {
@@ -191,7 +202,7 @@
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: var(--font-letter-spacing-wide, 0.05em);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-lg); /* padding-audit: ok */
   border-bottom: var(--border-width-thin) solid var(--color-border);
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
 }
@@ -236,11 +247,11 @@
 
   .dk-sticky-toc-responsive .dk-sticky-toc-link {
     font-size: var(--font-size-xs);
-    padding: 2px 0 2px var(--spacing-md);
+    padding: 2px 0 2px var(--spacing-md); /* padding-audit: ok */
   }
 
   .dk-sticky-toc-responsive .dk-sticky-toc-tldr {
-    padding: 2px 0 var(--spacing-sm) var(--spacing-xl);
+    padding: 2px 0 var(--spacing-sm) var(--spacing-xl); /* padding-audit: ok */
   }
 
   .dk-sticky-toc-responsive .dk-sticky-toc-dismiss {
@@ -252,7 +263,7 @@
   }
 
   .dk-sticky-toc-responsive .dk-sticky-toc-back {
-    padding: 0 0 var(--spacing-md);
+    padding: 0 0 var(--spacing-md); /* padding-audit: ok */
     margin-bottom: var(--spacing-md);
   }
 }

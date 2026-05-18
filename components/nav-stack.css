@@ -21,7 +21,12 @@
 
 .dk-nav-stack-header:not(:has(.dk-nav-stack-back)) {
   align-items: center;
-  min-height: var(--dk-chrome-bar-h, 2.5rem);
+  /* Peer-rail member: height tracks --layout-chrome-bar-h × --chrome-bar-rows
+     so the NavStack title row aligns with sibling chrome strips (dk-topbar,
+     dk-sticky-toc-summary, ...). The :has(.back) variant collapses because a
+     drilled level uses the back-button row as its chrome — already sized via
+     its own dk-nav-stack-back rules. */
+  min-height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
 }
 
 .dk-nav-stack-title {
@@ -29,8 +34,10 @@
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   letter-spacing: var(--font-letter-spacing-normal);
-  /* Match item left edge: items have border-left medium (2) + padding-left md (8). */
-  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm) calc(var(--spacing-md) + var(--border-width-medium));
+  /* Reserve the same accent-stripe channel that items carry, so the title's
+     content edge aligns with their labels (PEER_EDGE_RESERVATION). */
+  padding: var(--spacing-md);
+  border-left: var(--border-width-medium) solid transparent;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -43,7 +50,7 @@
   align-items: center;
   gap: var(--spacing-sm);
   width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-md);
   border: none;
   border-left: var(--border-width-medium) solid transparent;
   background: transparent;
@@ -88,7 +95,6 @@
   overflow-y: auto;
   scrollbar-gutter: stable;
   min-height: 0;
-  padding: var(--spacing-sm) 0;
 }
 
 .dk-nav-stack-list {
@@ -101,7 +107,7 @@
   align-items: center;
   gap: var(--spacing-sm);
   width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-md);
   border: none;
   border-left: var(--border-width-medium) solid transparent;
   background: transparent;
@@ -170,7 +176,7 @@
 }
 
 .dk-nav-stack-section-header {
-  padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
+  padding: var(--spacing-md);
   margin-top: var(--spacing-sm);
   font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-semibold);

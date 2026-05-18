@@ -7,21 +7,55 @@
   overflow: hidden;
 }
 
+/* Header and footer slots are positional only — their chrome treatment
+   (height, padding, border, flex layout) comes from `dk-topbar` /
+   `dk-topbar-bottom` which AppShell.render() composes onto the slot divs.
+   Static-HTML consumers add the same class manually. */
 .dk-app-shell-header,
 .dk-app-shell-footer {
   flex-shrink: 0;
+  min-width: 0;
 }
 
+/* Empty rails collapse so an unused slot leaves no visual residue
+   (EMPTY_STATE_COLLAPSE). */
+.dk-app-shell-header:empty,
+.dk-app-shell-footer:empty {
+  display: none;
+}
+
+/* position: relative so overlay-mode Sidebar children (position: absolute)
+   anchor to the body region, not to the viewport — keeps an overlay sidebar
+   below the AppShell header rail and above the footer rail.
+
+   --chrome-bar-rows is the PEER_RAIL multiplier. Every chrome strip on the
+   header rail (dk-topbar, dk-nav-stack-header, future peers) reads
+   calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1)), so the rail
+   grows uniformly when a page declares a taller chrome. Default is one row;
+   pages that need a two-row rail mark the shell body with
+   data-chrome-rows="2" (or "3", etc.). A single strip that intentionally
+   exits the rail overrides --chrome-bar-rows locally — visible in markup,
+   not buried in component CSS. */
 .dk-app-shell-body {
+  position: relative;
   display: flex;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  --chrome-bar-rows: 1;
 }
+.dk-app-shell-body[data-chrome-rows="2"] { --chrome-bar-rows: 2; }
+.dk-app-shell-body[data-chrome-rows="3"] { --chrome-bar-rows: 3; }
+.dk-app-shell-body[data-chrome-rows="4"] { --chrome-bar-rows: 4; }
 
 .dk-app-shell-left,
 .dk-app-shell-right {
   flex-shrink: 0;
+}
+
+.dk-app-shell-left:empty,
+.dk-app-shell-right:empty {
+  display: none;
 }
 
 .dk-app-shell-main {
