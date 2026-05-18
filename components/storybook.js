@@ -1,61 +1,23 @@
-const CONTRACT_EXPORTS = ['metadata', 'propTypes', 'variants', 'render'];
-const ALLOWED_PROP_TYPES = ['string', 'number', 'boolean', 'enum', 'array', 'object'];
-const MAX_EVENT_LOG = 50;
+// Storybook chrome — sits on top of `runtime.js`. The runtime owns pool scan,
+// contract validation, sibling-CSS loading, slot resolution, the luminance +
+// color-theme toggles, and the event-log capture. This module owns the
+// storybook-specific UI: the component nav list with pool tabs, resizable
+// variant cards, the propTypes inspector, layout persistence across the two
+// resizable Sidebars, the hash-routed selection, and the main() orchestrator.
+import {
+  mountLuminanceToggle,
+  mountColorThemeToggle,
+  scanPool,
+  renderEntry,
+  resolveSlots,
+  runCleanups,
+  installEventLog,
+} from './system/runtime.js';
+import { mountSystemSidebar } from './system/system-sidebar.js';
+import { LEVELS, TARGETS } from './system/nav-data.js';
+
 const CONFIG_URL = 'components/storybook.config.json';
 const LOCAL_CONFIG_URL = 'components/storybook.config.local.json';
-const LUMINANCE_STORAGE_KEY = 'dk-luminance';
-const COLOR_THEME_STORAGE_KEY = 'dk-color-theme';
-const COLOR_THEMES = ['mono-purple', 'monochrome', 'solarized'];
-const DEFAULT_COLOR_THEME = 'mono-purple';
-
-function ensureStylesheet(href, marker) {
-  if (document.querySelector(`link[${marker}]`)) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = href;
-  link.setAttribute(marker, 'true');
-  document.head.append(link);
-}
-
-async function mountLuminanceToggle(mountEl) {
-  if (!mountEl) return;
-  let stored = null;
-  try { stored = localStorage.getItem(LUMINANCE_STORAGE_KEY); } catch { /* ignore */ }
-  const initial = stored === 'light' || stored === 'dark' ? stored : 'auto';
-  if (initial === 'auto') {
-    document.documentElement.removeAttribute('data-luminance');
-  } else {
-    document.documentElement.setAttribute('data-luminance', initial);
-  }
-  ensureStylesheet('components/luminance-toggle.css', 'data-storybook-luminance-css');
-  try {
-    const mod = await import('./luminance-toggle.js');
-    mountEl.innerHTML = '';
-    mountEl.append(mod.render({ value: initial }));
-  } catch (err) {
-    console.warn('[storybook] luminance toggle mount failed:', err);
-  }
-}
-
-async function mountColorThemeToggle(mountEl) {
-  if (!mountEl) return;
-  let stored = null;
-  try { stored = localStorage.getItem(COLOR_THEME_STORAGE_KEY); } catch { /* ignore */ }
-  const initial = COLOR_THEMES.includes(stored) ? stored : DEFAULT_COLOR_THEME;
-  if (initial === DEFAULT_COLOR_THEME) {
-    document.documentElement.removeAttribute('data-color-theme');
-  } else {
-    document.documentElement.setAttribute('data-color-theme', initial);
-  }
-  ensureStylesheet('components/color-theme-toggle.css', 'data-storybook-color-theme-css');
-  try {
-    const mod = await import('./color-theme-toggle.js');
-    mountEl.innerHTML = '';
-    mountEl.append(mod.render({ value: initial }));
-  } catch (err) {
-    console.warn('[storybook] color theme toggle mount failed:', err);
-  }
-}
 
 async function loadConfig() {
   const res = await fetch(CONFIG_URL, { cache: 'no-cache' });
@@ -75,232 +37,35 @@ async function loadConfig() {
   return config;
 }
 
-function conforms(mod) {
-  return CONTRACT_EXPORTS.every((key) => key in mod);
-}
-
-function validatePropTypes(url, propTypes) {
-  if (!propTypes || typeof propTypes !== 'object') {
-    console.warn(`[storybook] ${url}: propTypes must be an object`);
-    return;
-  }
-  for (const [key, descriptor] of Object.entries(propTypes)) {
-    if (!descriptor || typeof descriptor !== 'object') {
-      console.warn(`[storybook] ${url}: propTypes.${key} is not a descriptor object`);
-      continue;
-    }
-    if (!ALLOWED_PROP_TYPES.includes(descriptor.type)) {
-      console.warn(
-        `[storybook] ${url}: propTypes.${key}.type = '${descriptor.type}' is not allowed ` +
-        `(allowed: ${ALLOWED_PROP_TYPES.join(', ')})`,
-      );
-    }
-    if (descriptor.type === 'enum' && !Array.isArray(descriptor.options)) {
-      console.warn(`[storybook] ${url}: propTypes.${key} has type 'enum' but no options array`);
-    }
-  }
-}
-
-async function ensureSiblingStyle(moduleUrl) {
-  const cssUrl = moduleUrl.replace(/\.js$/, '.css');
-  const selector = `link[data-storybook-sibling="${cssUrl}"]`;
-  if (document.querySelector(selector)) return;
-  try {
-    const probe = await fetch(cssUrl, { method: 'HEAD' });
-    if (!probe.ok) return;
-  } catch {
-    return;
-  }
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = cssUrl;
-  link.dataset.storybookSibling = cssUrl;
-  document.head.append(link);
-}
-
-async function loadPoolStylesheet(pool) {
-  if (!pool.stylesheet) return;
-  if (document.querySelector(`link[data-storybook-pool="${pool.name}"]`)) return;
-  const resolved = new URL(pool.stylesheet, document.baseURI).href;
-  const existing = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
-  if (existing.some((l) => l.href === resolved)) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = pool.stylesheet;
-  link.dataset.storybookPool = pool.name;
-  document.head.append(link);
-}
-
-async function resolveComponents(pool) {
-  if (Array.isArray(pool.components)) return pool.components;
-  const manifestUrl = new URL(`${pool.path}/manifest.json`, document.baseURI).href;
-  try {
-    const res = await fetch(manifestUrl, { cache: 'no-cache' });
-    if (!res.ok) throw new Error(`status ${res.status}`);
-    const data = await res.json();
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data.components)) return data.components;
-    console.warn(`[storybook] ${manifestUrl} has unexpected shape; expected array or { components: [] }`);
-    return [];
-  } catch (err) {
-    console.warn(`[storybook] ${pool.name}: no components array and manifest fetch failed: ${err.message}`);
-    return [];
-  }
-}
-
-async function scanPool(pool) {
-  await loadPoolStylesheet(pool);
-  const registry = [];
-  const components = await resolveComponents(pool);
-  for (const filename of components) {
-    const url = new URL(`${pool.path}/${filename}`, document.baseURI).href;
-    let mod;
-    try {
-      mod = await import(url);
-    } catch (err) {
-      console.warn(`[storybook] failed to import ${url}:`, err);
-      continue;
-    }
-    if (!conforms(mod)) {
-      console.warn(
-        `[storybook] ${url} does not conform to contract (expected: ${CONTRACT_EXPORTS.join(', ')})`,
-      );
-      continue;
-    }
-    validatePropTypes(url, mod.propTypes);
-    await ensureSiblingStyle(url);
-    registry.push({ pool: pool.name, url, mod });
-  }
-  return registry;
-}
-
-function renderComponentList(listEl, registry, active, onSelect, showPoolHeaders) {
-  listEl.innerHTML = '';
+// Build NavStack items from the component registry. Section-headers separate
+// pools when more than one is loaded; section-items render each component.
+// The id is `<pool>/<componentName>` — same shape as the URL hash that
+// storybook routes on. Matches the canonical sidebar pattern in
+// components/system/nav-data.js (used on the index page).
+function buildNavStackItems(registry, active, showPoolHeaders) {
+  const items = [];
   let lastPool = null;
   for (const entry of registry) {
     if (showPoolHeaders && entry.pool !== lastPool) {
-      const header = document.createElement('span');
-      header.className = 'storybook-pool-header';
-      header.textContent = entry.pool;
-      listEl.append(header);
+      items.push({
+        kind: 'section-header',
+        id: `pool-${entry.pool}`,
+        label: entry.pool,
+      });
       lastPool = entry.pool;
     }
-    const link = document.createElement('a');
-    link.href = `#${entry.pool}/${entry.mod.metadata.name}`;
-    link.className = 'storybook-component-link';
-    if (entry.pool === active?.pool && entry.mod.metadata.name === active?.mod.metadata.name) {
-      link.classList.add('is-active');
-    }
-    const nameEl = document.createElement('span');
-    nameEl.textContent = entry.mod.metadata.name;
-    link.append(nameEl);
-    if (entry.mod.metadata.examplePage) {
-      link.classList.add('storybook-component-link-has-example');
-      const marker = document.createElement('span');
-      marker.className = 'storybook-component-link-example-marker';
-      marker.setAttribute('aria-hidden', 'true');
-      marker.textContent = '›';
-      link.append(marker);
-      link.title = `${entry.mod.metadata.name} has an example page`;
-    }
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      onSelect(entry);
+    const id = `${entry.pool}/${entry.mod.metadata.name}`;
+    const isActive =
+      entry.pool === active?.pool &&
+      entry.mod.metadata.name === active?.mod.metadata.name;
+    items.push({
+      kind: showPoolHeaders ? 'section-item' : 'item',
+      id,
+      label: entry.mod.metadata.name,
+      selected: isActive,
     });
-    listEl.append(link);
   }
-}
-
-const POOL_FILTER_STORAGE_KEY = 'dk-storybook-pool-filter';
-const POOL_FILTER_ALL = 'all';
-
-function loadPoolFilter() {
-  try {
-    return localStorage.getItem(POOL_FILTER_STORAGE_KEY) || POOL_FILTER_ALL;
-  } catch {
-    return POOL_FILTER_ALL;
-  }
-}
-
-function savePoolFilter(value) {
-  try {
-    localStorage.setItem(POOL_FILTER_STORAGE_KEY, value);
-  } catch {
-    /* quota or disabled — ignore */
-  }
-}
-
-function renderPoolFilter(filterEl, poolNames, activeFilter, onChange) {
-  filterEl.innerHTML = '';
-  if (poolNames.length < 2) {
-    filterEl.hidden = true;
-    return;
-  }
-  filterEl.hidden = false;
-  const entries = [POOL_FILTER_ALL, ...poolNames];
-  entries.forEach((value, idx) => {
-    if (idx > 0) {
-      const sep = document.createElement('span');
-      sep.className = 'storybook-pool-tab-separator';
-      sep.setAttribute('aria-hidden', 'true');
-      sep.textContent = '\u00B7';
-      filterEl.append(sep);
-    }
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'storybook-pool-tab';
-    btn.dataset.poolFilter = value;
-    btn.setAttribute('role', 'tab');
-    const isActive = value === activeFilter;
-    btn.setAttribute('aria-selected', String(isActive));
-    if (isActive) btn.classList.add('storybook-pool-tab-active');
-    btn.textContent = value === POOL_FILTER_ALL ? 'All' : value;
-    btn.addEventListener('click', () => onChange(value));
-    filterEl.append(btn);
-  });
-}
-
-function renderEntry(mod, props, cleanups) {
-  const rendered = mod.render(props ?? {});
-  if (rendered instanceof HTMLElement) return rendered;
-  if (typeof rendered.cleanup === 'function') cleanups.push(rendered.cleanup);
-  return rendered.node;
-}
-
-function renderSpec(spec, registry, cleanups) {
-  const entry = registry.find((e) => e.mod.metadata.name === spec.component);
-  if (!entry) {
-    console.warn(`[storybook] slot component not found: ${spec.component}`);
-    const fallback = document.createElement('span');
-    fallback.textContent = `[missing: ${spec.component}]`;
-    return fallback;
-  }
-  const node = renderEntry(entry.mod, spec.props, cleanups);
-  if (spec.slots) resolveSlots(node, spec.slots, registry, cleanups);
-  return node;
-}
-
-function resolveSlots(root, slots, registry, cleanups) {
-  for (const [key, value] of Object.entries(slots)) {
-    const target = root.matches?.(`[data-slot="${key}"]`)
-      ? root
-      : root.querySelector(`[data-slot="${key}"]`);
-    if (!target) {
-      console.warn(`[storybook] no [data-slot="${key}"] element in shell`);
-      continue;
-    }
-    const specs = Array.isArray(value) ? value : [value];
-    for (const spec of specs) {
-      target.append(renderSpec(spec, registry, cleanups));
-    }
-  }
-}
-
-function runCleanups(cleanups) {
-  for (const fn of cleanups) {
-    try { fn(); } catch (err) { console.warn('[storybook] cleanup failed:', err); }
-  }
-  cleanups.length = 0;
+  return items;
 }
 
 const RESIZE_MIN = 40;
@@ -477,65 +242,6 @@ function renderVariants(variantsEl, entry, width, height, registry, cleanups, ov
   }
 }
 
-function installEventLog(previewRoot, logEl) {
-  const events = [];
-
-  const renderLog = () => {
-    logEl.innerHTML = '';
-    if (events.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'storybook-event-empty';
-      empty.textContent = 'No events yet. Interact with a variant above.';
-      logEl.append(empty);
-      return;
-    }
-    for (const ev of events) {
-      const row = document.createElement('div');
-      row.className = 'storybook-event-row';
-      const time = new Date(ev.t).toTimeString().slice(0, 8);
-      const meta = document.createElement('span');
-      meta.className = 'storybook-event-meta';
-      meta.textContent = `${time} · ${ev.name}`;
-      const detail = document.createElement('span');
-      detail.className = 'storybook-event-detail';
-      detail.textContent = JSON.stringify(ev.detail);
-      row.append(meta, detail);
-      logEl.append(row);
-    }
-    logEl.scrollTop = logEl.scrollHeight;
-  };
-
-  const originalDispatch = EventTarget.prototype.dispatchEvent;
-  EventTarget.prototype.dispatchEvent = function (event) {
-    // Capture the dispatch sequence *before* handlers run so compound events
-    // show cause-above-effect: a handler that dispatches a follow-up event
-    // nests inside the outer dispatch, so logging at start (not at return)
-    // keeps the outer event chronologically earlier than its consequences.
-    if (
-      event instanceof CustomEvent &&
-      this instanceof Node &&
-      previewRoot.contains(this)
-    ) {
-      try {
-        events.push({ t: Date.now(), name: event.type, detail: event.detail });
-        if (events.length > MAX_EVENT_LOG) events.splice(0, events.length - MAX_EVENT_LOG);
-        renderLog();
-      } catch {
-        /* swallow */
-      }
-    }
-    return originalDispatch.call(this, event);
-  };
-
-  renderLog();
-  return {
-    clear: () => {
-      events.length = 0;
-      renderLog();
-    },
-  };
-}
-
 function hashToSelection(hash, registry) {
   if (!hash || !hash.startsWith('#')) return registry[0];
   const [poolName, name] = hash.slice(1).split('/');
@@ -574,48 +280,47 @@ function saveLayout(layout) {
   }
 }
 
-function applyLayout(storybookEl, layout) {
-  storybookEl.style.gridTemplateColumns = `${layout.nav}px 1fr ${layout.inspector}px`;
-}
-
-function installResize() {
-  const storybookEl = document.querySelector('.storybook');
-  if (!storybookEl) return;
+// Mount nav and inspector content into left + right Sidebars inside the
+// AppShell. Sidebar's built-in resizer + sidebar:resize event drives
+// persistence; LAYOUT_CONSTRAINTS becomes minWidth/maxWidth props.
+async function mountSidebars() {
+  const inspectorHost = document.querySelector('[data-storybook-inspector-host]');
+  const navMount = document.querySelector('.dk-app-shell-left');
+  const inspectorMount = document.querySelector('.dk-app-shell-right');
+  if (!inspectorHost || !navMount || !inspectorMount) return null;
 
   const layout = loadLayout();
-  applyLayout(storybookEl, layout);
+  const sidebarMod = await import('./sidebar.js');
 
-  for (const handle of document.querySelectorAll('[data-storybook-resize]')) {
-    const key = handle.dataset.storybookResize;
-    const constraints = LAYOUT_CONSTRAINTS[key];
-    if (!constraints) continue;
+  const navSb = sidebarMod.render({
+    side: 'left',
+    width: layout.nav,
+    minWidth: LAYOUT_CONSTRAINTS.nav.min,
+    maxWidth: LAYOUT_CONSTRAINTS.nav.max,
+    resizable: true,
+  });
+  const inspectorSb = sidebarMod.render({
+    side: 'right',
+    width: layout.inspector,
+    minWidth: LAYOUT_CONSTRAINTS.inspector.min,
+    maxWidth: LAYOUT_CONSTRAINTS.inspector.max,
+    resizable: true,
+  });
 
-    handle.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      handle.setPointerCapture(e.pointerId);
-      const startX = e.clientX;
-      const startWidth = layout[key];
+  inspectorSb.querySelector('[data-slot="main"]').append(inspectorHost);
+  navMount.append(navSb);
+  inspectorMount.append(inspectorSb);
 
-      const onMove = (moveEvent) => {
-        const delta = key === 'nav'
-          ? moveEvent.clientX - startX
-          : startX - moveEvent.clientX;
-        const next = Math.max(constraints.min, Math.min(constraints.max, startWidth + delta));
-        layout[key] = next;
-        applyLayout(storybookEl, layout);
-      };
+  navSb.addEventListener('sidebar:resize', (e) => {
+    layout.nav = e.detail.width;
+    saveLayout(layout);
+  });
+  inspectorSb.addEventListener('sidebar:resize', (e) => {
+    layout.inspector = e.detail.width;
+    saveLayout(layout);
+  });
 
-      const onUp = (upEvent) => {
-        handle.releasePointerCapture(upEvent.pointerId);
-        handle.removeEventListener('pointermove', onMove);
-        handle.removeEventListener('pointerup', onUp);
-        saveLayout(layout);
-      };
-
-      handle.addEventListener('pointermove', onMove);
-      handle.addEventListener('pointerup', onUp);
-    });
-  }
+  return { navSlot: navSb.querySelector('[data-slot="main"]') };
 }
 
 async function main() {
@@ -623,8 +328,6 @@ async function main() {
 
   const el = {
     count: document.querySelector('[data-storybook-count]'),
-    list: document.querySelector('[data-storybook-list]'),
-    poolFilter: document.querySelector('[data-storybook-pool-filter]'),
     name: document.querySelector('[data-storybook-component-name]'),
     example: document.querySelector('[data-storybook-component-example]'),
     widthSlider: document.querySelector('[data-storybook-width-slider]'),
@@ -641,9 +344,10 @@ async function main() {
     colorThemeMount: document.querySelector('[data-storybook-color-theme]'),
   };
 
-  await Promise.all([
+  const [, , sidebars] = await Promise.all([
     mountLuminanceToggle(el.luminanceMount),
     mountColorThemeToggle(el.colorThemeMount),
+    mountSidebars(),
   ]);
 
   let registry = [];
@@ -671,16 +375,6 @@ async function main() {
   let height = Number(el.heightSlider.value);
   let overrides = {};
   const sizeOverrides = new Map();
-  let poolFilter = loadPoolFilter();
-  if (poolFilter !== POOL_FILTER_ALL && !poolNames.includes(poolFilter)) {
-    poolFilter = POOL_FILTER_ALL;
-  }
-
-  const visibleRegistry = () =>
-    poolFilter === POOL_FILTER_ALL
-      ? registry
-      : registry.filter((e) => e.pool === poolFilter);
-
   const updateFooter = () => {
     if (el.footerHash) {
       el.footerHash.textContent = `#${active.pool}/${active.mod.metadata.name}`;
@@ -695,17 +389,64 @@ async function main() {
 
   const variantCallbacks = { onResize: updateFooter };
 
-  const paint = () => {
-    const visible = visibleRegistry();
-    const showPoolHeaders = new Set(visible.map((e) => e.pool)).size > 1;
-    renderComponentList(el.list, visible, active, select, showPoolHeaders);
-    if (el.poolFilter) {
-      renderPoolFilter(el.poolFilter, poolNames, poolFilter, (next) => {
-        poolFilter = next;
-        savePoolFilter(next);
-        paint();
-      });
+  // NavStack lifecycle. Storybook delegates to mountSystemSidebar with an
+  // augmented two-level structure: the canonical system root (with the
+  // 'storybook' item rewritten as a branch into the sub-level) plus a
+  // 'storybook' sub-level whose items are the component registry. Initial
+  // path drills the user straight into the storybook sub-level; the
+  // NavStack back button pops them to the system root, from which any
+  // other system page is one click away. Re-renders on every paint so the
+  // selected component reflects the active entry.
+  let currentNav = null;
+  const handleNavSelect = (e) => {
+    const id = e.detail.id;
+    if (id.startsWith('pool-')) return;
+    if (id in TARGETS) {
+      const target = TARGETS[id];
+      // Token anchors (#colors, #typography, ...) live on the index page;
+      // navigate there rather than mutate storybook's own #pool/component
+      // hash, which would mis-route the component selection.
+      window.location.href = target.startsWith('#')
+        ? `index.html${target}`
+        : target;
+      return;
     }
+    const [poolName, componentName] = id.split('/');
+    const entry = registry.find(
+      (e2) => e2.pool === poolName && e2.mod.metadata.name === componentName,
+    );
+    if (entry) select(entry);
+  };
+  const renderNav = async () => {
+    if (!sidebars) return;
+    if (currentNav) currentNav.remove();
+    const componentItems = buildNavStackItems(
+      registry, active, poolNames.length > 1,
+    );
+    const systemRoot = {
+      ...LEVELS[0],
+      items: LEVELS[0].items.map((item) =>
+        item.id === 'storybook'
+          ? { ...item, kind: 'branch', branchTo: 'storybook' }
+          : item,
+      ),
+    };
+    const storybookLevel = {
+      id: 'storybook',
+      title: 'Components',
+      items: componentItems,
+    };
+    currentNav = await mountSystemSidebar({
+      host: sidebars.navSlot,
+      levels: [systemRoot, storybookLevel],
+      current: 'storybook',
+      initialPath: ['root', 'storybook'],
+      onSelect: handleNavSelect,
+    });
+  };
+
+  const paint = () => {
+    renderNav();
     el.name.textContent = active.mod.metadata.name;
     if (el.example) {
       const examplePage = active.mod.metadata.examplePage;
@@ -892,8 +633,6 @@ async function main() {
       }
     });
   }
-
-  installResize();
 
   for (const tab of document.querySelectorAll('[data-storybook-inspector-tab]')) {
     tab.addEventListener('click', () => {

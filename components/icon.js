@@ -1,4 +1,4 @@
-import { iconNames, iconMeta, icon as buildIcon } from './icons.js';
+import { iconNames, iconMeta, icon as buildIcon } from './system/icons.js';
 
 export const metadata = {
   name: 'Icon',

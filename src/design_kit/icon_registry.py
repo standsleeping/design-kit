@@ -1,4 +1,4 @@
-"""Generate components/icons.js from vendored Radix SVGs.
+"""Generate components/system/icons.js from vendored Radix SVGs.
 
 The registry pairs each SVG with curated metadata (category, when-to-use
 guidance) so consumers see one canonical surface for icon selection.
@@ -11,6 +11,10 @@ exports:
     iconMeta:  Record<name, Meta>    -- category + guidance per icon
     iconCategories: Category[]       -- grouping order for preview surfaces
     icon(name): SVGElement | null    -- factory; clones the parsed markup
+
+The output lives in components/system/ alongside the other framework
+infrastructure (runtime.js, nav-data.js, system-sidebar.js), so the
+components/ top level holds only contract-conformant components.
 
 The generator is invoked from build.py before the components/ tree is copied
 into dist/, so the published bundle always reflects what's on disk.
@@ -28,6 +32,7 @@ from design_kit.logging import get_logger
 logger = get_logger(__name__)
 
 ICONS_DIRNAME = "icons"
+SYSTEM_DIRNAME = "system"
 REGISTRY_FILENAME = "icons.js"
 
 
@@ -303,7 +308,7 @@ export function icon(name) {{
 
 
 def generate_registry(components_dir: Path) -> Path:
-    """Write components/icons.js based on components/icons/*.svg."""
+    """Write components/system/icons.js based on components/icons/*.svg."""
     icons_dir = components_dir / ICONS_DIRNAME
     if not icons_dir.is_dir():
         raise FileNotFoundError(f"Icons directory not found: {icons_dir}")
@@ -313,7 +318,9 @@ def generate_registry(components_dir: Path) -> Path:
     markup = _markup_payload(icons_dir, CURATED_ICONS)
 
     module = _render_module(categories, meta, markup)
-    out_path = components_dir / REGISTRY_FILENAME
+    system_dir = components_dir / SYSTEM_DIRNAME
+    system_dir.mkdir(parents=True, exist_ok=True)
+    out_path = system_dir / REGISTRY_FILENAME
     out_path.write_text(module, encoding="utf-8")
     logger.info(f"Generated {out_path} ({len(markup)} icons)")
     return out_path

@@ -1,4 +1,4 @@
-import { icon as buildIcon } from './icons.js';
+import { icon as buildIcon } from './system/icons.js';
 
 export const metadata = {
   name: 'NavStack',
