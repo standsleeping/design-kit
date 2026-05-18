@@ -17,11 +17,38 @@ def test_build_creates_output_files(tmp_path: Path) -> None:
     css_content = tokens_css.read_text(encoding="utf-8")
     assert "@layer" in css_content
 
-    preview_html = tmp_path / "preview.html"
-    assert preview_html.exists()
-    html_content = preview_html.read_text(encoding="utf-8")
+    index_html = tmp_path / "index.html"
+    assert index_html.exists()
+    html_content = index_html.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in html_content
     assert "tokens.css" in html_content
+
+
+def test_build_stamps_version_header_on_tokens_css(tmp_path: Path) -> None:
+    """tokens.css carries a version header so consumers can identify the source."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    css_content = (tmp_path / "tokens.css").read_text(encoding="utf-8")
+    assert css_content.startswith("/* design-kit tokens v")
+    assert "regenerate via `design-kit build`" in css_content
+
+
+def test_build_emits_tokens_manifest(tmp_path: Path) -> None:
+    """Writes a manifest with version, generated_at, and an artifact sha256."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    manifest_path = tmp_path / "tokens.manifest.json"
+    assert manifest_path.exists()
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["name"] == "design-kit-tokens"
+    assert isinstance(manifest["version"], str) and manifest["version"]
+    assert "generated_at" in manifest
+
+    tokens_artifact = manifest["artifacts"]["tokens.css"]
+    assert len(tokens_artifact["sha256"]) == 64
+    assert tokens_artifact["bytes"] == len(
+        (tmp_path / "tokens.css").read_bytes()
+    )
 
 
 def test_build_copies_components(tmp_path: Path) -> None:
@@ -65,4 +92,4 @@ def test_build_creates_output_dir(tmp_path: Path) -> None:
 
     assert output_dir.is_dir()
     assert (output_dir / "tokens.css").exists()
-    assert (output_dir / "preview.html").exists()
+    assert (output_dir / "index.html").exists()

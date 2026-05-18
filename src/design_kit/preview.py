@@ -2,8 +2,39 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from design_kit.icon_registry import CURATED_ICONS, ICON_CATEGORIES, normalise_svg
 from design_kit.token_css import GOOGLE_FONTS_LINK
+
+# Palette families shown in the preview, in display order. Excludes
+# white/black (rendered separately if at all) and solarized (theme-specific,
+# not part of the primary palette surface).
+PALETTE_FAMILIES = ("gray", "purple", "blue", "teal", "green", "yellow", "orange", "red")
+TOKENS_PATH = Path("tokens/design-tokens.json")
+
+
+def _load_palette() -> list[tuple[str, list[tuple[str, str]]]]:
+    """Load the primitive color palette from design-tokens.json.
+
+    Reading the palette at build time (rather than hardcoding the hex values
+    in this file) keeps preview.py from being a silent drift surface — the
+    swatches always reflect what tokens.json actually defines. Also lets the
+    token-leak audit run cleanly over this file: no raw hex literals here,
+    only data loaded from the single source of truth.
+    """
+    data = json.loads(TOKENS_PATH.read_text(encoding="utf-8"))
+    palette = data["primitive"]["color"]
+    out: list[tuple[str, list[tuple[str, str]]]] = []
+    for family in PALETTE_FAMILIES:
+        shades = palette.get(family)
+        if not isinstance(shades, dict):
+            continue
+        out.append(
+            (family.capitalize(), [(shade, hex_val) for shade, hex_val in shades.items()])
+        )
+    return out
 
 
 def generate_preview_html() -> str:
@@ -14,6 +45,7 @@ def generate_preview_html() -> str:
     """
     sidebar = _sidebar()
     header = _header()
+    nav_script = _nav_script()
     sections = [
         _section_colors(),
         _section_typography(),
@@ -36,7 +68,9 @@ def generate_preview_html() -> str:
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="components/app-shell.css">
   <link rel="stylesheet" href="components/sidebar.css">
+  <link rel="stylesheet" href="components/topbar.css">
   <link rel="stylesheet" href="components/menu-item.css">
+  <link rel="stylesheet" href="components/nav-stack.css">
 {GOOGLE_FONTS_LINK}
   <style>
     /* Viewport-lock the page so .dk-app-shell's height: 100% resolves:
@@ -104,7 +138,7 @@ def generate_preview_html() -> str:
     }}
     .swatch-color {{
       height: 32px;
-      border: var(--border-width-thin) solid rgba(128, 128, 128, 0.3);
+      border: var(--border-width-thin) solid var(--color-border);
     }}
     .swatch-label {{
       font-family: var(--typography-mono);
@@ -150,72 +184,6 @@ def generate_preview_html() -> str:
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
       min-width: 60px;
-    }}
-    .header-bar {{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--spacing-md) var(--spacing-xl);
-      border-bottom: var(--border-width-thin) solid var(--color-border);
-      background: var(--color-bg);
-    }}
-    .header-title {{
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text);
-      text-transform: uppercase;
-      letter-spacing: var(--font-letter-spacing-wide);
-    }}
-    .header-note {{
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-xs);
-      color: var(--color-text-muted);
-    }}
-    .sidebar-header-block {{
-      padding: var(--spacing-lg) var(--spacing-lg);
-      border-bottom: var(--border-width-thin) solid var(--color-border);
-    }}
-    .sidebar-brand {{
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--font-letter-spacing-wider);
-      color: var(--color-text);
-    }}
-    .sidebar-version {{
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-xs);
-      color: var(--color-text-muted);
-    }}
-    .nav-section {{
-      padding: var(--spacing-sm) 0;
-    }}
-    .nav-section-title {{
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-semibold);
-      text-transform: uppercase;
-      letter-spacing: var(--font-letter-spacing-wide);
-      color: var(--color-text-muted);
-      padding: var(--spacing-sm) var(--spacing-lg);
-    }}
-    .nav-link {{
-      display: block;
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-xs);
-      color: var(--color-text-muted);
-      text-decoration: none;
-      padding: var(--spacing-xs) var(--spacing-lg) var(--spacing-xs) var(--spacing-2xl);
-    }}
-    .nav-link:hover {{
-      color: var(--color-text);
-      background: var(--color-hover-bg);
-      text-decoration: none;
-    }}
-    .main-content {{
-      padding: var(--spacing-xl) 0;
     }}
     .heading-demo {{
       margin-bottom: var(--spacing-md);
@@ -290,14 +258,14 @@ def generate_preview_html() -> str:
 
   <div class="dk-app-shell-body">
     {sidebar}
-    <div class="dk-app-shell-main">
-      <div id="main-content" class="main-content">
-        {main_content}
-      </div>
-    </div>
+    <main id="main-content" class="dk-app-shell-main">
+      {main_content}
+    </main>
   </div>
 
 </div>
+
+{nav_script}
 </body>
 </html>
 """
@@ -305,39 +273,28 @@ def generate_preview_html() -> str:
 
 def _header() -> str:
     return """\
-  <div class="dk-app-shell-header header-bar">
-    <span class="header-title">Design Kit \u00b7 Tokens</span>
-    <span class="header-note"><a href="storybook.html">Open storybook \u2192</a></span>
-  </div>"""
+  <header class="dk-app-shell-header dk-topbar">
+    <span class="dk-topbar-title dk-topbar-title-eyebrow">Design Kit</span>
+  </header>"""
+
+
+def _nav_script() -> str:
+    """Include the shared system-sidebar mounting script.
+
+    The same script and the same nav data drive the sidebar on every page,
+    so the navigation is cohesive across the system. See
+    components/system/system-sidebar.js and planning/design-kit/nav-model.md.
+    """
+    return '<script type="module" src="components/system/system-sidebar.js"></script>'
 
 
 def _sidebar() -> str:
     return """\
-  <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left" style="width: 220px;">
-    <div class="dk-sidebar-header sidebar-header-block">
-      <div class="sidebar-brand">DESIGN KIT</div>
-      <div class="sidebar-version">v0.1</div>
-    </div>
-
-    <div class="dk-sidebar-main">
-      <div class="nav-section">
-        <div class="nav-section-title">Tokens</div>
-        <a class="nav-link" href="#colors">Colors</a>
-        <a class="nav-link" href="#typography">Typography</a>
-        <a class="nav-link" href="#display-typography">Display Typography</a>
-        <a class="nav-link" href="#spacing">Spacing</a>
-        <a class="nav-link" href="#borders">Borders</a>
-        <a class="nav-link" href="#tables">Tables</a>
-        <a class="nav-link" href="#icons">Icons</a>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-title">Explore</div>
-        <a class="nav-link" href="storybook.html">Storybook</a>
-        <a class="nav-link" href="taxonomy.html">Design Taxonomy</a>
-        <a class="nav-link" href="line-height-units.html">Line Height Units</a>
-      </div>
-    </div>
+  <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+         data-state="expanded"
+         style="--dk-sidebar-width: 220px;"
+         aria-label="Design Kit navigation">
+    <div class="dk-sidebar-main" data-slot="main" data-system-nav></div>
   </aside>"""
 
 
@@ -367,105 +324,7 @@ def _color_family_swatches(family: str, shades: list[tuple[str, str]]) -> str:
 
 
 def _section_colors() -> str:
-    families: list[tuple[str, list[tuple[str, str]]]] = [
-        (
-            "Gray",
-            [
-                ("50", "#F5F5F5"),
-                ("100", "#ECECED"),
-                ("200", "#C5C3C7"),
-                ("300", "#9F9CA2"),
-                ("400", "#7B777F"),
-                ("500", "#57545A"),
-                ("600", "#363438"),
-                ("700", "#181619"),
-            ],
-        ),
-        (
-            "Purple",
-            [
-                ("100", "#F1E8FF"),
-                ("200", "#D6B6FF"),
-                ("300", "#BF80FF"),
-                ("400", "#AC38FF"),
-                ("500", "#8300CA"),
-                ("600", "#530082"),
-                ("700", "#280042"),
-            ],
-        ),
-        (
-            "Blue",
-            [
-                ("100", "#EDF0FF"),
-                ("200", "#A6B2FF"),
-                ("300", "#5E74FF"),
-                ("400", "#4758C2"),
-                ("500", "#303B85"),
-                ("600", "#28316C"),
-                ("700", "#151732"),
-            ],
-        ),
-        (
-            "Teal",
-            [
-                ("100", "#80FFFF"),
-                ("200", "#00D9D9"),
-                ("300", "#00AEAE"),
-                ("400", "#008686"),
-                ("500", "#005F5F"),
-                ("600", "#003B3B"),
-                ("700", "#001A1A"),
-            ],
-        ),
-        (
-            "Green",
-            [
-                ("100", "#C0FF80"),
-                ("200", "#8FD900"),
-                ("300", "#72AE00"),
-                ("400", "#578600"),
-                ("500", "#3C5F00"),
-                ("600", "#243C00"),
-                ("700", "#0E1B00"),
-            ],
-        ),
-        (
-            "Yellow",
-            [
-                ("100", "#FFF2C1"),
-                ("200", "#FFE684"),
-                ("300", "#FFD946"),
-                ("400", "#FFCC08"),
-                ("500", "#E6B605"),
-                ("600", "#CDA003"),
-                ("700", "#B38900"),
-            ],
-        ),
-        (
-            "Orange",
-            [
-                ("100", "#FFF5EC"),
-                ("200", "#FFD6B8"),
-                ("300", "#FFA473"),
-                ("400", "#FF771C"),
-                ("500", "#D35713"),
-                ("600", "#A83709"),
-                ("700", "#7C1700"),
-            ],
-        ),
-        (
-            "Red",
-            [
-                ("100", "#FFECEC"),
-                ("200", "#FFBDBD"),
-                ("300", "#FF8080"),
-                ("400", "#FF1616"),
-                ("500", "#BF0000"),
-                ("600", "#7F0000"),
-                ("700", "#450000"),
-            ],
-        ),
-    ]
+    families = _load_palette()
 
     family_html = "\n".join(
         _color_family_swatches(name, shades) for name, shades in families

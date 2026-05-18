@@ -1,19 +1,30 @@
 """Build command: generate CSS and preview pages into an output directory."""
 
+import hashlib
 import json
 import shutil
 import time
+from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version as pkg_version
 from pathlib import Path
+from typing import TypedDict
 
 from design_kit.border_audit import AuditOutcome, run_border_audit
+from design_kit.border_width_audit import (
+    BorderWidthAuditOutcome,
+    run_border_width_audit,
+)
 from design_kit.contrast_self_test import run as run_contrast_audit
 from design_kit.focus_ring_audit import (
     FocusRingAuditOutcome,
     run_focus_ring_audit,
 )
-from design_kit.icon_registry import REGISTRY_FILENAME, generate_registry
+from design_kit.icon_registry import generate_registry
 from design_kit.logging import get_logger
+from design_kit.padding_audit import PaddingAuditOutcome, run_padding_audit
+from design_kit.page_audit import PageAuditOutcome, run_page_audit
 from design_kit.preview import generate_preview_html
+from design_kit.radius_audit import RadiusAuditOutcome, run_radius_audit
 from design_kit.token_css import generate_token_css
 from design_kit.token_leak_audit import LeakAuditOutcome, run_token_leak_audit
 
@@ -21,9 +32,32 @@ logger = get_logger(__name__)
 
 COMPONENTS_DIR = Path("components")
 PAGES_DIR = Path("pages")
-# Runtime / infrastructure JS files that live alongside components but are
-# not themselves contract-conformant components.
-NON_COMPONENT_JS = {"storybook.js", REGISTRY_FILENAME}
+# Top-level .js files under components/ that are framework infrastructure,
+# not contract-conformant components. The rest of the framework lives under
+# components/system/ and is excluded by directory; storybook.js stays at
+# the top level because pages/storybook.html loads it directly.
+NON_COMPONENT_TOP_LEVEL_JS = {"storybook.js"}
+
+PACKAGE_NAME = "design-kit"
+
+
+class ArtifactInfo(TypedDict):
+    sha256: str
+    bytes: int
+
+
+class TokenManifest(TypedDict):
+    name: str
+    version: str
+    generated_at: str
+    artifacts: dict[str, ArtifactInfo]
+
+
+def _read_version() -> str:
+    try:
+        return pkg_version(PACKAGE_NAME)
+    except PackageNotFoundError:
+        return "0.0.0+unknown"
 
 
 def build(tokens_path: Path, output_dir: Path) -> None:
@@ -38,10 +72,16 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     else:
         logger.warning("Skipping icon registry: components/icons/ not found")
 
-    css = generate_token_css(tokens_path)
+    version = _read_version()
+    header = (
+        f"/* design-kit tokens v{version}\n"
+        " * regenerate via `design-kit build`; do not edit manually\n"
+        " */\n"
+    )
+    css = header + generate_token_css(tokens_path)
     css_path = output_dir / "tokens.css"
     css_path.write_text(css, encoding="utf-8")
-    logger.info(f"Generated {css_path}")
+    logger.info(f"Generated {css_path} (v{version})")
 
     audit_results, audit_report = run_contrast_audit(css_path)
     audit_failures = [r for r in audit_results if not r.passed]
@@ -60,8 +100,26 @@ def build(tokens_path: Path, output_dir: Path) -> None:
         )
     logger.info(f"Contrast audit passed ({len(audit_results)} checks)")
 
+    encoded_css = css.encode("utf-8")
+    tokens_manifest: TokenManifest = {
+        "name": "design-kit-tokens",
+        "version": version,
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "artifacts": {
+            "tokens.css": {
+                "sha256": hashlib.sha256(encoded_css).hexdigest(),
+                "bytes": len(encoded_css),
+            }
+        },
+    }
+    tokens_manifest_path = output_dir / "tokens.manifest.json"
+    tokens_manifest_path.write_text(
+        json.dumps(tokens_manifest, indent=2) + "\n", encoding="utf-8"
+    )
+    logger.info(f"Generated {tokens_manifest_path} (v{version})")
+
     html = generate_preview_html()
-    html_path = output_dir / "preview.html"
+    html_path = output_dir / "index.html"
     html_path.write_text(html, encoding="utf-8")
     logger.info(f"Generated {html_path}")
 
@@ -84,7 +142,7 @@ def build(tokens_path: Path, output_dir: Path) -> None:
         manifest = sorted(
             p.name
             for p in dest_components.glob("*.js")
-            if p.name not in NON_COMPONENT_JS
+            if p.name not in NON_COMPONENT_TOP_LEVEL_JS
         )
         manifest_path = dest_components / "manifest.json"
         manifest_path.write_text(
@@ -94,17 +152,20 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     else:
         logger.warning(f"Components directory not found: {COMPONENTS_DIR}")
 
-    leak_result = run_token_leak_audit(COMPONENTS_DIR)
+    leak_result = run_token_leak_audit(
+        COMPONENTS_DIR,
+        pages_dir=PAGES_DIR,
+        extra_files=[Path("src/design_kit/preview.py")],
+    )
     if leak_result.outcome == LeakAuditOutcome.FAILED:
         logger.error(
-            f"Token-leak audit found {len(leak_result.leaks)} raw-color literal(s) "
-            f"in component CSS"
+            f"Token-leak audit found {len(leak_result.leaks)} raw-color literal(s)"
         )
         for leak in leak_result.leaks:
             logger.error(f"  {leak.file}:{leak.line}: {leak.value} — {leak.snippet}")
         raise RuntimeError(
             f"Token-leak audit found {len(leak_result.leaks)} raw-color literal(s); "
-            f"see TOKEN_DRIVEN_DESIGN — components consume colors via var(--color-*)"
+            f"see TOKEN_DRIVEN_DESIGN — every surface consumes colors via var(--color-*)"
         )
     logger.info("Token-leak audit passed")
 
@@ -123,6 +184,88 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             f"controls with /* focus-ring: standalone */"
         )
     logger.info("Focus-ring audit passed")
+
+    padding_result = run_padding_audit(COMPONENTS_DIR)
+    if padding_result.outcome == PaddingAuditOutcome.FAILED:
+        logger.error(
+            f"Padding audit found {len(padding_result.violations)} "
+            f"asymmetric padding declaration(s) in component CSS"
+        )
+        for v in padding_result.violations:
+            kinds = ", ".join(k.value for k in v.kinds)
+            logger.error(
+                f"  {v.file}:{v.line}: {v.selector} — {v.snippet}  [{kinds}]"
+            )
+        raise RuntimeError(
+            f"Padding audit found {len(padding_result.violations)} "
+            f"asymmetric padding declaration(s); see PADDING_IS_INSET_ONLY — "
+            f"padding is square; horizontal/vertical asymmetry lives in "
+            f"min-width/gap/margin. Mark documented exceptions with "
+            f"/* padding-audit: ok */"
+        )
+    logger.info("Padding audit passed")
+
+    radius_result = run_radius_audit(COMPONENTS_DIR)
+    if radius_result.outcome == RadiusAuditOutcome.FAILED:
+        logger.error(
+            f"Radius audit found {len(radius_result.violations)} non-zero "
+            f"border-radius declaration(s) in component CSS"
+        )
+        for v in radius_result.violations:
+            logger.error(f"  {v.file}:{v.line}: {v.snippet}  [value: {v.value}]")
+        raise RuntimeError(
+            f"Radius audit found {len(radius_result.violations)} non-zero "
+            f"border-radius declaration(s); the visual language is "
+            f"square-cornered. Remove the declaration (zero is the default), "
+            f"or mark genuine circles with /* radius-audit: ok */"
+        )
+    logger.info("Radius audit passed")
+
+    bw_result = run_border_width_audit(
+        COMPONENTS_DIR,
+        pages_dir=PAGES_DIR,
+        extra_files=[Path("src/design_kit/preview.py")],
+    )
+    if bw_result.outcome == BorderWidthAuditOutcome.FAILED:
+        logger.error(
+            f"Border-width audit found {len(bw_result.violations)} raw "
+            f"border-width literal(s)"
+        )
+        for v in bw_result.violations:
+            logger.error(
+                f"  {v.file}:{v.line}: {v.declaration} → {v.literal} — {v.snippet}"
+            )
+        raise RuntimeError(
+            f"Border-width audit found {len(bw_result.violations)} raw "
+            f"border-width literal(s); see TOKEN_DRIVEN_DESIGN — borders bind "
+            f"to var(--border-width-thin|medium|thick). Mark documented "
+            f"exceptions with /* token-leak: ok */"
+        )
+    logger.info("Border-width audit passed")
+
+    page_result = run_page_audit(PAGES_DIR)
+    if page_result.outcome == PageAuditOutcome.FAILED:
+        logger.error(
+            f"Page audit found {len(page_result.violations)} contract "
+            f"violation(s) in pages/"
+        )
+        for v in page_result.violations:
+            logger.error(f"  {v.page}: {v.rule} — {v.message}")
+        raise RuntimeError(
+            f"Page audit found {len(page_result.violations)} violation(s); "
+            f"see docs/reference/page-contract.md"
+        )
+    for name in page_result.stale_allowlist:
+        logger.warning(
+            f"Page {name} conforms to the contract but is still in "
+            f"KNOWN_NON_CONFORMANT; remove the entry from page_audit.py"
+        )
+    if page_result.deferred:
+        logger.info(
+            f"Page audit: {len(page_result.deferred)} page(s) on migration "
+            f"backlog: {', '.join(page_result.deferred)}"
+        )
+    logger.info(f"Page audit passed ({page_result.scanned} pages scanned)")
 
     audit = run_border_audit(output_dir)
     if audit.outcome == AuditOutcome.FAILED:
