@@ -78,7 +78,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    max-height: 16em;
+    max-height: 16em; /* dimension-audit: ok — em-relative event-log cap */
     overflow-y: auto;
   }
 
@@ -108,7 +108,7 @@
   }
 
   .matrix-cell {
-    height: 360px;
+    height: 360px; /* dimension-audit: ok — demo matrix cell height for sidebar variants */
     display: flex;
     /* No border here — the sidebar's own border-right + the nav-stack's
        internal rules provide the structural framing. Doubled borders are a

@@ -51,9 +51,9 @@
   .pass { color: var(--color-success); }
   .fail { color: var(--color-danger); }
   .failure-detail { color: var(--color-danger); white-space: pre-wrap; word-break: break-word; }
-  .mounts { position: fixed; left: -99999px; top: 0; }
-  .mount-wide { width: 800px; }
-  .mount-narrow { width: 240px; }
+  .mounts { position: fixed; left: -99999px; top: 0; } /* dimension-audit: ok — off-screen test mount */
+  .mount-wide { width: 800px; } /* dimension-audit: ok — WIDTH_CONTROLLED_TESTING fixture */
+  .mount-narrow { width: 240px; } /* dimension-audit: ok — WIDTH_CONTROLLED_TESTING fixture */
 </style>
 </head>
 <body>

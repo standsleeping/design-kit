@@ -94,7 +94,7 @@
   }
 
   .storybook-controls-row input[type="number"] {
-    width: 5ch;
+    width: 5ch; /* dimension-audit: ok — character-relative width for compact numeric input */
     padding: var(--spacing-2xs) var(--spacing-xs);
     border: var(--border-width-thin) solid var(--color-border);
     background: var(--color-bg);
@@ -157,11 +157,11 @@
     gap: var(--spacing-xs);
   }
 
-  .storybook-axes-control input[type="range"] { width: 80px; }
+  .storybook-axes-control input[type="range"] { width: 80px; } /* dimension-audit: ok — compact range input for axes panel chrome */
 
   .storybook-axes-readout {
     color: var(--color-text);
-    min-width: 3ch;
+    min-width: 3ch; /* dimension-audit: ok — character-relative width for axis readout */
     text-align: right;
   }
 
@@ -290,7 +290,7 @@
     justify-content: center;
     padding: var(--spacing-xl);
     position: relative;
-    min-height: 200px;
+    min-height: 200px; /* dimension-audit: ok — storybook variant cell floor */
   }
 
   /* Inspector content (lives in right Sidebar's main slot) */

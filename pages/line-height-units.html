@@ -30,7 +30,7 @@
       flex-direction: column;
       gap: var(--spacing-xl);
       padding: var(--spacing-2xl);
-      max-width: 1200px;
+      max-width: 1200px; /* dimension-audit: ok — demo page container width */
     }
 
     .page-header {
@@ -58,7 +58,7 @@
       font-size: var(--font-size-sm);
       --mono: 0;
       line-height: var(--font-line-height-relaxed);
-      max-width: 72ch;
+      max-width: var(--layout-reading-measure-md);
     }
 
     /* ── Page-level controls ── */
@@ -99,11 +99,11 @@
 
     .control-label input[type="range"] {
       accent-color: var(--color-purple-500);
-      width: 120px;
+      width: var(--control-input-width-md);
     }
 
     .control-value {
-      min-width: 3.5em;
+      min-width: 3.5em; /* dimension-audit: ok — em-relative width for numeric readout */
       text-align: right;
     }
 
@@ -126,7 +126,7 @@
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
       --mono: 0;
-      max-width: 72ch;
+      max-width: var(--layout-reading-measure-md);
     }
 
     /* ── Comparison grid ── */
@@ -229,7 +229,7 @@
     }
 
     .summary table {
-      max-width: 600px;
+      max-width: 600px; /* dimension-audit: ok — demo summary table width */
     }
   </style>
 </head>

@@ -105,7 +105,7 @@
     scrollbar-color: var(--color-hover-outline) var(--color-border);
     scrollbar-width: thin;
   }
-  .pane-flush .pane-body::-webkit-scrollbar { width: 8px; }
+  .pane-flush .pane-body::-webkit-scrollbar { width: var(--scrollbar-width-thin); }
   .pane-flush .pane-body::-webkit-scrollbar-track { background: var(--color-border); }
   .pane-flush .pane-body::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
 
@@ -183,7 +183,7 @@
   .inset-scroll {
     border: var(--border-width-thin) solid var(--color-border);
     background: var(--color-code-bg);
-    max-height: 220px;
+    max-height: 220px; /* dimension-audit: ok — demo pane height tuned to fit example rows */
     overflow-y: auto;
     scrollbar-gutter: stable;
   }
@@ -248,10 +248,10 @@
   .flush-scroll {
     display: flex;
     flex-direction: column;
-    max-height: 220px;
+    max-height: 220px; /* dimension-audit: ok — demo pane height tuned to fit example rows */
     overflow-y: scroll;
   }
-  .flush-scroll::-webkit-scrollbar { width: 8px; }
+  .flush-scroll::-webkit-scrollbar { width: var(--scrollbar-width-thin); }
   .flush-scroll::-webkit-scrollbar-track { background: var(--color-border); }
   .flush-scroll::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
 
