@@ -1,5 +1,7 @@
 """Tests for the command-line interface."""
 
+import pytest
+
 from design_kit.cli import parse_args
 
 
@@ -39,3 +41,25 @@ def test_parse_args_log_level_with_build() -> None:
     args = parse_args(["--log-level", "DEBUG", "build"])
     assert args.log_level == "DEBUG"
     assert args.command == "build"
+
+
+def test_parse_args_export_tokens_requires_target() -> None:
+    """export-tokens fails without --to."""
+    with pytest.raises(SystemExit):
+        parse_args(["export-tokens"])
+
+
+def test_parse_args_export_tokens_target() -> None:
+    """Parses export-tokens subcommand with --to value."""
+    args = parse_args(["export-tokens", "--to", "/tmp/vendor/dk"])
+    assert args.command == "export-tokens"
+    assert args.to == "/tmp/vendor/dk"
+    assert args.source_dir == "dist"
+
+
+def test_parse_args_export_tokens_custom_source() -> None:
+    """Parses export-tokens with a custom --source-dir."""
+    args = parse_args(
+        ["export-tokens", "--to", "/tmp/vendor/dk", "--source-dir", "build/out"]
+    )
+    assert args.source_dir == "build/out"

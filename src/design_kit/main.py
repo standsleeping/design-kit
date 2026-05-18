@@ -4,6 +4,7 @@ from pathlib import Path
 
 from design_kit.build import build
 from design_kit.cli import parse_args
+from design_kit.export import export_tokens
 from design_kit.logging import configure_logging, get_logger
 
 logger = get_logger(__name__)
@@ -22,9 +23,17 @@ def main(args: list[str] | None = None) -> int:
                 tokens_path=Path(parsed_args.tokens_path),
                 output_dir=Path(parsed_args.output_dir),
             )
+        elif parsed_args.command == "export-tokens":
+            export_tokens(
+                source_dir=Path(parsed_args.source_dir),
+                target_dir=Path(parsed_args.to),
+            )
         else:
             print(
-                "usage: design-kit <command>\n\ncommands:\n  build  Generate tokens.css, preview.html, and components.html"
+                "usage: design-kit <command>\n\n"
+                "commands:\n"
+                "  build           Generate tokens.css, index.html, and components\n"
+                "  export-tokens   Copy tokens.css and manifest to a target directory"
             )
         return 0
     except Exception as e:

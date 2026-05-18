@@ -24,7 +24,7 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
 
     build_parser = subparsers.add_parser(
         "build",
-        help="Generate tokens.css and preview.html into an output directory",
+        help="Generate tokens.css and index.html into an output directory",
     )
     build_parser.add_argument(
         "--output-dir",
@@ -35,6 +35,21 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         "--tokens-path",
         default="tokens/design-tokens.json",
         help="Path to design tokens JSON file (default: tokens/design-tokens.json)",
+    )
+
+    export_parser = subparsers.add_parser(
+        "export-tokens",
+        help="Copy generated tokens.css and manifest to a target directory",
+    )
+    export_parser.add_argument(
+        "--to",
+        required=True,
+        help="Target directory for tokens.css and tokens.manifest.json",
+    )
+    export_parser.add_argument(
+        "--source-dir",
+        default="dist",
+        help="Source directory holding the built tokens (default: dist)",
     )
 
     return parser.parse_args(args)
