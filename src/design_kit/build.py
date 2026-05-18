@@ -15,6 +15,10 @@ from design_kit.border_width_audit import (
     run_border_width_audit,
 )
 from design_kit.contrast_self_test import run as run_contrast_audit
+from design_kit.dimension_audit import (
+    DimensionAuditOutcome,
+    run_dimension_audit,
+)
 from design_kit.focus_ring_audit import (
     FocusRingAuditOutcome,
     run_focus_ring_audit,
@@ -267,6 +271,30 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             f"exceptions with /* token-leak: ok */"
         )
     logger.info("Border-width audit passed")
+
+    dimension_result = run_dimension_audit(
+        COMPONENTS_DIR,
+        pages_dir=PAGES_DIR,
+        extra_files=[Path("src/design_kit/preview.py")],
+    )
+    if dimension_result.outcome == DimensionAuditOutcome.FAILED:
+        logger.error(
+            f"Dimension audit found {len(dimension_result.violations)} raw "
+            f"layout-dimension literal(s)"
+        )
+        for v in dimension_result.violations:
+            logger.error(
+                f"  {v.file}:{v.line}: {v.declaration} → {v.literal} — {v.snippet}"
+            )
+        raise RuntimeError(
+            f"Dimension audit found {len(dimension_result.violations)} raw "
+            f"layout-dimension literal(s); see TOKEN_DRIVEN_DESIGN / "
+            f"JUSTIFY_EVERY_DIMENSION — widths, heights, gaps, font-sizes, "
+            f"and position offsets bind to design tokens. Permitted literals: "
+            f"0, auto, %, viewport/container-query units, lh, fr. Mark "
+            f"documented exceptions with /* dimension-audit: ok */"
+        )
+    logger.info("Dimension audit passed")
 
     page_result = run_page_audit(PAGES_DIR)
     if page_result.outcome == PageAuditOutcome.FAILED:
