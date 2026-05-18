@@ -21,6 +21,7 @@ from design_kit.focus_ring_audit import (
 )
 from design_kit.icon_registry import generate_registry
 from design_kit.logging import get_logger
+from design_kit.margin_audit import MarginAuditOutcome, run_margin_audit
 from design_kit.padding_audit import PaddingAuditOutcome, run_padding_audit
 from design_kit.page_audit import PageAuditOutcome, run_page_audit
 from design_kit.preview import generate_preview_html
@@ -220,6 +221,30 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             f"or mark genuine circles with /* radius-audit: ok */"
         )
     logger.info("Radius audit passed")
+
+    margin_result = run_margin_audit(
+        COMPONENTS_DIR,
+        pages_dir=PAGES_DIR,
+        extra_files=[Path("src/design_kit/preview.py")],
+    )
+    if margin_result.outcome == MarginAuditOutcome.FAILED:
+        logger.error(
+            f"Margin audit found {len(margin_result.violations)} margin "
+            f"declaration(s) carrying layout intent"
+        )
+        for v in margin_result.violations:
+            logger.error(
+                f"  {v.file}:{v.line}: {v.declaration}: {v.value} — {v.snippet}"
+            )
+        raise RuntimeError(
+            f"Margin audit found {len(margin_result.violations)} margin "
+            f"declaration(s) with layout intent; see NEVER_MARGIN — rhythm "
+            f"lives in the parent's gap, centering in grid alignment, full-bleed "
+            f"in restructured layout. Permitted forms: margin: 0 (UA reset) and "
+            f"margin-(side): auto (flex/grid alignment hook). Mark documented "
+            f"exceptions with /* margin-audit: ok */"
+        )
+    logger.info("Margin audit passed")
 
     bw_result = run_border_width_audit(
         COMPONENTS_DIR,
