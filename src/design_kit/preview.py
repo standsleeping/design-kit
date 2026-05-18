@@ -137,10 +137,10 @@ def generate_preview_html() -> str:
       flex-direction: column;
       align-items: stretch;
       gap: var(--spacing-xs);
-      min-width: 40px;
+      min-width: var(--control-size-lg);
     }}
     .swatch-color {{
-      height: 32px;
+      height: var(--control-size-md);
       border: var(--border-width-thin) solid var(--color-border);
     }}
     .swatch-label {{
@@ -163,7 +163,7 @@ def generate_preview_html() -> str:
       gap: var(--spacing-md);
     }}
     .spacing-block {{
-      height: 20px;
+      height: var(--font-size-lg);
       background: var(--color-gray-300);
       flex-shrink: 0;
     }}
@@ -172,7 +172,7 @@ def generate_preview_html() -> str:
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
       white-space: nowrap;
-      min-width: 80px;
+      min-width: var(--control-min-width-md);
     }}
     .size-sample {{
       display: flex;
@@ -183,7 +183,7 @@ def generate_preview_html() -> str:
       font-family: var(--typography-mono);
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
-      min-width: 60px;
+      min-width: 60px; /* dimension-audit: ok — preview-only readout column width */
     }}
     .heading-demo {{
       /* row in .subsection flex column; rhythm via parent's gap */
@@ -194,7 +194,7 @@ def generate_preview_html() -> str:
       gap: var(--spacing-lg);
     }}
     .border-sample {{
-      width: 80px;
+      width: var(--control-min-width-md);
       border-bottom-style: solid;
       border-bottom-color: var(--color-gray-400);
     }}
@@ -233,13 +233,13 @@ def generate_preview_html() -> str:
       color: var(--color-text-muted);
     }}
     .icon-table td.icon-cell {{
-      width: 32px;
-      font-size: 20px;
+      width: var(--control-size-md);
+      font-size: var(--font-size-lg);
       color: var(--color-text);
       text-align: center;
     }}
     .icon-table td.icon-name {{
-      width: 12em;
+      width: 12em; /* dimension-audit: ok — em-relative column for icon names */
       color: var(--color-text);
     }}
     .icon-table td.icon-guidance {{
@@ -502,7 +502,7 @@ def _section_spacing() -> str:
         rows += f"""\
       <div class="spacing-row">
         <span class="spacing-label">{name} ({value})</span>
-        <div class="spacing-block" style="width: var(--spacing-{name}); min-width: 2px;"></div>
+        <div class="spacing-block" style="width: var(--spacing-{name}); min-width: 2px;"></div> <!-- dimension-audit: ok — 2px floor keeps the smallest spacing token visually present -->
       </div>
 """
 
