@@ -2,16 +2,16 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  min-width: 140px;
+  min-width: var(--control-input-width-lg);
 }
 
 .dk-range-input {
   flex: 1;
-  min-width: 100px;
+  min-width: var(--control-input-width-sm);
 }
 
 .dk-range-value {
-  min-width: 3ch;
+  min-width: 3ch; /* dimension-audit: ok — character-relative width for digit alignment */
   text-align: right;
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);

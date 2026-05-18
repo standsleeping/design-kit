@@ -69,7 +69,7 @@
 .dk-aml-metric-header,
 .dk-aml-metric {
   text-align: right;
-  min-width: 24px;
+  min-width: var(--control-size-sm);
 }
 
 .dk-aml-header-button {

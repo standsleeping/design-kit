@@ -9,7 +9,7 @@
   font-family: var(--typography-mono);
   display: grid;
   background: var(--color-border);
-  gap: 1px;
+  gap: 1px; /* dimension-audit: ok — hairline grid divider (background-bleed technique) */
 }
 
 .dk-title-block-field {
@@ -43,7 +43,7 @@
 .dk-title-block-meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 1px;
+  gap: 1px; /* dimension-audit: ok — hairline grid divider (background-bleed technique) */
   background: var(--color-border);
   grid-column: 1 / -1;
 }

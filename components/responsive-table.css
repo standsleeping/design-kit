@@ -15,7 +15,7 @@
 }
 
 .dk-table-scroll::-webkit-scrollbar {
-  height: 8px;
+  height: var(--scrollbar-width-thin);
 }
 
 .dk-table-scroll::-webkit-scrollbar-track {
@@ -400,8 +400,8 @@
 }
 
 .dk-presence-dot {
-  width: 0.6em;
-  height: 0.6em;
+  width: 0.6em; /* dimension-audit: ok — em-relative dot scales with row text */
+  height: 0.6em; /* dimension-audit: ok — em-relative dot scales with row text */
   border-radius: 50%; /* radius-audit: ok */
   border: var(--border-width-thin) solid var(--color-hover-outline);
   background: transparent;

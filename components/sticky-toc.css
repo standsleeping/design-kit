@@ -163,8 +163,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: var(--control-size-lg);
+  height: var(--control-size-lg);
   padding: 0;
   background: transparent;
   border: none;
@@ -219,10 +219,10 @@
 @media (min-width: 1100px) {
   .dk-sticky-toc-responsive {
     position: fixed;
-    top: var(--dk-sticky-toc-rail-top, 2rem);
-    left: var(--dk-sticky-toc-rail-left, 1rem);
+    top: var(--dk-sticky-toc-rail-top, var(--spacing-3xl));
+    left: var(--dk-sticky-toc-rail-left, var(--spacing-xl));
     right: auto;
-    max-width: var(--dk-sticky-toc-rail-max-width, 200px);
+    max-width: var(--dk-sticky-toc-rail-max-width, var(--layout-toc-width));
     background: transparent;
     border-bottom: none;
     z-index: var(--z-sticky, 10);

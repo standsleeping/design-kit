@@ -1,5 +1,5 @@
 .dk-field-row {
-  min-height: 44px;
+  min-height: var(--control-touch-target-md);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -9,7 +9,7 @@
 }
 
 .dk-field-row-compact {
-  min-height: 36px;
+  min-height: var(--control-touch-target-sm);
   padding-top: var(--spacing-xs); /* padding-audit: ok */
   padding-bottom: var(--spacing-xs);
 }
@@ -31,5 +31,5 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  max-width: 220px;
+  max-width: var(--layout-content-track-width);
 }

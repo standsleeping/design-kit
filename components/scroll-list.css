@@ -26,7 +26,7 @@
   scrollbar-width: auto;
 }
 
-.dk-scroll-list::-webkit-scrollbar { width: 8px; }
+.dk-scroll-list::-webkit-scrollbar { width: var(--scrollbar-width-thin); }
 .dk-scroll-list::-webkit-scrollbar-track { background: var(--color-border); }
 .dk-scroll-list::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
 

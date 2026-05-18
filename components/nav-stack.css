@@ -73,7 +73,7 @@
 
 .dk-nav-stack-back-icon {
   flex-shrink: 0;
-  width: 1.25rem;
+  width: 1.25rem; /* dimension-audit: ok — fixed icon column, independent of local font-size */
   text-align: center;
   font-size: var(--font-size-base);
   color: var(--color-text-muted);
@@ -148,7 +148,7 @@
 .dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-icon {
   display: inline-block;
   flex-shrink: 0;
-  width: 1.25rem;
+  width: 1.25rem; /* dimension-audit: ok — fixed icon column, independent of local font-size */
   text-align: center;
   font-weight: var(--font-weight-semibold);
   letter-spacing: var(--font-letter-spacing-normal);

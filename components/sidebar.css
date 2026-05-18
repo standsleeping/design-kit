@@ -119,17 +119,17 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 8px;
+  width: var(--scrollbar-width-thin);
   cursor: ew-resize;
   z-index: 2;
 }
 
 .dk-sidebar-left .dk-sidebar-resizer {
-  right: -4px;
+  right: calc(var(--scrollbar-width-thin) / -2);
 }
 
 .dk-sidebar-right .dk-sidebar-resizer {
-  left: -4px;
+  left: calc(var(--scrollbar-width-thin) / -2);
 }
 
 .dk-sidebar-resizer:hover {

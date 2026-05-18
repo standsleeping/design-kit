@@ -66,8 +66,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: var(--control-size-sm);
+  height: var(--control-size-sm);
   padding: 0;
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);

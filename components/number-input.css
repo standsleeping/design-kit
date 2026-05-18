@@ -1,5 +1,5 @@
 .dk-number-input {
-  width: 72px;
+  width: var(--control-input-width-xs);
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text);

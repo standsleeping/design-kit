@@ -20,7 +20,7 @@
 .dk-form-layout-rows {
   display: grid;
   grid-template-columns: repeat(var(--dk-form-columns, 2), 1fr);
-  gap: 1px;
+  gap: 1px; /* dimension-audit: ok — hairline grid divider (background-bleed technique) */
   background: var(--color-border);
 }
 

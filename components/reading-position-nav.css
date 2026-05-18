@@ -7,7 +7,7 @@
   left: var(--spacing-xl);
   z-index: var(--z-sticky, 100);
   pointer-events: none;
-  max-width: 220px;
+  max-width: var(--layout-content-track-width);
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   line-height: var(--font-line-height-base);

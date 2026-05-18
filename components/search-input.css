@@ -1,6 +1,6 @@
 .dk-search-input {
   width: 100%;
-  min-width: 120px;
+  min-width: var(--control-input-width-md);
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   line-height: var(--font-line-height-base);

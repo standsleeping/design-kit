@@ -1,4 +1,4 @@
 .dk-checkbox {
-  width: 14px;
-  height: 14px;
+  width: var(--control-size-xs);
+  height: var(--control-size-xs);
 }
