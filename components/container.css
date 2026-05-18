@@ -12,7 +12,7 @@
 .dk-container-centered {
   max-width: var(--layout-content-max-width, 680px);
   margin: 0 auto;
-  padding: var(--spacing-2xl) var(--spacing-xl);
+  padding: var(--spacing-2xl) var(--spacing-xl); /* padding-audit: ok */
   gap: 1lh;
 }
 

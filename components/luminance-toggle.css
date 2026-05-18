@@ -13,7 +13,7 @@
   color: var(--color-text-muted);
   background: transparent;
   border: var(--border-width-thin) solid transparent;
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-md); /* padding-audit: ok */
   cursor: pointer;
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease),
               border-color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);

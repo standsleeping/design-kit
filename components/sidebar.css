@@ -1,3 +1,20 @@
+/* Register the width properties as typed lengths so transitions on
+   `width: var(--dk-sidebar-width)` interpolate when the var is updated at
+   runtime (drag-resize). Without @property registration, Chrome treats the
+   var change as not animatable and the resolved width does not update while
+   a `transition: width` declaration is active. */
+@property --dk-sidebar-width {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 280px;
+}
+
+@property --dk-sidebar-icon-width {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 56px;
+}
+
 .dk-sidebar {
   position: relative;
   display: flex;
@@ -8,6 +25,11 @@
   min-width: 0;
   transition: width 0.2s ease-out, transform 0.2s ease-out;
   border-right: var(--border-width-thin) solid var(--color-border);
+  /* Expanded-state width. Consumers set this per-instance; CSS reads it
+     and state-conditional rules below pick the icon and hidden widths.
+     Writing the value here (not on `width`) avoids fighting inline styles
+     with `!important` when state flips. */
+  --dk-sidebar-width: 280px;
   /* icon-button-sm (24px) + 2 * spacing-md (8px) wraps cleanly; consumers can
      override per-shell to tune the icon-strip width. */
   --dk-sidebar-icon-width: 56px;
@@ -19,14 +41,24 @@
   border-left: var(--border-width-thin) solid var(--color-border);
 }
 
-/* Inline mode rules. Width comes from the data-state value. */
+/* Inline mode rules. Width is the expanded width by default; state-conditional
+   rules below shrink to icon or zero. */
+.dk-sidebar-mode-inline {
+  width: var(--dk-sidebar-width);
+}
+
 .dk-sidebar-mode-inline[data-state="icon"] {
-  width: var(--dk-sidebar-icon-width) !important;
+  width: var(--dk-sidebar-icon-width);
   transition: width 0.15s ease-in;
 }
 
 .dk-sidebar-mode-inline[data-state="hidden"] {
-  width: 0 !important;
+  width: 0;
+  /* Clear the side border so a collapsed sidebar leaves no visible 1px line
+     where its edge used to be. Overlay mode keeps the border (it slides off
+     via transform, so the border travels with it). */
+  border-right: none;
+  border-left: none;
   transition: width 0.15s ease-in;
 }
 
@@ -38,6 +70,7 @@
   bottom: 0;
   left: 0;
   z-index: var(--z-overlay, 1000);
+  width: var(--dk-sidebar-width);
   transform: translateX(0);
 }
 

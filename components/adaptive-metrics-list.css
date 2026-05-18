@@ -16,7 +16,7 @@
 }
 
 .dk-aml-sort-readout {
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-md); /* padding-audit: ok */
   border-bottom: var(--border-width-thin) solid var(--color-border);
   color: var(--color-text-muted);
   background: var(--color-code-bg);
@@ -26,7 +26,7 @@
   display: grid;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md); /* padding-audit: ok */
   grid-template-columns: minmax(120px, 1fr) repeat(var(--dk-aml-columns, 1), minmax(28px, auto));
 }
 

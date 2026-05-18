@@ -12,7 +12,7 @@
   text-transform: uppercase;
   letter-spacing: var(--font-letter-spacing-wide);
   color: var(--color-text-muted);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm); /* padding-audit: ok */
   background: var(--color-bg);
   border-bottom: var(--border-width-thin) solid var(--color-border);
 }

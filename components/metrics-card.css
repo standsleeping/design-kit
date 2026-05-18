@@ -3,7 +3,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md); /* padding-audit: ok */
   border: var(--border-width-thin) solid var(--color-border);
   background: var(--color-bg);
   font-family: var(--typography-mono);

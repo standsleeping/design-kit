@@ -34,7 +34,6 @@
   width: 24px;
   height: 24px;
   font-size: var(--font-size-xs);
-  border-radius: var(--radius-sm);
 }
 
 .dk-icon-button-sm .dk-icon {
@@ -46,12 +45,10 @@
   width: 32px;
   height: 32px;
   font-size: var(--font-size-sm);
-  border-radius: var(--radius-md);
 }
 
 .dk-icon-button-touch {
   width: 40px;
   height: 40px;
   font-size: var(--font-size-base);
-  border-radius: var(--radius-md);
 }

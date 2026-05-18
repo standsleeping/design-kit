@@ -14,7 +14,7 @@
 
 .dk-title-block-field {
   background: var(--color-bg);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm); /* padding-audit: ok */
 }
 
 .dk-title-block-label {

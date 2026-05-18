@@ -1,11 +1,13 @@
+/* Content strip, not chrome. Designed to live inside a chrome rail
+   (AppShell footer, status bar, sidebar footer slot) that owns the
+   height, padding, border, and background. The strip just lays out
+   its label/value pairs horizontally.
+   See BOUNDARY_OWNERSHIP — exactly one element should own each edge. */
 .dk-ssf {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-xl);
-  border-top: var(--border-width-thin) solid var(--color-border);
-  background: var(--color-bg);
   font-family: var(--typography-mono);
   --mono: 1;
   font-size: var(--font-size-xs);

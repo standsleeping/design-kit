@@ -43,7 +43,7 @@ export function render() {
   root.className = 'dk-app-shell';
 
   const header = document.createElement('div');
-  header.className = 'dk-app-shell-header';
+  header.className = 'dk-app-shell-header dk-topbar';
   header.dataset.slot = 'header';
 
   const body = document.createElement('div');
@@ -64,7 +64,7 @@ export function render() {
   body.append(leftSidebar, main, rightSidebar);
 
   const footer = document.createElement('div');
-  footer.className = 'dk-app-shell-footer';
+  footer.className = 'dk-app-shell-footer dk-topbar dk-topbar-bottom';
   footer.dataset.slot = 'footer';
 
   root.append(header, body, footer);

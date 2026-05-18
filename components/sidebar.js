@@ -103,20 +103,8 @@ export function render(props = {}) {
   const root = document.createElement('div');
   root.className = `dk-sidebar dk-sidebar-${side} dk-sidebar-mode-${mode}`;
   root.dataset.state = displayState;
+  root.style.setProperty('--dk-sidebar-width', `${width}px`);
   root.style.setProperty('--dk-sidebar-icon-width', `${iconWidth}px`);
-
-  // Width: in inline mode, icon state shrinks to iconWidth; hidden state is 0.
-  // In overlay mode, the sidebar always renders at `width` and slides via
-  // transform (the CSS picks the transform from data-state).
-  if (mode === 'overlay') {
-    root.style.width = `${width}px`;
-  } else if (displayState === 'icon') {
-    root.style.width = `${iconWidth}px`;
-  } else if (displayState === 'hidden') {
-    root.style.width = '0';
-  } else {
-    root.style.width = `${width}px`;
-  }
 
   const header = document.createElement('div');
   header.className = 'dk-sidebar-header';
@@ -148,7 +136,7 @@ export function render(props = {}) {
           ? moveEvent.clientX - startX
           : startX - moveEvent.clientX;
         const newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + delta));
-        root.style.width = `${newWidth}px`;
+        root.style.setProperty('--dk-sidebar-width', `${newWidth}px`);
       };
 
       const onUp = (upEvent) => {

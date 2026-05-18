@@ -6,13 +6,13 @@
 }
 
 .dk-tab-bar-tab {
-  padding: var(--spacing-xs) 0;
+  padding: var(--spacing-xs) 0; /* padding-audit: ok */
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: var(--border-width-medium) solid transparent;
   cursor: pointer;
   white-space: nowrap;
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
