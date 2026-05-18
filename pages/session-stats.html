@@ -6,123 +6,130 @@
 <meta name="color-scheme" content="light dark">
 <title>Session stats footer · design-kit</title>
 <link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/luminance-toggle.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/session-stats-footer.css?{{CACHE_BUST}}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
+  /* Page-local: viewport lock + prose density. Layout chrome (header rail,
+     scroll body, footer rail) all come from .dk-app-shell. */
   html, body { height: 100%; margin: 0; overflow: hidden; }
-  body {
-    font-family: var(--typography-body);
-    color: var(--color-text);
-    background: var(--color-bg);
-  }
+  body { font-family: var(--typography-body); color: var(--color-text); background: var(--color-bg); }
 
-  .page {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-  }
-
-  .page-header {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-md) var(--spacing-xl);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
+  /* Header content sits on the AppShell header rail (a dk-topbar). The
+     rail provides the strip layout; these classes style the inline children. */
+  .demo-header-title {
     font-family: var(--typography-mono);
     --mono: 1;
     font-size: var(--font-size-xs);
-    flex-shrink: 0;
-  }
-  .page-title {
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
   }
-  .page-subtitle { color: var(--color-text-muted); }
-  .page-controls { margin-left: auto; }
-
-  .page-content {
-    flex: 1;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-    padding: var(--spacing-3xl) var(--spacing-4xl);
+  .demo-header-subtitle {
+    font-family: var(--typography-mono);
+    --mono: 1;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
   }
 
-  .filler-section {
-    margin-bottom: var(--spacing-3xl);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-    padding-bottom: var(--spacing-2xl);
+  /* Prose stack. Container owns inset (square padding) and rhythm (gap);
+     children carry zero padding (CONTAINER_OWNS_INSET, PADDING_IS_INSET_ONLY).
+     Reading width is enforced on paragraphs via max-width, not by horizontal
+     padding asymmetry. */
+  .demo-prose {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-3xl);
+    gap: var(--spacing-3xl);
   }
-  .filler-section:last-child { border-bottom: none; }
-  .filler-section h2 {
+  .demo-prose-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  .demo-prose-section h2 {
     font-family: var(--typography-mono);
     --mono: 1;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
-    margin: 0 0 var(--spacing-md);
+    margin: 0;
   }
-  .filler-section p {
-    margin: 0 0 var(--spacing-md);
+  .demo-prose-section p {
+    margin: 0;
     line-height: var(--font-line-height-relaxed);
     max-width: 64ch;
     color: var(--color-text);
   }
-
-  .page-footer { flex-shrink: 0; }
 </style>
 </head>
 <body>
-<div class="page">
-  <header class="page-header">
-    <span class="page-title">Session stats footer</span>
-    <span class="page-subtitle">scroll, click, move, switch tabs</span>
-    <div class="page-controls" data-luminance></div>
+<div class="dk-app-shell">
+
+  <header class="dk-app-shell-header dk-topbar">
+    <span class="demo-header-title">Session stats footer</span>
+    <span class="demo-header-subtitle">scroll, click, move, switch tabs</span>
+    <span class="dk-topbar-spacer"></span>
+    <span data-luminance></span>
   </header>
 
-  <main class="page-content">
-    <section class="filler-section">
-      <h2>What this is</h2>
-      <p>The strip pinned at the bottom is the <code>SessionStatsFooter</code> component. It tracks six live values: time the tab has been on (visible and focused), time it has been off (hidden or in a background window), the maximum scroll percentage reached in this content region (capped at 100), the number of tab switches away from this tab, the total mouse movements, and the total clicks anywhere in the window. Durations are shown as <code>m:ss</code>.</p>
-      <p>Move your mouse to watch <em>moves</em> climb. Click anywhere to bump <em>clicks</em>. Switch to another browser tab and back to bump <em>tabs</em>. Scroll this region to push <em>scroll %</em> up; it only ratchets, never decreases.</p>
-    </section>
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="session-stats"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <div class="demo-prose">
+        <section class="demo-prose-section">
+          <h2>What this is</h2>
+          <p>The strip pinned at the bottom is the <code>SessionStatsFooter</code> component. It tracks six live values: time the tab has been on (visible and focused), time it has been off (hidden or in a background window), the maximum scroll percentage reached in this content region (capped at 100), the number of tab switches away from this tab, the total mouse movements, and the total clicks anywhere in the window. Durations are shown as <code>m:ss</code>.</p>
+          <p>Move your mouse to watch <em>moves</em> climb. Click anywhere to bump <em>clicks</em>. Switch to another browser tab and back to bump <em>tabs</em>. Scroll this region to push <em>scroll %</em> up; it only ratchets, never decreases.</p>
+        </section>
 
-    <section class="filler-section">
-      <h2>Filler one</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aenean sit amet erat nunc.</p>
-      <p>Phasellus a est. Aliquam erat volutpat. Sed cursus turpis vitae tortor. Donec posuere vulputate arcu. Phasellus accumsan cursus velit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
-      <p>Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.</p>
-    </section>
+        <section class="demo-prose-section">
+          <h2>Filler one</h2>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aenean sit amet erat nunc.</p>
+          <p>Phasellus a est. Aliquam erat volutpat. Sed cursus turpis vitae tortor. Donec posuere vulputate arcu. Phasellus accumsan cursus velit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
+          <p>Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.</p>
+        </section>
 
-    <section class="filler-section">
-      <h2>Filler two</h2>
-      <p>Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. Sed dignissim lacinia nunc.</p>
-      <p>Curabitur tortor. Pellentesque nibh. Aenean quam. In scelerisque sem at dolor. Maecenas mattis. Sed convallis tristique sem. Proin ut ligula vel nunc egestas porttitor. Morbi lectus risus, iaculis vel, suscipit quis, luctus non, massa.</p>
-      <p>Fusce ac turpis quis ligula lacinia aliquet. Mauris ipsum. Nulla metus metus, ullamcorper vel, tincidunt sed, euismod in, nibh. Quisque volutpat condimentum velit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>
-    </section>
+        <section class="demo-prose-section">
+          <h2>Filler two</h2>
+          <p>Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. Sed dignissim lacinia nunc.</p>
+          <p>Curabitur tortor. Pellentesque nibh. Aenean quam. In scelerisque sem at dolor. Maecenas mattis. Sed convallis tristique sem. Proin ut ligula vel nunc egestas porttitor. Morbi lectus risus, iaculis vel, suscipit quis, luctus non, massa.</p>
+          <p>Fusce ac turpis quis ligula lacinia aliquet. Mauris ipsum. Nulla metus metus, ullamcorper vel, tincidunt sed, euismod in, nibh. Quisque volutpat condimentum velit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>
+        </section>
 
-    <section class="filler-section">
-      <h2>Filler three</h2>
-      <p>Nam nec ante. Sed lacinia, urna non tincidunt mattis, tortor neque adipiscing diam, a cursus ipsum ante quis turpis. Nulla facilisi. Ut fringilla. Suspendisse potenti.</p>
-      <p>Nunc feugiat mi a tellus consequat imperdiet. Vestibulum sapien. Proin quam. Etiam ultrices. Suspendisse in justo eu magna luctus suscipit. Sed lectus.</p>
-      <p>Integer euismod lacus luctus magna. Quisque cursus, metus vitae pharetra auctor, sem massa mattis sem, at interdum magna augue eget diam. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
-    </section>
+        <section class="demo-prose-section">
+          <h2>Filler three</h2>
+          <p>Nam nec ante. Sed lacinia, urna non tincidunt mattis, tortor neque adipiscing diam, a cursus ipsum ante quis turpis. Nulla facilisi. Ut fringilla. Suspendisse potenti.</p>
+          <p>Nunc feugiat mi a tellus consequat imperdiet. Vestibulum sapien. Proin quam. Etiam ultrices. Suspendisse in justo eu magna luctus suscipit. Sed lectus.</p>
+          <p>Integer euismod lacus luctus magna. Quisque cursus, metus vitae pharetra auctor, sem massa mattis sem, at interdum magna augue eget diam. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
+        </section>
 
-    <section class="filler-section">
-      <h2>Filler four (the bottom)</h2>
-      <p>If you have read this far, the scroll percent should now read 100. From here you can scroll back up and watch that nothing happens to the value, because the component holds the maximum reached.</p>
-      <p>The strip beneath this content is rendered once on page load and continues updating until you leave the page.</p>
-    </section>
-  </main>
+        <section class="demo-prose-section">
+          <h2>Filler four (the bottom)</h2>
+          <p>If you have read this far, the scroll percent should now read 100. From here you can scroll back up and watch that nothing happens to the value, because the component holds the maximum reached.</p>
+          <p>The strip beneath this content is rendered once on page load and continues updating until you leave the page.</p>
+        </section>
+      </div>
+    </main>
+  </div>
 
-  <footer class="page-footer" data-footer></footer>
+  <footer class="dk-app-shell-footer dk-topbar dk-topbar-bottom" data-footer></footer>
+
 </div>
 
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 <script type="module">
   import { render as renderLuminance } from './components/luminance-toggle.js';
   import { render as renderFooter } from './components/session-stats-footer.js';
@@ -130,7 +137,7 @@
   document.querySelector('[data-luminance]').append(renderLuminance());
 
   const footerHost = document.querySelector('[data-footer]');
-  const result = renderFooter({ scrollTarget: '.page-content' });
+  const result = renderFooter({ scrollTarget: '.dk-app-shell-main' });
   footerHost.append(result.node);
   window.addEventListener('beforeunload', result.cleanup);
 </script>

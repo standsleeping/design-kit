@@ -6,11 +6,15 @@
 <meta name="color-scheme" content="light dark">
 <title>Sticky TOC · design-kit</title>
 <link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/sticky-toc.css?{{CACHE_BUST}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
-  html, body { margin: 0; }
-  html { scrollbar-width: none; }
-  html::-webkit-scrollbar { display: none; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
     background: var(--color-bg);
     color: var(--color-text);
@@ -19,13 +23,18 @@
     line-height: var(--font-line-height-relaxed);
   }
 
-  article {
+  /* Hide main's scrollbar so the sticky TOC reads as a chrome strip without
+     a visible vertical rail behind it. Scroll still works via wheel/touch. */
+  .dk-app-shell-main { scrollbar-width: none; }
+  .dk-app-shell-main::-webkit-scrollbar { display: none; }
+
+  .dk-app-shell-main article {
     max-width: 480px;
     margin: 0 auto;
     padding: var(--spacing-xl) var(--spacing-lg);
   }
 
-  article h1 {
+  .dk-app-shell-main article h1 {
     font-family: var(--typography-mono);
     --mono: 1;
     font-size: var(--font-size-xl);
@@ -34,7 +43,7 @@
     line-height: var(--font-line-height-tight);
   }
 
-  article h2 {
+  .dk-app-shell-main article h2 {
     font-family: var(--typography-mono);
     --mono: 1;
     font-size: var(--font-size-lg);
@@ -44,64 +53,77 @@
     scroll-margin-top: 3.5rem;
   }
 
-  article p {
+  .dk-app-shell-main article p {
     margin: 0 0 var(--spacing-md);
   }
 
-  article code {
+  .dk-app-shell-main article code {
     font-family: var(--typography-mono);
     --mono: 1;
     font-size: 0.92em;
   }
 
-  .filler {
+  .dk-app-shell-main .filler {
     min-height: 80vh;
   }
 </style>
 </head>
 <body>
-<nav id="sticky-toc-host" aria-label="Page sections"></nav>
-<article>
-  <h1 id="top">Lean by Example</h1>
-  <p>A compact tour of the Lean 4 language, drawn from Chapter 2 of <em>Theorem Proving in Lean 4</em>. Tap the bar above to expand the table of contents; tap a link to jump.</p>
+<div class="dk-app-shell">
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="sticky-toc"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <nav id="sticky-toc-host" aria-label="Page sections"></nav>
+      <article>
+        <h1 id="top">Lean by Example</h1>
+        <p>A compact tour of the Lean 4 language, drawn from Chapter 2 of <em>Theorem Proving in Lean 4</em>. Tap the bar above to expand the table of contents; tap a link to jump.</p>
 
-  <h2 id="repl">Type-checking in the REPL</h2>
-  <p>The simplest way to interact with Lean is through its REPL. Type an expression, and Lean reports its type. <code>#check 1 + 2</code> shows that the expression has type <code>Nat</code>.</p>
-  <div class="filler"></div>
+        <h2 id="repl">Type-checking in the REPL</h2>
+        <p>The simplest way to interact with Lean is through its REPL. Type an expression, and Lean reports its type. <code>#check 1 + 2</code> shows that the expression has type <code>Nat</code>.</p>
+        <div class="filler"></div>
 
-  <h2 id="basics">The basic types</h2>
-  <p>Lean ships with the usual primitive types: <code>Nat</code>, <code>Int</code>, <code>String</code>, <code>Bool</code>. Each is a term-level inhabitant of the type <code>Type</code>.</p>
-  <div class="filler"></div>
+        <h2 id="basics">The basic types</h2>
+        <p>Lean ships with the usual primitive types: <code>Nat</code>, <code>Int</code>, <code>String</code>, <code>Bool</code>. Each is a term-level inhabitant of the type <code>Type</code>.</p>
+        <div class="filler"></div>
 
-  <h2 id="building">Building types from types</h2>
-  <p>Function types are written with arrows: <code>Nat → Nat</code>. Product types are pairs: <code>Nat × String</code>. Sum types are tagged unions: <code>Nat ⊕ String</code>.</p>
-  <div class="filler"></div>
+        <h2 id="building">Building types from types</h2>
+        <p>Function types are written with arrows: <code>Nat → Nat</code>. Product types are pairs: <code>Nat × String</code>. Sum types are tagged unions: <code>Nat ⊕ String</code>.</p>
+        <div class="filler"></div>
 
-  <h2 id="application">Application and currying</h2>
-  <p>Function application is written by juxtaposition. <code>f x y</code> means <code>(f x) y</code>: apply <code>f</code> to <code>x</code>, then apply the result to <code>y</code>. All multi-argument functions are curried.</p>
-  <div class="filler"></div>
+        <h2 id="application">Application and currying</h2>
+        <p>Function application is written by juxtaposition. <code>f x y</code> means <code>(f x) y</code>: apply <code>f</code> to <code>x</code>, then apply the result to <code>y</code>. All multi-argument functions are curried.</p>
+        <div class="filler"></div>
 
-  <h2 id="lambdas">Lambdas</h2>
-  <p>Anonymous functions use <code>fun</code>: <code>fun x => x + 1</code> is a function that adds one. Lambdas with multiple parameters desugar into nested single-parameter lambdas.</p>
-  <div class="filler"></div>
+        <h2 id="lambdas">Lambdas</h2>
+        <p>Anonymous functions use <code>fun</code>: <code>fun x => x + 1</code> is a function that adds one. Lambdas with multiple parameters desugar into nested single-parameter lambdas.</p>
+        <div class="filler"></div>
 
-  <h2 id="defs">Defining functions</h2>
-  <p>Top-level definitions use <code>def</code>: <code>def double (x : Nat) : Nat := 2 * x</code>. The body comes after <code>:=</code>. Lean infers types where it can.</p>
-  <div class="filler"></div>
+        <h2 id="defs">Defining functions</h2>
+        <p>Top-level definitions use <code>def</code>: <code>def double (x : Nat) : Nat := 2 * x</code>. The body comes after <code>:=</code>. Lean infers types where it can.</p>
+        <div class="filler"></div>
 
-  <h2 id="universes">Types are objects</h2>
-  <p>In Lean, types are themselves values. <code>Nat</code> has type <code>Type</code>; <code>Type</code> has type <code>Type 1</code>; the universe hierarchy continues upward to avoid Russell-style paradoxes.</p>
-  <div class="filler"></div>
+        <h2 id="universes">Types are objects</h2>
+        <p>In Lean, types are themselves values. <code>Nat</code> has type <code>Type</code>; <code>Type</code> has type <code>Type 1</code>; the universe hierarchy continues upward to avoid Russell-style paradoxes.</p>
+        <div class="filler"></div>
 
-  <h2 id="dependent">Dependent arrows and products</h2>
-  <p>Dependent function types let the return type depend on the argument: <code>(n : Nat) → Vector α n</code>. Dependent products generalize pairs to sigma types.</p>
-  <div class="filler"></div>
+        <h2 id="dependent">Dependent arrows and products</h2>
+        <p>Dependent function types let the return type depend on the argument: <code>(n : Nat) → Vector α n</code>. Dependent products generalize pairs to sigma types.</p>
+        <div class="filler"></div>
 
-  <h2 id="reference">Reference card</h2>
-  <p>A quick lookup table for the syntax introduced in the previous sections. Bookmark it for use while working through the exercises.</p>
-  <div class="filler"></div>
-</article>
+        <h2 id="reference">Reference card</h2>
+        <p>A quick lookup table for the syntax introduced in the previous sections. Bookmark it for use while working through the exercises.</p>
+        <div class="filler"></div>
+      </article>
+    </main>
+  </div>
+</div>
 
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 <script type="module">
   import { render } from './components/sticky-toc.js?{{CACHE_BUST}}';
 

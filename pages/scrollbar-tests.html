@@ -5,21 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Scroll Container Patterns · design-kit</title>
-<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
-  html, body { height: 100%; overflow: hidden; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
-    margin: 0;
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--typography-mono);
     --mono: 1;
     font-size: var(--font-size-xs);
-    display: flex;
-    flex-direction: column;
   }
 
-  header {
+  /* The page composes its own internal scroll containers inside the grid,
+     so main itself must not scroll. Override the shell's default
+     overflow: auto and make main a flex column that hosts a chrome strip
+     on top and the three-panel grid below it. */
+  .dk-app-shell-main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .scroll-header {
     flex-shrink: 0;
     padding: var(--spacing-lg) var(--spacing-2xl);
     border-bottom: var(--border-width-thin) solid var(--color-border);
@@ -27,7 +40,7 @@
     align-items: baseline;
     gap: var(--spacing-xl);
   }
-  header h1 {
+  .scroll-header h1 {
     margin: 0;
     font-family: var(--typography-mono);
     --mono: 1;
@@ -36,15 +49,15 @@
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
   }
-  header p {
+  .scroll-header p {
     margin: 0;
     color: var(--color-text-muted);
     font-family: var(--typography-prop);
     --mono: 0;
     font-size: var(--font-size-sm);
   }
-  header .toggles { margin-left: auto; display: flex; gap: var(--spacing-md); }
-  header button {
+  .scroll-header .toggles { margin-left: auto; display: flex; gap: var(--spacing-md); }
+  .scroll-header button {
     appearance: none;
     background: var(--color-bg);
     color: var(--color-text);
@@ -55,7 +68,7 @@
     letter-spacing: var(--font-letter-spacing-wide);
     cursor: pointer;
   }
-  header button[aria-pressed="true"] { background: var(--color-hover-bg); }
+  .scroll-header button[aria-pressed="true"] { background: var(--color-hover-bg); }
 
   .grid {
     flex: 1;
@@ -142,42 +155,56 @@
 </style>
 </head>
 <body>
-<header>
-  <h1>Scroll Container Patterns</h1>
-  <p>Hover the items, then toggle content length to compare shift behavior across the project rule (B) and the scroll-list component variant (C).</p>
-  <div class="toggles">
-    <button data-toggle="length" aria-pressed="false">Long content</button>
-    <button data-toggle="theme" aria-pressed="false">Dark</button>
+<div class="dk-app-shell">
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="scrollbar-tests"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <header class="scroll-header">
+        <h1>Scroll Container Patterns</h1>
+        <p>Hover the items, then toggle content length to compare shift behavior across the project rule (B) and the scroll-list component variant (C).</p>
+        <div class="toggles">
+          <button data-toggle="length" aria-pressed="false">Long content</button>
+          <button data-toggle="theme" aria-pressed="false">Dark</button>
+        </div>
+      </header>
+
+      <div class="grid">
+
+        <section class="panel">
+          <div class="panel-header">
+            <div class="panel-title">A. overflow-y: auto</div>
+            <div class="panel-note">Default. Hover paints to the right edge when no bar; toggling content length shifts the layout when the bar appears or disappears.</div>
+          </div>
+          <div class="scroll-auto" data-list></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div class="panel-title">B. scrollbar-gutter: stable</div>
+            <div class="panel-note">Project-wide rule. Never shifts; the hover background is cut off where the (often invisible) gutter sits.</div>
+          </div>
+          <div class="scroll-stable" data-list></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div class="panel-title">C. overflow-y: scroll + tinted track</div>
+            <div class="panel-note">scroll-list component. Never shifts. The rail is always rendered, so the hover cut-off aligns with a visible scrollbar rather than empty space.</div>
+          </div>
+          <div class="scroll-permanent" data-list></div>
+        </section>
+
+      </div>
+    </main>
   </div>
-</header>
-
-<div class="grid">
-
-  <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title">A. overflow-y: auto</div>
-      <div class="panel-note">Default. Hover paints to the right edge when no bar; toggling content length shifts the layout when the bar appears or disappears.</div>
-    </div>
-    <div class="scroll-auto" data-list></div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title">B. scrollbar-gutter: stable</div>
-      <div class="panel-note">Project-wide rule. Never shifts; the hover background is cut off where the (often invisible) gutter sits.</div>
-    </div>
-    <div class="scroll-stable" data-list></div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title">C. overflow-y: scroll + tinted track</div>
-      <div class="panel-note">scroll-list component. Never shifts. The rail is always rendered, so the hover cut-off aligns with a visible scrollbar rather than empty space.</div>
-    </div>
-    <div class="scroll-permanent" data-list></div>
-  </section>
-
 </div>
+
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 
 <script>
   const baseItems = [

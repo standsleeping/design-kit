@@ -6,11 +6,17 @@
 <meta name="color-scheme" content="light dark">
 <title>Inset vs Flush · design-kit</title>
 <link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/luminance-toggle.css?{{CACHE_BUST}}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
+  /* Page-local: viewport lock + the two-pane split content. Layout chrome
+     (header rail) comes from .dk-app-shell. */
   html, body {
     height: 100%;
     margin: 0;
@@ -23,35 +29,22 @@
     background: var(--color-bg);
   }
 
-  /* ---- Page shell ---- */
-  .demo {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-  }
-  .demo-header {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-md) var(--spacing-xl);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-    flex-shrink: 0;
-  }
-  .demo-title {
+  /* Header content sits on the AppShell header rail (a dk-topbar). The
+     rail provides the strip layout; this styles only the title. */
+  .demo-header-title {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
-    color: var(--color-text);
     white-space: nowrap;
   }
-  .demo-controls { margin-left: auto; }
 
+  /* Two-pane split fills main exactly; each pane scrolls independently, so
+     main itself never has to scroll. */
   .demo-split {
-    flex: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    height: 100%;
     min-height: 0;
   }
 
@@ -59,6 +52,7 @@
   .pane {
     display: flex;
     flex-direction: column;
+    min-width: 0;
     min-height: 0;
     overflow: hidden;
   }
@@ -71,7 +65,7 @@
     border-right: var(--border-width-thin) solid var(--color-border);
   }
   .pane-header {
-    padding: var(--spacing-lg) var(--spacing-xl);
+    padding: var(--spacing-xl);
     border-bottom: var(--border-width-thin) solid var(--color-border);
     flex-shrink: 0;
   }
@@ -291,133 +285,147 @@
 </style>
 </head>
 <body>
-<div class="demo">
-  <header class="demo-header">
-    <span class="demo-title">Inset vs Flush</span>
-    <div class="demo-controls" id="luminance-mount" aria-label="Luminance mode"></div>
+<div class="dk-app-shell">
+
+  <header class="dk-app-shell-header dk-topbar">
+    <span class="demo-header-title">Inset vs Flush</span>
+    <span class="dk-topbar-spacer"></span>
+    <span data-luminance aria-label="Luminance mode"></span>
   </header>
 
-  <div class="demo-split">
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="inset-vs-flush"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <div class="demo-split">
 
-    <!-- ============= LEFT: INSET ============= -->
-    <section class="pane pane-inset">
-      <header class="pane-header">
-        <div class="pane-eyebrow">Mode A · Surfaces</div>
-        <h2 class="pane-title">Inset</h2>
-        <p class="pane-tagline">Bounded objects with four borders, square corners, square internal padding. Each owns its boundary and floats in its parent's gutter.</p>
-      </header>
+        <!-- ============= LEFT: INSET ============= -->
+        <section class="pane pane-inset">
+          <header class="pane-header">
+            <div class="pane-eyebrow">Mode A · Surfaces</div>
+            <h2 class="pane-title">Inset</h2>
+            <p class="pane-tagline">Bounded objects with four borders, square corners, square internal padding. Each owns its boundary and floats in its parent's gutter.</p>
+          </header>
 
-      <div class="pane-body">
+          <div class="pane-body">
 
-        <section class="section">
-          <div class="section-label">Same rows · inset cards</div>
-          <p class="section-blurb">Each row carries its own four-side border. Siblings are separated by gutter, not by a shared rule.</p>
-          <div class="inset-list">
-            <div class="inset-row inset-row-active">Pools <span class="inset-row-meta">12</span></div>
-            <div class="inset-row">Entities <span class="inset-row-meta">348</span></div>
-            <div class="inset-row">Settings <span class="inset-row-meta">›</span></div>
-            <div class="inset-row">production-east <span class="inset-row-meta">healthy</span></div>
-            <div class="inset-row">staging-replicas <span class="inset-row-meta">degraded</span></div>
+            <section class="section">
+              <div class="section-label">Same rows · inset cards</div>
+              <p class="section-blurb">Each row carries its own four-side border. Siblings are separated by gutter, not by a shared rule.</p>
+              <div class="inset-list">
+                <div class="inset-row inset-row-active">Pools <span class="inset-row-meta">12</span></div>
+                <div class="inset-row">Entities <span class="inset-row-meta">348</span></div>
+                <div class="inset-row">Settings <span class="inset-row-meta">›</span></div>
+                <div class="inset-row">production-east <span class="inset-row-meta">healthy</span></div>
+                <div class="inset-row">staging-replicas <span class="inset-row-meta">degraded</span></div>
+              </div>
+            </section>
+
+            <section class="section">
+              <div class="section-label">Invisible-gutter scrollbar</div>
+              <p class="section-blurb">Bar appears intermittently inside the bordered card. <code>scrollbar-gutter: stable</code> reserves the space so layout never shifts. Inherits the html-level transparent track.</p>
+              <div class="inset-scroll">
+                <div class="inset-scroll-row"><span>Cron job</span><span>daily</span></div>
+                <div class="inset-scroll-row"><span>Build pipeline</span><span>success</span></div>
+                <div class="inset-scroll-row"><span>Deployment</span><span>production</span></div>
+                <div class="inset-scroll-row"><span>Test suite</span><span>247 passing</span></div>
+                <div class="inset-scroll-row"><span>Lint</span><span>clean</span></div>
+                <div class="inset-scroll-row"><span>Type check</span><span>clean</span></div>
+                <div class="inset-scroll-row"><span>Bundle size</span><span>142 kb</span></div>
+                <div class="inset-scroll-row"><span>Coverage</span><span>87%</span></div>
+                <div class="inset-scroll-row"><span>Dependencies</span><span>up to date</span></div>
+                <div class="inset-scroll-row"><span>License audit</span><span>clean</span></div>
+                <div class="inset-scroll-row"><span>Security scan</span><span>0 issues</span></div>
+                <div class="inset-scroll-row"><span>Accessibility</span><span>AA</span></div>
+              </div>
+            </section>
+
+            <section class="section contract">
+              <div class="section-label">Contract</div>
+              <dl>
+                <dt>Border</dt><dd>Four sides, thin, square corners</dd>
+                <dt>Padding</dt><dd>Square (xl–3xl token range)</dd>
+                <dt>Sibling gap</dt><dd>Gutter (parent's flex/grid gap)</dd>
+                <dt>Scroll mode</dt><dd>Invisible-gutter (auto + scrollbar-gutter: stable)</dd>
+                <dt>Used for</dt><dd>Modals, code blocks, expandable cards, preview cards</dd>
+              </dl>
+            </section>
+
           </div>
         </section>
 
-        <section class="section">
-          <div class="section-label">Invisible-gutter scrollbar</div>
-          <p class="section-blurb">Bar appears intermittently inside the bordered card. <code>scrollbar-gutter: stable</code> reserves the space so layout never shifts. Inherits the html-level transparent track.</p>
-          <div class="inset-scroll">
-            <div class="inset-scroll-row"><span>Cron job</span><span>daily</span></div>
-            <div class="inset-scroll-row"><span>Build pipeline</span><span>success</span></div>
-            <div class="inset-scroll-row"><span>Deployment</span><span>production</span></div>
-            <div class="inset-scroll-row"><span>Test suite</span><span>247 passing</span></div>
-            <div class="inset-scroll-row"><span>Lint</span><span>clean</span></div>
-            <div class="inset-scroll-row"><span>Type check</span><span>clean</span></div>
-            <div class="inset-scroll-row"><span>Bundle size</span><span>142 kb</span></div>
-            <div class="inset-scroll-row"><span>Coverage</span><span>87%</span></div>
-            <div class="inset-scroll-row"><span>Dependencies</span><span>up to date</span></div>
-            <div class="inset-scroll-row"><span>License audit</span><span>clean</span></div>
-            <div class="inset-scroll-row"><span>Security scan</span><span>0 issues</span></div>
-            <div class="inset-scroll-row"><span>Accessibility</span><span>AA</span></div>
-          </div>
-        </section>
+        <!-- ============= RIGHT: FLUSH ============= -->
+        <section class="pane pane-flush">
+          <header class="pane-header">
+            <div class="pane-eyebrow">Mode B · Items</div>
+            <h2 class="pane-title">Flush</h2>
+            <p class="pane-tagline">Rows inside a surface or pane. Full-bleed background, no four-side border, separated from siblings by a single shared rule.</p>
+          </header>
 
-        <section class="section contract">
-          <div class="section-label">Contract</div>
-          <dl>
-            <dt>Border</dt><dd>Four sides, thin, square corners</dd>
-            <dt>Padding</dt><dd>Square (xl–3xl token range)</dd>
-            <dt>Sibling gap</dt><dd>Gutter (parent's flex/grid gap)</dd>
-            <dt>Scroll mode</dt><dd>Invisible-gutter (auto + scrollbar-gutter: stable)</dd>
-            <dt>Used for</dt><dd>Modals, code blocks, expandable cards, preview cards</dd>
-          </dl>
+          <div class="pane-body">
+
+            <section class="section">
+              <div class="section-label">Same rows · flush items</div>
+              <p class="section-blurb">Rows extend pane edge-to-edge. The active row carries a left border (medium, color-link) and a full-bleed selected-bg fill.</p>
+              <div class="flush-list">
+                <div class="flush-row flush-row-active">Pools <span class="flush-row-meta">12</span></div>
+                <div class="flush-row">Entities <span class="flush-row-meta">348</span></div>
+                <div class="flush-row">Settings <span class="flush-row-meta">›</span></div>
+                <div class="flush-row">production-east <span class="flush-row-meta">healthy</span></div>
+                <div class="flush-row">staging-replicas <span class="flush-row-meta">degraded</span></div>
+              </div>
+            </section>
+
+            <section class="section section-frame-host">
+              <div class="section-label">Nested boundary-rail · 2rem dead zone</div>
+              <p class="section-blurb">Two boundary-rails along the same scroll-line — the inner list and the pane itself — share the same gutter colors. They're disambiguated by the 2rem horizontal dead zone between their tracks (visual-language minimum: 1rem). Adjacent rails without that gap would read as a single thickened bar.</p>
+              <div class="flush-scroll-frame">
+                <div class="flush-scroll">
+                  <div class="flush-scroll-row"><span>Cron job</span><span>daily</span></div>
+                  <div class="flush-scroll-row"><span>Build pipeline</span><span>success</span></div>
+                  <div class="flush-scroll-row"><span>Deployment</span><span>production</span></div>
+                  <div class="flush-scroll-row"><span>Test suite</span><span>247 passing</span></div>
+                  <div class="flush-scroll-row"><span>Lint</span><span>clean</span></div>
+                  <div class="flush-scroll-row"><span>Type check</span><span>clean</span></div>
+                  <div class="flush-scroll-row"><span>Bundle size</span><span>142 kb</span></div>
+                  <div class="flush-scroll-row"><span>Coverage</span><span>87%</span></div>
+                  <div class="flush-scroll-row"><span>Dependencies</span><span>up to date</span></div>
+                  <div class="flush-scroll-row"><span>License audit</span><span>clean</span></div>
+                  <div class="flush-scroll-row"><span>Security scan</span><span>0 issues</span></div>
+                  <div class="flush-scroll-row"><span>Accessibility</span><span>AA</span></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="section contract section-after-frame">
+              <div class="section-label">Contract</div>
+              <dl>
+                <dt>Border</dt><dd>Single shared rule (top, bottom, or left)</dd>
+                <dt>Padding</dt><dd>Asymmetric inline (sm–md vertical, xl horizontal owned by container)</dd>
+                <dt>Sibling gap</dt><dd>None — rows touch, separated by the rule</dd>
+                <dt>Active state</dt><dd>Left border (medium, color-link) + selected-bg fill, full-bleed</dd>
+                <dt>Scroll mode</dt><dd>Boundary-rail (scroll + tinted track) when bar is the column edge; otherwise invisible-gutter</dd>
+                <dt>Used for</dt><dd>Nav rows, scroll-list rows, sticky-toc entries, table rows, menu items</dd>
+              </dl>
+            </section>
+
+          </div>
         </section>
 
       </div>
-    </section>
-
-    <!-- ============= RIGHT: FLUSH ============= -->
-    <section class="pane pane-flush">
-      <header class="pane-header">
-        <div class="pane-eyebrow">Mode B · Items</div>
-        <h2 class="pane-title">Flush</h2>
-        <p class="pane-tagline">Rows inside a surface or pane. Full-bleed background, no four-side border, separated from siblings by a single shared rule.</p>
-      </header>
-
-      <div class="pane-body">
-
-        <section class="section">
-          <div class="section-label">Same rows · flush items</div>
-          <p class="section-blurb">Rows extend pane edge-to-edge. The active row carries a left border (medium, color-link) and a full-bleed selected-bg fill.</p>
-          <div class="flush-list">
-            <div class="flush-row flush-row-active">Pools <span class="flush-row-meta">12</span></div>
-            <div class="flush-row">Entities <span class="flush-row-meta">348</span></div>
-            <div class="flush-row">Settings <span class="flush-row-meta">›</span></div>
-            <div class="flush-row">production-east <span class="flush-row-meta">healthy</span></div>
-            <div class="flush-row">staging-replicas <span class="flush-row-meta">degraded</span></div>
-          </div>
-        </section>
-
-        <section class="section section-frame-host">
-          <div class="section-label">Nested boundary-rail · 2rem dead zone</div>
-          <p class="section-blurb">Two boundary-rails along the same scroll-line — the inner list and the pane itself — share the same gutter colors. They're disambiguated by the 2rem horizontal dead zone between their tracks (visual-language minimum: 1rem). Adjacent rails without that gap would read as a single thickened bar.</p>
-          <div class="flush-scroll-frame">
-            <div class="flush-scroll">
-              <div class="flush-scroll-row"><span>Cron job</span><span>daily</span></div>
-              <div class="flush-scroll-row"><span>Build pipeline</span><span>success</span></div>
-              <div class="flush-scroll-row"><span>Deployment</span><span>production</span></div>
-              <div class="flush-scroll-row"><span>Test suite</span><span>247 passing</span></div>
-              <div class="flush-scroll-row"><span>Lint</span><span>clean</span></div>
-              <div class="flush-scroll-row"><span>Type check</span><span>clean</span></div>
-              <div class="flush-scroll-row"><span>Bundle size</span><span>142 kb</span></div>
-              <div class="flush-scroll-row"><span>Coverage</span><span>87%</span></div>
-              <div class="flush-scroll-row"><span>Dependencies</span><span>up to date</span></div>
-              <div class="flush-scroll-row"><span>License audit</span><span>clean</span></div>
-              <div class="flush-scroll-row"><span>Security scan</span><span>0 issues</span></div>
-              <div class="flush-scroll-row"><span>Accessibility</span><span>AA</span></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="section contract section-after-frame">
-          <div class="section-label">Contract</div>
-          <dl>
-            <dt>Border</dt><dd>Single shared rule (top, bottom, or left)</dd>
-            <dt>Padding</dt><dd>Asymmetric inline (sm–md vertical, xl horizontal owned by container)</dd>
-            <dt>Sibling gap</dt><dd>None — rows touch, separated by the rule</dd>
-            <dt>Active state</dt><dd>Left border (medium, color-link) + selected-bg fill, full-bleed</dd>
-            <dt>Scroll mode</dt><dd>Boundary-rail (scroll + tinted track) when bar is the column edge; otherwise invisible-gutter</dd>
-            <dt>Used for</dt><dd>Nav rows, scroll-list rows, sticky-toc entries, table rows, menu items</dd>
-          </dl>
-        </section>
-
-      </div>
-    </section>
-
+    </main>
   </div>
+
 </div>
 
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 <script type="module">
   import { render } from './components/luminance-toggle.js?{{CACHE_BUST}}';
-  const mount = document.getElementById('luminance-mount');
+  const mount = document.querySelector('[data-luminance]');
   let stored = null;
   try { stored = localStorage.getItem('dk-luminance'); } catch {}
   const initial = stored === 'light' || stored === 'dark' ? stored : 'auto';

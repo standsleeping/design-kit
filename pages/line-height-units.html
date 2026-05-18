@@ -5,11 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Line Height Units — Design Kit</title>
-  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
   <style>
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--typography-body);
+    }
     /* ── Root line-height enables rlh unit ── */
     html {
       line-height: var(--font-line-height-base); /* 1.5 → 1rlh = 24px */
@@ -45,8 +54,8 @@
       gap: var(--spacing-xl);
       padding: var(--spacing-md) 0;
       margin-top: var(--spacing-xl);
-      border-top: 1px solid var(--color-border);
-      border-bottom: 1px solid var(--color-border);
+      border-top: var(--border-width-thin) solid var(--color-border);
+      border-bottom: var(--border-width-thin) solid var(--color-border);
     }
 
     /* ── Scenario-level controls (no borders, no bleed) ── */
@@ -116,13 +125,13 @@
     }
 
     .panel {
-      border: 1px solid var(--color-border);
+      border: var(--border-width-thin) solid var(--color-border);
       overflow: hidden;
     }
 
     .panel-header {
       padding: var(--spacing-sm) var(--spacing-lg);
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: var(--border-width-thin) solid var(--color-border);
       display: flex;
       justify-content: space-between;
       align-items: baseline;
@@ -179,7 +188,9 @@
       font-size: var(--font-size-lg);
     }
 
-    /* ── Line grid overlay: alternating bands + lines ── */
+    /* ── Line grid overlay: alternating bands + lines ──
+       Debug overlay for the line-height teaching page; the purple is an
+       ad-hoc demo tint, not a palette color, so the literals stay raw. */
     [data-grid="on"] .prose-rem,
     [data-grid="on"] .prose-lh,
     [data-grid="on"] .prose-2xl {
@@ -187,13 +198,13 @@
         repeating-linear-gradient(
           to bottom,
           transparent calc(1lh - 1px),
-          rgba(108, 92, 231, 0.35) calc(1lh - 1px),
-          rgba(108, 92, 231, 0.35) 1lh
+          rgba(108, 92, 231, 0.35) calc(1lh - 1px), /* token-leak: ok */
+          rgba(108, 92, 231, 0.35) 1lh /* token-leak: ok */
         ),
         repeating-linear-gradient(
           to bottom,
-          rgba(108, 92, 231, 0.07) 0,
-          rgba(108, 92, 231, 0.07) 1lh,
+          rgba(108, 92, 231, 0.07) 0, /* token-leak: ok */
+          rgba(108, 92, 231, 0.07) 1lh, /* token-leak: ok */
           transparent 1lh,
           transparent 2lh
         );
@@ -202,7 +213,7 @@
     /* ── Summary table ── */
     .summary {
       margin-top: var(--spacing-2xl);
-      border-top: 1px solid var(--color-border);
+      border-top: var(--border-width-thin) solid var(--color-border);
       padding-top: var(--spacing-xl);
     }
 
@@ -212,6 +223,15 @@
   </style>
 </head>
 <body>
+<div class="dk-app-shell">
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="line-height-units"></div>
+    </aside>
+    <main class="dk-app-shell-main">
   <div class="page">
     <h1 class="page-title">Line Height Units</h1>
     <p class="page-desc">
@@ -498,5 +518,11 @@
       window.addEventListener('load', updateDisplayValues);
     }
   </script>
+
+    </main>
+  </div>
+</div>
+
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 </body>
 </html>

@@ -5,143 +5,54 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Dashboard shell · design-kit</title>
-<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/luminance-toggle.css?{{CACHE_BUST}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
   /* ── Dashboard shell ────────────────────────────────────────────────────
-     A flush four-column application shell: an icon rail, a secondary nav
-     column, the center content, and a right-hand panel. Each non-rail column
-     carries a header strip and a footer strip; the icon rail's logo strip and
-     user strip stand in for those at the same heights. Read across the layout,
-     the top strips form one continuous header rail and the bottom strips one
-     footer rail (PEER_RAIL). The two side columns collapse to zero width; a
-     re-expand control surfaces in the center header when a side is shut.
+     A three-column application shell built from `dk-app-shell` + the system
+     sidebar (left) + the demo right panel. The middle column carries a
+     `dk-topbar` chrome strip and a `dk-topbar dk-topbar-bottom` footer
+     strip; the right panel is itself a Sidebar with header + footer slots
+     that bind to `--layout-chrome-bar-h` (PEER_RAIL) with the main strips.
+     AppShell's own header/footer slots are intentionally absent because
+     the chrome lives per-column, not shell-wide.
 
-     The page builds the shell from plain markup + tokens (the only component
-     dependency is `icon()` for the rail glyphs). The point is the layout
-     pattern, not new components — compare `sidebar-nav-stack.html` for the
-     paired-pane variant. */
+     Compare `sidebar-nav-stack.html` for the single-sidebar variant. */
 
-  :root {
-    /* The header rail and the footer rail are independent contracts; they
-       happen to share a value here. Every strip on a rail binds to its rail's
-       token (PEER_RAIL: one source of truth, N bindings). 2.5rem matches the
-       chrome-bar height used elsewhere (icon-button-sm + 2·spacing-md). */
-    --rail-header-h: var(--dk-chrome-bar-h, 2.5rem);
-    --rail-footer-h: var(--dk-chrome-bar-h, 2.5rem);
-
-    /* Fixed column widths; the center column takes whatever's left. */
-    --ds-rail-w: 64px;
-    --ds-nav-w: var(--layout-sidebar-width, 220px);
-    --ds-right-w: 260px;
-  }
-
-  html, body { height: 100%; margin: 0; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--typography-mono);
     --mono: 1;
     font-size: var(--font-size-xs);
-    overflow: hidden;
   }
 
-  .ds-shell {
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-  }
+  /* Right panel surface tone, kept distinct from the system sidebar's
+     default surface so the page reads as left chrome / center body / right
+     inspector. The system sidebar inherits its own surface from sidebar.css. */
+  #right { background: var(--color-bg); }
 
-  /* ── columns ──────────────────────────────────────────────────────────── */
-  .ds-rail,
-  .ds-nav,
-  .ds-main,
-  .ds-right {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-width: 0;
-  }
+  /* Collapse / expand visibility for the controls in main-chrome. The
+     system sidebar (aside.dk-app-shell-left) has no built-in chrome of its
+     own, so both directions of the collapse toggle live here; the
+     data-nav-collapsed / data-right-collapsed markers on the shell drive
+     which direction is reachable at any time. */
+  #nav-expand, #right-expand { display: none; }
+  .dk-app-shell[data-nav-collapsed] #nav-expand { display: inline-flex; }
+  .dk-app-shell[data-nav-collapsed] #nav-collapse { display: none; }
+  .dk-app-shell[data-right-collapsed] #right-expand { display: inline-flex; }
 
-  .ds-rail {
-    flex-shrink: 0;
-    width: var(--ds-rail-w);
-    background: var(--color-code-bg);
-    border-right: var(--border-width-thin) solid var(--color-border);
-  }
-
-  .ds-nav {
-    flex-shrink: 0;
-    width: var(--ds-nav-w);
-    background: var(--color-code-bg);
-    border-right: var(--border-width-thin) solid var(--color-border);
-    transition: width 0.18s ease;
-  }
-
-  .ds-main {
-    flex: 1;
-    background: var(--color-bg);
-  }
-
-  .ds-right {
-    flex-shrink: 0;
-    width: var(--ds-right-w);
-    background: var(--color-bg);
-    border-left: var(--border-width-thin) solid var(--color-border);
-    transition: width 0.18s ease;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .ds-nav, .ds-right { transition: none; }
-  }
-
-  /* Collapsed side columns shrink to nothing and drop their divider so it
-     doesn't double up against the neighbour's edge (BOUNDARY_OWNERSHIP). */
-  .ds-shell[data-nav-collapsed] .ds-nav {
-    width: 0;
-    border-right: none;
-  }
-  .ds-shell[data-right-collapsed] .ds-right {
-    width: 0;
-    border-left: none;
-  }
-
-  /* ── rails: header strip / footer strip ───────────────────────────────── */
-  .ds-bar {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    height: var(--rail-header-h);
-    padding: 0 var(--spacing-md);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-  }
-
-  .ds-footer-bar {
-    flex-shrink: 0;
-    height: var(--rail-footer-h);
-    border-top: var(--border-width-thin) solid var(--color-border);
-  }
-
-  .ds-bar-title {
-    flex: 1;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .ds-main-title {
-    font-size: var(--font-size-2xs);
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--font-letter-spacing-wide);
-    color: var(--color-text-muted);
-  }
-
-  /* collapse / re-expand controls */
-  .ds-collapse,
-  .ds-expand {
+  /* Collapse/expand buttons in chrome strips (the visual treatment of the
+     buttons themselves; the strips are dk-topbar). */
+  .chrome-btn {
     flex-shrink: 0;
     padding: var(--spacing-xs) var(--spacing-sm);
     border: none;
@@ -153,223 +64,31 @@
     line-height: 1;
     transition: color 0.15s ease;
   }
-  .ds-collapse:hover,
-  .ds-expand:hover { color: var(--color-text); }
-  .ds-collapse:focus-visible,
-  .ds-expand:focus-visible {
+  .chrome-btn:hover { color: var(--color-text); }
+  .chrome-btn:focus-visible {
     outline: var(--border-width-medium) solid var(--color-link);
     outline-offset: -2px;
   }
 
-  /* re-expand buttons live in the center header; shown only when shut */
-  #nav-expand, #right-expand { display: none; }
-  #right-expand { margin-left: auto; }
-  .ds-shell[data-nav-collapsed]   #nav-expand   { display: block; }
-  .ds-shell[data-right-collapsed] #right-expand { display: block; }
-
-  /* ── icon rail ────────────────────────────────────────────────────────── */
-  .ds-rail-primary,
-  .ds-rail-utilities {
+  /* ── Main column wrap: chrome strip (dk-topbar) + scroll body + footer
+     strip (dk-topbar-bottom). dk-app-shell-main owns the column slot but
+     we need a flex column inside it so the body region scrolls between
+     the two chrome strips. The shell's default overflow: auto on main is
+     overridden here because main contains its own scroll body. ── */
+  .dk-app-shell-main {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) 0;
-  }
-
-  .ds-rail-spacer {
-    flex: 1;
-    min-height: var(--spacing-2xl);
-  }
-
-  .ds-rail-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    width: 100%;
-    padding: var(--spacing-sm) 0;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    font-family: inherit;
-    transition: color 0.15s ease, background-color 0.15s ease;
-  }
-  .ds-rail-item:hover {
-    background: var(--color-hover-bg);
-    color: var(--color-text);
-  }
-  /* The focusable row spans the rail; a ring around it would be clipped
-     left/right by overflow:hidden. Ring the icon box instead — small, centred,
-     never clipped (INSET_FOCUS_RING, ring-the-child variant). */
-  .ds-rail-item:focus { outline: none; }
-  .ds-rail-item:focus-visible .ds-rail-item-icon {
-    outline: var(--border-width-medium) solid var(--color-link);
-    outline-offset: 2px;
-  }
-
-  .ds-rail-item-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 26px;
-  }
-  .ds-rail-item-icon svg { width: 20px; height: 20px; }
-
-  .ds-rail-item-label {
-    max-width: 100%;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: var(--font-size-2xs);
-    line-height: 1.1;
-    text-align: center;
   }
-
-  .ds-rail-item-selected { color: var(--color-text); }
-  .ds-rail-item-selected .ds-rail-item-icon {
-    background: var(--color-selected-bg);
-    color: var(--color-link);
-  }
-
-  .ds-rail-util {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    align-self: center;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    transition: color 0.15s ease, background-color 0.15s ease;
-  }
-  .ds-rail-util:hover {
-    background: var(--color-hover-bg);
-    color: var(--color-text);
-  }
-  .ds-rail-util:focus-visible {
-    outline: var(--border-width-medium) solid var(--color-link);
-    outline-offset: -2px;
-  }
-  .ds-rail-util svg { width: 16px; height: 16px; }
-  .ds-rail-util-dot::after {
-    content: '';
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--color-link);
-  }
-
-  /* ── nav column ───────────────────────────────────────────────────────── */
-  .ds-nav-body {
-    flex: 1;
-    min-height: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-    padding: var(--spacing-sm) 0;
-  }
-  .ds-nav-list { display: flex; flex-direction: column; }
-
-  .ds-nav-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
-    border-left: var(--border-width-medium) solid transparent;
-    background: transparent;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    font-family: inherit;
-    font-size: var(--font-size-xs);
-    text-align: left;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  }
-  .ds-nav-item:hover {
-    background: var(--color-hover-bg);
-    color: var(--color-text);
-  }
-  .ds-nav-item:focus-visible {
-    outline: var(--border-width-medium) solid var(--color-link);
-    outline-offset: -2px;
-  }
-  .ds-nav-item-selected {
-    border-left-color: var(--color-link);
-    background: var(--color-selected-bg);
-    color: var(--color-text);
-  }
-  .ds-nav-label {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .ds-nav-badge {
-    flex-shrink: 0;
-    font-size: var(--font-size-2xs);
-    color: var(--color-text-muted);
-  }
-
-  .ds-nav-section {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    width: 100%;
-    margin-top: var(--spacing-sm);
-    padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
-    border: none;
-    border-top: var(--border-width-thin) solid var(--color-border);
-    border-left: var(--border-width-medium) solid transparent;
-    background: transparent;
-    font-family: inherit;
-    font-size: var(--font-size-2xs);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: var(--font-letter-spacing-wide);
-    text-align: left;
-  }
-  .ds-nav-section-collapsible { cursor: pointer; transition: color 0.15s ease; }
-  .ds-nav-section-collapsible:hover { color: var(--color-text); }
-  .ds-nav-section-collapsible:focus-visible {
-    outline: var(--border-width-medium) solid var(--color-link);
-    outline-offset: -2px;
-  }
-  .ds-nav-section-label {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .ds-nav-chevron {
-    flex-shrink: 0;
-    font-size: var(--font-size-xs);
-    line-height: 1;
-  }
-  .ds-nav-group { display: flex; flex-direction: column; }
-  .ds-nav-group[hidden] { display: none; }
-
-  /* ── center + right bodies ────────────────────────────────────────────── */
-  .ds-main-body,
-  .ds-right-body {
+  .main-body {
     flex: 1;
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-gutter: stable;
   }
-  .ds-main-placeholder,
-  .ds-right-placeholder {
+  .main-placeholder,
+  .right-placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -381,154 +100,97 @@
 </style>
 </head>
 <body>
-<div class="ds-shell" id="shell">
+<div class="dk-app-shell" id="shell">
 
-  <!-- icon rail: empty header strip / primary destinations / spacer /
-       utilities / empty user (footer) strip -->
-  <aside class="ds-rail" aria-label="Primary">
-    <div class="ds-bar"></div>
-    <div class="ds-rail-primary">
-      <button class="ds-rail-item ds-rail-item-selected" data-rail="lorem">
-        <span class="ds-rail-item-icon"></span><span class="ds-rail-item-label">Lorem</span>
-      </button>
-      <button class="ds-rail-item" data-rail="ipsum">
-        <span class="ds-rail-item-icon"></span><span class="ds-rail-item-label">Ipsum</span>
-      </button>
-      <button class="ds-rail-item" data-rail="dolor">
-        <span class="ds-rail-item-icon"></span><span class="ds-rail-item-label">Dolor</span>
-      </button>
-      <button class="ds-rail-item" data-rail="amet">
-        <span class="ds-rail-item-icon"></span><span class="ds-rail-item-label">Amet</span>
-      </button>
-      <button class="ds-rail-item" data-rail="elit">
-        <span class="ds-rail-item-icon"></span><span class="ds-rail-item-label">Elit</span>
-      </button>
-    </div>
-    <div class="ds-rail-spacer"></div>
-    <div class="ds-rail-utilities">
-      <button class="ds-rail-util" data-util="search" aria-label="Search"></button>
-      <button class="ds-rail-util" data-util="new" aria-label="New"></button>
-      <button class="ds-rail-util ds-rail-util-dot" data-util="alerts" aria-label="Notifications"></button>
-      <button class="ds-rail-util" data-util="more" aria-label="More"></button>
-    </div>
-    <div class="ds-footer-bar"></div>
-  </aside>
+  <div class="dk-app-shell-body">
 
-  <!-- secondary nav: title + collapse / items + sections + a badge / footer -->
-  <nav class="ds-nav" id="nav" aria-label="Lorem">
-    <div class="ds-bar">
-      <span class="ds-bar-title">Lorem</span>
-      <button class="ds-collapse" id="nav-collapse" aria-label="Collapse navigation">«</button>
-    </div>
-    <div class="ds-nav-body">
-      <div class="ds-nav-list">
-        <button class="ds-nav-item ds-nav-item-selected"><span class="ds-nav-label">Lorem ipsum</span></button>
-        <button class="ds-nav-item"><span class="ds-nav-label">Dolor sit</span></button>
-        <button class="ds-nav-item"><span class="ds-nav-label">Consectetur</span></button>
-        <button class="ds-nav-item"><span class="ds-nav-label">Adipiscing elit</span></button>
-        <button class="ds-nav-item"><span class="ds-nav-label">Sed eiusmod</span></button>
-        <button class="ds-nav-section ds-nav-section-collapsible" data-group="tempor" aria-expanded="true">
-          <span class="ds-nav-section-label">Tempor</span><span class="ds-nav-chevron" aria-hidden="true">▾</span>
-        </button>
-        <div class="ds-nav-group" data-group="tempor">
-          <button class="ds-nav-item"><span class="ds-nav-label">Ut labore</span></button>
-          <button class="ds-nav-item"><span class="ds-nav-label">Et dolore</span></button>
+    <!-- System sidebar (left): standard contract slot. -->
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           id="nav"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="dashboard-shell"></div>
+    </aside>
+
+    <!-- Center column: chrome strip + body + footer strip. -->
+    <main class="dk-app-shell-main">
+      <header class="dk-topbar">
+        <button class="chrome-btn" id="nav-collapse" aria-label="Collapse navigation">«</button>
+        <button class="chrome-btn" id="nav-expand" aria-label="Expand navigation">»</button>
+        <span class="dk-topbar-title dk-topbar-title-eyebrow">Lorem ipsum</span>
+        <span data-luminance aria-label="Luminance mode"></span>
+        <button class="chrome-btn" id="right-expand" aria-label="Expand panel">«</button>
+      </header>
+      <div class="main-body">
+        <div class="main-placeholder">Lorem ipsum dolor sit amet</div>
+      </div>
+      <footer class="dk-topbar dk-topbar-bottom"></footer>
+    </main>
+
+    <!-- Right panel: DK Sidebar (right, inline, expanded, 260px). -->
+    <div class="dk-app-shell-right">
+      <div class="dk-sidebar dk-sidebar-right dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 260px;"
+           id="right"
+           aria-label="Lorem">
+        <div class="dk-sidebar-header dk-topbar" data-slot="header">
+          <button class="chrome-btn" id="right-collapse" aria-label="Collapse panel">»</button>
+          <span class="dk-topbar-title">Lorem</span>
         </div>
-        <div class="ds-nav-section">Magna aliqua</div>
-        <button class="ds-nav-item">
-          <span class="ds-nav-label">Quis nostrud</span><span class="ds-nav-badge">Novum</span>
-        </button>
+        <div class="dk-sidebar-main" data-slot="main">
+          <div class="right-placeholder">Lorem ipsum</div>
+        </div>
+        <div class="dk-sidebar-footer dk-topbar dk-topbar-bottom" data-slot="footer"></div>
       </div>
     </div>
-    <div class="ds-footer-bar"></div>
-  </nav>
 
-  <!-- center: header (re-expand controls + title) / body placeholder / footer -->
-  <main class="ds-main">
-    <div class="ds-bar">
-      <button class="ds-expand" id="nav-expand" aria-label="Expand navigation">»</button>
-      <span class="ds-bar-title ds-main-title">Lorem ipsum</span>
-      <button class="ds-expand" id="right-expand" aria-label="Expand panel">«</button>
-    </div>
-    <div class="ds-main-body">
-      <div class="ds-main-placeholder">Lorem ipsum dolor sit amet</div>
-    </div>
-    <div class="ds-footer-bar"></div>
-  </main>
-
-  <!-- right panel: collapse + title / body placeholder / footer -->
-  <aside class="ds-right" id="right" aria-label="Lorem">
-    <div class="ds-bar">
-      <button class="ds-collapse" id="right-collapse" aria-label="Collapse panel">»</button>
-      <span class="ds-bar-title">Lorem</span>
-    </div>
-    <div class="ds-right-body">
-      <div class="ds-right-placeholder">Lorem ipsum</div>
-    </div>
-    <div class="ds-footer-bar"></div>
-  </aside>
+  </div>
 
 </div>
 
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
+
 <script type="module">
 const cb = '{{CACHE_BUST}}';
-const { icon } = await import(`./components/icons.js?v=${cb}`);
+const luminanceMod = await import(`./components/luminance-toggle.js?v=${cb}`);
 
-// Rail glyphs (Radix icons via the icon() helper).
-const RAIL_ICONS = {
-  lorem: 'exclamation-triangle',
-  ipsum: 'file-text',
-  dolor: 'code',
-  amet: 'info-circled',
-  elit: 'gear',
-};
-for (const btn of document.querySelectorAll('.ds-rail-item')) {
-  const svg = icon(RAIL_ICONS[btn.dataset.rail]);
-  if (svg) btn.querySelector('.ds-rail-item-icon').append(svg);
-}
-
-const UTIL_ICONS = {
-  search: 'magnifying-glass',
-  new: 'plus',
-  alerts: 'bell',
-  more: 'dots-horizontal',
-};
-for (const btn of document.querySelectorAll('.ds-rail-util')) {
-  const svg = icon(UTIL_ICONS[btn.dataset.util]);
-  if (svg) btn.append(svg);
-}
-
-// Column collapse: a data-attribute on the shell drives the CSS.
+// Column collapse: flip the sidebar's data-state and a marker on the shell.
+// The marker drives re-expand button visibility in main-chrome. The system
+// sidebar (left) is collapsed through the chrome-strip » button next to its
+// title; expansion happens via the « button that appears once collapsed.
 const shell = document.getElementById('shell');
-document.getElementById('nav-collapse').addEventListener('click', () => { shell.dataset.navCollapsed = 'true'; });
-document.getElementById('nav-expand').addEventListener('click', () => { delete shell.dataset.navCollapsed; });
-document.getElementById('right-collapse').addEventListener('click', () => { shell.dataset.rightCollapsed = 'true'; });
-document.getElementById('right-expand').addEventListener('click', () => { delete shell.dataset.rightCollapsed; });
+const navSb = document.getElementById('nav');
+const rightSb = document.getElementById('right');
+document.getElementById('nav-collapse').addEventListener('click', () => {
+  navSb.dataset.state = 'hidden';
+  shell.dataset.navCollapsed = 'true';
+});
+document.getElementById('nav-expand').addEventListener('click', () => {
+  navSb.dataset.state = 'expanded';
+  delete shell.dataset.navCollapsed;
+});
+document.getElementById('right-collapse').addEventListener('click', () => {
+  rightSb.dataset.state = 'hidden';
+  shell.dataset.rightCollapsed = 'true';
+});
+document.getElementById('right-expand').addEventListener('click', () => {
+  rightSb.dataset.state = 'expanded';
+  delete shell.dataset.rightCollapsed;
+});
 
-// Collapsible nav section: toggle the matching item group.
-for (const header of document.querySelectorAll('.ds-nav-section-collapsible')) {
-  header.addEventListener('click', () => {
-    const group = document.querySelector(`.ds-nav-group[data-group="${header.dataset.group}"]`);
-    const open = !group.hidden;
-    group.hidden = open;
-    header.setAttribute('aria-expanded', String(!open));
-    header.querySelector('.ds-nav-chevron').textContent = open ? '▸' : '▾';
-  });
+// Luminance toggle.
+const luminanceMount = document.querySelector('[data-luminance]');
+let stored = null;
+try { stored = localStorage.getItem('dk-luminance'); } catch {}
+const initial = stored === 'light' || stored === 'dark' ? stored : 'auto';
+if (initial === 'auto') {
+  document.documentElement.removeAttribute('data-luminance');
+} else {
+  document.documentElement.setAttribute('data-luminance', initial);
 }
-
-// Click-to-select: rail destinations and nav items move the selection.
-function selectWithin(container, selector, selectedClass, clicked) {
-  for (const el of container.querySelectorAll(selector)) el.classList.remove(selectedClass);
-  clicked.classList.add(selectedClass);
-}
-const rail = document.querySelector('.ds-rail');
-for (const item of rail.querySelectorAll('.ds-rail-item')) {
-  item.addEventListener('click', () => selectWithin(rail, '.ds-rail-item', 'ds-rail-item-selected', item));
-}
-const navList = document.querySelector('.ds-nav-list');
-for (const item of navList.querySelectorAll('.ds-nav-item')) {
-  item.addEventListener('click', () => selectWithin(navList, '.ds-nav-item', 'ds-nav-item-selected', item));
-}
+luminanceMount.append(luminanceMod.render({ value: initial }));
 </script>
 </body>
 </html>

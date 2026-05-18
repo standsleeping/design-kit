@@ -5,18 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Border Audit · design-kit</title>
-<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
-    margin: 0;
-    padding: var(--spacing-xl) var(--spacing-2xl);
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--typography-mono);
     font-size: var(--font-size-xs);
     --mono: 1;
   }
-  h1 {
+  .dk-app-shell-main {
+    padding: var(--spacing-xl) var(--spacing-2xl);
+  }
+  .dk-app-shell-main h1 {
     font-size: var(--font-size-lg);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
@@ -48,29 +56,53 @@
 </style>
 </head>
 <body>
-<h1>Border Audit</h1>
-<p>Walks each target page and flags any pair of parallel borders (two horizontal-rule edges at the same y, or two vertical-rule edges at the same x) whose ranges overlap. This is the runtime detection corollary of <code>BOUNDARY_OWNERSHIP</code>: exactly one element should own each visible edge.</p>
-<div class="summary" data-summary>Running…</div>
-<div class="results">
-  <table>
-    <thead><tr><th>Page</th><th>Result</th><th>Findings</th></tr></thead>
-    <tbody data-results></tbody>
-  </table>
+<div class="dk-app-shell">
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="border-audit"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <h1>Border Audit</h1>
+      <p>Walks each target page and reports two classes of border problem with overlapping ranges. <strong>Doubled borders</strong> (axes within 1.5px) are the runtime detection corollary of <code>BOUNDARY_OWNERSHIP</code>: exactly one element should own each visible edge. <strong>Near-rail borders</strong> (horizontal edges 1.5–12px apart with overlapping x ranges, sibling elements only) are the runtime detection corollary of <code>PEER_RAIL</code>'s quantization sharpening: chrome strips that look like they're on the same rail must actually share a height (use <code>--chrome-bar-rows</code> on the shell so peers grow together).</p>
+      <div class="summary" data-summary>Running…</div>
+      <div class="results">
+        <table>
+          <thead><tr><th>Page</th><th>Result</th><th>Findings</th></tr></thead>
+          <tbody data-results></tbody>
+        </table>
+      </div>
+      <div class="frame-host" aria-hidden="true"></div>
+    </main>
+  </div>
 </div>
-<div class="frame-host" aria-hidden="true"></div>
 
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 <script type="module">
 const TARGETS = [
-  'preview.html',
+  'index.html',
   'storybook.html',
   'sidebar-nav-stack.html',
   'line-height-units.html',
+  'sticky-toc.html',
+  'dashboard-shell.html',
 ];
 
 // Pixel tolerance for "same axis position" (handles fractional rendering).
 const POS_TOL = 1.5;
 // Minimum overlap length for two parallel borders to be considered a doubled rule.
 const OVERLAP_MIN = 4;
+// Near-rail detection: two horizontal rules between NEAR_MIN_DY (exclusive)
+// and NEAR_MAX_DY (inclusive) px apart, with overlapping x ranges, look like
+// an intended peer rail but don't actually align. The lower bound matches
+// POS_TOL so doubled-border findings aren't re-reported here. The upper bound
+// is the maximum y-gap that still reads as "supposed to be one rail" rather
+// than two distinct chrome strips. Sharpening of PEER_RAIL — see
+// system-principles/content/peer_rail.md § "Sharpening: quantization".
+const NEAR_MIN_DY = POS_TOL;
+const NEAR_MAX_DY = 12;
 
 const SIDES = ['top', 'right', 'bottom', 'left'];
 
@@ -127,7 +159,42 @@ function findDoubledBorders(lines) {
       // table-row borders touching tip-to-tip): the user perceives one line.
       // We flag only when the borders' ranges meaningfully overlap, so
       // tip-to-tip cases (overlap < OVERLAP_MIN) are excluded above.
-      findings.push({ a, b, overlap });
+      findings.push({ kind: 'doubled', a, b, overlap });
+    }
+  }
+  return findings;
+}
+
+// Detect two horizontal rules that look like they're on the same peer rail
+// but render at slightly different y. This is the PEER_RAIL near-miss case:
+// each strip compiled in isolation (a column's topbar vs. a sticky chrome
+// inside the neighbouring column), no shared height token, so the user sees
+// a stutter rather than a continuous rail.
+//
+// Exclusions:
+// - DOM ancestor/descendant pairs (a child's border just below its parent's
+//   is structural, not a rail miss).
+// - One element's x-range fully contains the other's. This filters out
+//   "internal content of one strip happens to near-align with the edge of
+//   a stacked-in-column strip" — the eye doesn't expect those to align.
+//   Real peer-rail misses are sibling columns: each strip spans roughly its
+//   own column, with comparable x-extents, not nested.
+function findNearAlignedBorders(lines) {
+  const findings = [];
+  for (let i = 0; i < lines.length; i++) {
+    for (let j = i + 1; j < lines.length; j++) {
+      const a = lines[i], b = lines[j];
+      if (a.axis !== 'h' || b.axis !== 'h') continue;
+      const dy = Math.abs(a.pos - b.pos);
+      if (dy <= NEAR_MIN_DY || dy > NEAR_MAX_DY) continue;
+      const overlap = Math.min(a.end, b.end) - Math.max(a.start, b.start);
+      if (overlap < OVERLAP_MIN) continue;
+      if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+      // Skip when one x-range fully contains the other (stacked-in-column,
+      // not peer columns).
+      if (a.start <= b.start && a.end >= b.end) continue;
+      if (b.start <= a.start && b.end >= a.end) continue;
+      findings.push({ kind: 'near-rail', a, b, dy, overlap });
     }
   }
   return findings;
@@ -152,7 +219,10 @@ async function auditPage(url) {
   let findings;
   try {
     const lines = collectBorderLines(f.contentDocument);
-    findings = findDoubledBorders(lines);
+    findings = [
+      ...findDoubledBorders(lines),
+      ...findNearAlignedBorders(lines),
+    ];
   } catch (err) {
     findings = [{ error: err.message }];
   }
@@ -174,7 +244,11 @@ function renderRow(url, findings) {
     tdResult.className = 'fail';
     tdDetail.textContent = findings.map(f => {
       if (f.error) return `error: ${f.error}`;
-      return `${f.a.axis === 'h' ? 'horizontal' : 'vertical'} @ ${f.a.pos.toFixed(1)}px, overlap ${f.overlap.toFixed(1)}px\n  A: ${describe(f.a.el)} (${f.a.side})\n  B: ${describe(f.b.el)} (${f.b.side})`;
+      const axisLabel = f.a.axis === 'h' ? 'horizontal' : 'vertical';
+      const tag = f.kind === 'near-rail'
+        ? `near-rail Δy ${f.dy.toFixed(1)}px`
+        : `doubled @ ${f.a.pos.toFixed(1)}px`;
+      return `${axisLabel} ${tag}, overlap ${f.overlap.toFixed(1)}px\n  A: ${describe(f.a.el)} (${f.a.side})\n  B: ${describe(f.b.el)} (${f.b.side})`;
     }).join('\n\n');
   }
   tr.append(tdName, tdResult, tdDetail);

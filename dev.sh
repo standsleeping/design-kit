@@ -15,8 +15,8 @@ cd "$here"
 uv run design-kit build
 
 echo ""
+echo "design-kit index:      http://localhost:$port/"
 echo "design-kit storybook:  http://localhost:$port/storybook.html"
-echo "design-kit preview:    http://localhost:$port/preview.html"
 echo "contract tests:        http://localhost:$port/contract-tests.html"
 echo "Ctrl-C to stop."
 echo ""

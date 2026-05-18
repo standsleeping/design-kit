@@ -5,18 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Contract Tests · design-kit</title>
-<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
-    margin: 0;
-    padding: var(--spacing-xl) var(--spacing-2xl);
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--typography-mono);
     font-size: var(--font-size-xs);
     --mono: 1;
   }
-  h1 {
+  .dk-app-shell-main {
+    padding: var(--spacing-xl) var(--spacing-2xl);
+  }
+  .dk-app-shell-main h1 {
     font-size: var(--font-size-lg);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
@@ -54,16 +62,30 @@
 </style>
 </head>
 <body>
-<h1>Component Contract Tests</h1>
-<div class="summary" data-summary>Running…</div>
-<div class="results">
-  <table>
-    <thead>
-      <tr><th>Component</th><th>Checks</th><th>Failures</th></tr>
-    </thead>
-    <tbody data-results></tbody>
-  </table>
+<div class="dk-app-shell">
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="contract-tests"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <h1>Component Contract Tests</h1>
+      <div class="summary" data-summary>Running…</div>
+      <div class="results">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Checks</th><th>Failures</th></tr>
+          </thead>
+          <tbody data-results></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
 </div>
+
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 
 <script type="module">
 const CONFIG_URL = 'components/storybook.config.json';

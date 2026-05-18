@@ -5,81 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Sidebar + NavStack · design-kit</title>
-<link rel="stylesheet" href="tokens.css">
-<link rel="stylesheet" href="components/sidebar.css">
-<link rel="stylesheet" href="components/nav-stack.css">
-<link rel="stylesheet" href="components/icon-button.css">
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/luminance-toggle.css?{{CACHE_BUST}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
-  html, body { height: 100%; margin: 0; }
+  /* The page's primary documentation surface is the four-cell matrix below,
+     which renders the Sidebar + NavStack composition in each of its
+     {root, settings} × {expanded, icon} states. The left chrome of the page
+     is the system sidebar (itself a live instance of the same composition),
+     so the page is dog-fooded by its own subject.
+
+     Main owns its scroll body; we explicitly override the shell's default
+     overflow: auto so the top dk-topbar chrome stays pinned. */
+  html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--typography-mono);
     font-size: var(--font-size-xs);
     --mono: 1;
-    overflow: hidden;
   }
 
-  .shell {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .shell-backdrop {
-    position: absolute;
-    inset: 0;
-    background: color-mix(in srgb, var(--color-text) 30%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease-out;
-    z-index: calc(var(--z-overlay, 1000) - 1);
-  }
-  .shell-backdrop[data-visible="true"] {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .shell-backdrop { transition: none; }
-  }
-
-  .pane {
+  .dk-app-shell-main {
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    background: var(--color-bg);
+    overflow: hidden;
   }
 
-  /* --dk-chrome-bar-h: derived from icon-button-sm (24px) + 2 * spacing-md
-     (8px) = 40px = 2.5rem; this is the smallest height that lets a button-bar
-     and a text-only bar coexist without the icon-button overflowing. Pinning
-     both panes' chrome bars to this token keeps the cross-pane structural
-     rule continuous (see ADJACENT_BAR_BASELINE). */
-  .pane-bar {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-    height: var(--dk-chrome-bar-h, 2.5rem);
-    box-sizing: border-box;
-  }
-
-  .pane-bar-title {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    letter-spacing: var(--font-letter-spacing-normal);
-  }
-
-  .pane-body {
+  .main-body {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
   }
 
-  /* Container owns horizontal inset; section borders run full-bleed. */
+  /* Container owns inset (square padding); sibling sections separated by a
+     shared top rule. */
   .pane-section {
     padding: var(--spacing-2xl);
   }
@@ -93,27 +59,8 @@
     font-style: italic;
   }
 
-  /* "Panel toggle" glyph: small bordered rectangle with a vertical bar
-     suggesting a sidebar pane. Matches the Linear-style reference glyph. */
-  .panel-toggle-glyph {
-    display: inline-block;
-    width: 1.1em;
-    height: 0.8em;
-    border: var(--border-width-thin) solid currentColor;
-    position: relative;
-    vertical-align: middle;
-  }
-  .panel-toggle-glyph::before {
-    content: '';
-    position: absolute;
-    left: 0.25em;
-    top: 0;
-    bottom: 0;
-    width: var(--border-width-thin);
-    background: currentColor;
-  }
-
-  .event-log-title {
+  .event-log-title,
+  .matrix-title {
     font-size: var(--font-size-2xs);
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
@@ -133,9 +80,7 @@
     overflow-y: auto;
   }
 
-  .event-log-list li {
-    color: var(--color-text-muted);
-  }
+  .event-log-list li { color: var(--color-text-muted); }
 
   .event-log-list li b {
     color: var(--color-text);
@@ -143,13 +88,9 @@
     margin-right: var(--spacing-sm);
   }
 
-  .matrix-title {
-    font-size: var(--font-size-2xs);
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--font-letter-spacing-wide);
+  .event-log-empty {
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-md);
+    font-style: italic;
   }
 
   .matrix-grid {
@@ -162,8 +103,8 @@
     height: 360px;
     display: flex;
     /* No border here — the sidebar's own border-right + the nav-stack's
-       internal rules provide the structural framing. Doubled borders are
-       a BOUNDARY_OWNERSHIP violation. */
+       internal rules provide the structural framing. Doubled borders are a
+       BOUNDARY_OWNERSHIP violation. */
   }
 
   .matrix-cell-label {
@@ -176,61 +117,80 @@
 </style>
 </head>
 <body>
-<div class="shell" id="shell">
-  <div class="shell-backdrop" id="shell-backdrop"></div>
-  <div id="sidebar-mount"></div>
-  <div class="pane">
-    <div class="pane-bar">
-      <button type="button"
-              class="dk-icon-button dk-icon-button-sm"
-              id="panel-toggle"
-              aria-label="Toggle sidebar">
-        <span class="panel-toggle-glyph" aria-hidden="true"></span>
-      </button>
-      <span class="pane-bar-title" id="pane-title">Pools</span>
-    </div>
-    <div class="pane-body">
-      <section class="pane-section">
-        <div id="pane-content" class="pane-body-empty">
-          Click a sidebar item to populate this pane.
-          Use the toggle in the bar above to collapse.
-        </div>
-      </section>
+<div class="dk-app-shell">
 
-      <section class="pane-section">
-        <div class="event-log-title">Event Log</div>
-        <ul class="event-log-list" id="event-log"></ul>
-      </section>
+  <div class="dk-app-shell-body">
 
-      <section class="pane-section">
-        <div class="matrix-title">All four states</div>
-        <div class="matrix-grid">
-          <div>
-            <div class="matrix-cell-label">Root, expanded</div>
-            <div class="matrix-cell" data-cell="re"></div>
+    <!-- System sidebar (left): the page's left chrome is itself a live
+         Sidebar + NavStack instance, so the page demos its subject. -->
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="sidebar-nav-stack"></div>
+    </aside>
+
+    <main class="dk-app-shell-main">
+      <header class="dk-topbar">
+        <span class="dk-topbar-title">Sidebar + NavStack</span>
+        <span class="dk-topbar-spacer"></span>
+        <span data-luminance aria-label="Luminance mode"></span>
+      </header>
+
+      <div class="main-body">
+        <section class="pane-section">
+          <p>
+            This page documents the Sidebar + NavStack composition. The
+            <strong>left chrome</strong> is itself a live instance of the
+            composition (system sidebar — see <code>components/system/system-sidebar.js</code>).
+            The <strong>four-cell matrix</strong> below renders all four
+            {level} × {displayState} states statically. Click any item in
+            the matrix to see the corresponding NavStack events surface
+            in the event log.
+          </p>
+        </section>
+
+        <section class="pane-section">
+          <div class="event-log-title">Event Log (NavStack events from any cell below)</div>
+          <ul class="event-log-list" id="event-log">
+            <li class="event-log-empty">Click an item or branch in the four-cell matrix to populate this log.</li>
+          </ul>
+        </section>
+
+        <section class="pane-section">
+          <div class="matrix-title">All four states</div>
+          <div class="matrix-grid">
+            <div>
+              <div class="matrix-cell-label">Root, expanded</div>
+              <div class="matrix-cell" data-cell="re"></div>
+            </div>
+            <div>
+              <div class="matrix-cell-label">Settings, expanded</div>
+              <div class="matrix-cell" data-cell="se"></div>
+            </div>
+            <div>
+              <div class="matrix-cell-label">Root, icon</div>
+              <div class="matrix-cell" data-cell="ri"></div>
+            </div>
+            <div>
+              <div class="matrix-cell-label">Settings, icon</div>
+              <div class="matrix-cell" data-cell="si"></div>
+            </div>
           </div>
-          <div>
-            <div class="matrix-cell-label">Settings, expanded</div>
-            <div class="matrix-cell" data-cell="se"></div>
-          </div>
-          <div>
-            <div class="matrix-cell-label">Root, icon</div>
-            <div class="matrix-cell" data-cell="ri"></div>
-          </div>
-          <div>
-            <div class="matrix-cell-label">Settings, icon</div>
-            <div class="matrix-cell" data-cell="si"></div>
-          </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </main>
   </div>
+
 </div>
+
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 
 <script type="module">
 const cb = '{{CACHE_BUST}}';
-const sidebarMod  = await import(`./components/sidebar.js?v=${cb}`);
-const navStackMod = await import(`./components/nav-stack.js?v=${cb}`);
+const sidebarMod   = await import(`./components/sidebar.js?v=${cb}`);
+const navStackMod  = await import(`./components/nav-stack.js?v=${cb}`);
+const luminanceMod = await import(`./components/luminance-toggle.js?v=${cb}`);
 
 const LEVELS = [
   {
@@ -263,40 +223,27 @@ const LEVELS = [
   },
 ];
 
-// --- Interactive shell ---
-const sidebarMount = document.getElementById('sidebar-mount');
-const paneTitle    = document.getElementById('pane-title');
-const paneContent  = document.getElementById('pane-content');
-const eventLog     = document.getElementById('event-log');
-const panelToggle  = document.getElementById('panel-toggle');
-const backdrop     = document.getElementById('shell-backdrop');
+// --- Luminance toggle ---
+const luminanceMount = document.querySelector('[data-luminance]');
+let stored = null;
+try { stored = localStorage.getItem('dk-luminance'); } catch {}
+const initial = stored === 'light' || stored === 'dark' ? stored : 'auto';
+if (initial === 'auto') {
+  document.documentElement.removeAttribute('data-luminance');
+} else {
+  document.documentElement.setAttribute('data-luminance', initial);
+}
+luminanceMount.append(luminanceMod.render({ value: initial }));
 
-const EXPANDED_WIDTH = 240;
-const ICON_WIDTH = 56;
-const BREAK_MEDIUM = 1024;
-const BREAK_NARROW = 640;
-
-const sidebar = sidebarMod.render({ width: EXPANDED_WIDTH, iconWidth: ICON_WIDTH });
-const navStack = navStackMod.render({ levels: LEVELS, initialPath: ['root'] });
-sidebar.querySelector('[data-slot="main"]').append(navStack);
-sidebarMount.append(sidebar);
-
-navStack.addEventListener('nav-stack:select', (e) => {
-  paneTitle.textContent = e.detail.label;
-  paneContent.classList.remove('pane-body-empty');
-  paneContent.textContent = `Selected: ${e.detail.label} (${e.detail.kind})`;
-  logEvent('select', e.detail);
-  // On narrow viewports the overlay should dismiss after a selection,
-  // mirroring how phone-style drawers behave.
-  if (tier() === 'narrow') {
-    userOverride = 'hidden';
-    applyState();
-  }
-});
-navStack.addEventListener('nav-stack:branch', (e) => logEvent('branch', e.detail));
-navStack.addEventListener('nav-stack:back',   (e) => logEvent('back',   e.detail));
-
+// --- Event log fed by NavStack events from the four-cell matrix ---
+// NavStack events bubble; we listen at document level and filter to the
+// matrix only, so the system sidebar's own selects don't fight to log
+// while also navigating away.
+const eventLog = document.getElementById('event-log');
+const matrixHost = document.querySelector('.matrix-grid');
 function logEvent(name, detail) {
+  const empty = eventLog.querySelector('.event-log-empty');
+  if (empty) empty.remove();
   const li = document.createElement('li');
   const tag = document.createElement('b');
   tag.textContent = `nav-stack:${name}`;
@@ -304,81 +251,9 @@ function logEvent(name, detail) {
   eventLog.prepend(li);
   while (eventLog.children.length > 20) eventLog.lastChild.remove();
 }
-
-// Viewport-aware mode/displayState with user-override latch.
-// Tier transitions reset the override so each viewport gets its auto-default.
-function tier() {
-  const w = window.innerWidth;
-  if (w >= BREAK_MEDIUM) return 'wide';
-  if (w >= BREAK_NARROW) return 'medium';
-  return 'narrow';
-}
-
-function autoState(t) {
-  if (t === 'wide')   return { mode: 'inline',  displayState: 'expanded' };
-  if (t === 'medium') return { mode: 'inline',  displayState: 'icon'     };
-  return                     { mode: 'overlay', displayState: 'hidden'   };
-}
-
-// What the toggle flips to in each tier (the "the user wants to see more"
-// or "the user wants to dismiss" intent).
-function toggleTarget(current) {
-  if (current.mode === 'overlay') {
-    return current.displayState === 'hidden' ? 'expanded' : 'hidden';
-  }
-  return current.displayState === 'icon' ? 'expanded' : 'icon';
-}
-
-let currentTier = tier();
-let userOverride = null; // null | 'expanded' | 'icon' | 'hidden'
-
-function effectiveState() {
-  const auto = autoState(currentTier);
-  if (userOverride === null) return auto;
-  return { mode: auto.mode, displayState: userOverride };
-}
-
-function applyState() {
-  const s = effectiveState();
-  sidebar.classList.remove('dk-sidebar-mode-inline', 'dk-sidebar-mode-overlay');
-  sidebar.classList.add(`dk-sidebar-mode-${s.mode}`);
-  sidebar.dataset.state = s.displayState;
-  sidebar.style.width = (s.mode === 'inline' && s.displayState === 'icon')
-    ? `${ICON_WIDTH}px`
-    : `${EXPANDED_WIDTH}px`;
-  backdrop.dataset.visible = (s.mode === 'overlay' && s.displayState !== 'hidden') ? 'true' : 'false';
-}
-
-window.addEventListener('resize', () => {
-  const t = tier();
-  if (t !== currentTier) {
-    currentTier = t;
-    userOverride = null;
-    applyState();
-  }
-});
-
-panelToggle.addEventListener('click', () => {
-  userOverride = toggleTarget(effectiveState());
-  applyState();
-});
-
-backdrop.addEventListener('click', () => {
-  if (effectiveState().mode !== 'overlay') return;
-  userOverride = 'hidden';
-  applyState();
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.key !== 'Escape') return;
-  const s = effectiveState();
-  if (s.mode === 'overlay' && s.displayState !== 'hidden') {
-    userOverride = 'hidden';
-    applyState();
-  }
-});
-
-applyState();
+matrixHost.addEventListener('nav-stack:select', (e) => logEvent('select', e.detail));
+matrixHost.addEventListener('nav-stack:branch', (e) => logEvent('branch', e.detail));
+matrixHost.addEventListener('nav-stack:back',   (e) => logEvent('back',   e.detail));
 
 // --- Static four-cell matrix ---
 function fillCell(selector, { state, path }) {

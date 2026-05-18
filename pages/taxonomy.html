@@ -5,13 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Early-Tech Graphic Design Taxonomy</title>
-  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
   <!-- Recursive variable font (canonical URL in token_css.py:GOOGLE_FONTS_LINK) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
   <style>
+    html, body { height: 100%; margin: 0; overflow: hidden; }
     body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--typography-body);
+    }
+    .taxonomy-content {
       max-width: 780px;
       margin: 0 auto;
       padding: var(--spacing-2xl) var(--spacing-xl);
@@ -33,7 +42,7 @@
     }
     .section {
       padding: var(--spacing-2xl) 0;
-      border-top: 1px solid var(--color-border);
+      border-top: var(--border-width-thin) solid var(--color-border);
     }
     .section:first-of-type {
       border-top: var(--border-width-medium) solid var(--color-gray-400);
@@ -130,13 +139,23 @@
       margin-bottom: var(--spacing-xs);
     }
     @media (max-width: 600px) {
-      body {
+      .taxonomy-content {
         padding: var(--spacing-xl) var(--spacing-md);
       }
     }
   </style>
 </head>
 <body>
+<div class="dk-app-shell">
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="taxonomy"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <div class="taxonomy-content">
 
   <div class="page-title">Early-Tech Graphic Design Taxonomy</div>
   <div class="page-subtitle">Design lineage and influences behind the visual language.</div>
@@ -381,5 +400,11 @@
 
   </div>
 
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 </body>
 </html>
