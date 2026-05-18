@@ -23,6 +23,10 @@ from design_kit.focus_ring_audit import (
     FocusRingAuditOutcome,
     run_focus_ring_audit,
 )
+from design_kit.interactive_state_audit import (
+    InteractiveStateAuditOutcome,
+    run_interactive_state_audit,
+)
 from design_kit.icon_registry import generate_registry
 from design_kit.logging import get_logger
 from design_kit.margin_audit import MarginAuditOutcome, run_margin_audit
@@ -189,6 +193,26 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             f"controls with /* focus-ring: standalone */"
         )
     logger.info("Focus-ring audit passed")
+
+    state_result = run_interactive_state_audit(COMPONENTS_DIR)
+    if state_result.outcome == InteractiveStateAuditOutcome.FAILED:
+        logger.error(
+            f"Interactive-state audit found {len(state_result.violations)} "
+            f":hover/:active rule(s) on non-focusable selectors"
+        )
+        for v in state_result.violations:
+            logger.error(
+                f"  {v.file}:{v.line}: {v.selector} — {v.snippet}"
+            )
+        raise RuntimeError(
+            f"Interactive-state audit found {len(state_result.violations)} "
+            f":hover/:active rule(s) on non-focusable selectors; see "
+            f"STATE_BELONGS_TO_INTERACTIVE — pair the rule with a "
+            f":focus-visible declaration on the same base, target a natively "
+            f"focusable element, or mark drag-only handles with "
+            f"/* state-audit: ok */"
+        )
+    logger.info("Interactive-state audit passed")
 
     padding_result = run_padding_audit(COMPONENTS_DIR)
     if padding_result.outcome == PaddingAuditOutcome.FAILED:
