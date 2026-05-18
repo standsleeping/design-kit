@@ -89,6 +89,9 @@ def generate_preview_html() -> str:
       background: var(--color-bg);
     }}
     .section {{
+      display: flex;
+      flex-direction: column;
+      gap: 1lh;
       padding: var(--spacing-2xl) 0 var(--spacing-xl);
       scroll-margin-top: var(--spacing-2xl);
     }}
@@ -106,14 +109,15 @@ def generate_preview_html() -> str:
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
       color: var(--color-text);
-      margin-bottom: 1lh;
     }}
     .heading-anchor {{
       color: inherit;
       text-decoration: none;
     }}
     .subsection {{
-      margin-top: 1lh;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5lh;
     }}
     .subsection-heading {{
       font-family: var(--typography-mono);
@@ -122,7 +126,6 @@ def generate_preview_html() -> str:
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
       color: var(--color-text-muted);
-      margin-bottom: 0.5lh;
     }}
     .swatch-grid {{
       display: flex;
@@ -153,13 +156,11 @@ def generate_preview_html() -> str:
       font-family: var(--typography-mono);
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
-      margin-bottom: var(--spacing-xs);
     }}
     .spacing-row {{
       display: flex;
       align-items: center;
       gap: var(--spacing-md);
-      margin-bottom: var(--spacing-sm);
     }}
     .spacing-block {{
       height: 20px;
@@ -177,7 +178,6 @@ def generate_preview_html() -> str:
       display: flex;
       align-items: baseline;
       gap: var(--spacing-lg);
-      margin-bottom: var(--spacing-xs);
     }}
     .size-value {{
       font-family: var(--typography-mono);
@@ -186,13 +186,12 @@ def generate_preview_html() -> str:
       min-width: 60px;
     }}
     .heading-demo {{
-      margin-bottom: var(--spacing-md);
+      /* row in .subsection flex column; rhythm via parent's gap */
     }}
     .border-row {{
       display: flex;
       align-items: center;
       gap: var(--spacing-lg);
-      margin-bottom: var(--spacing-md);
     }}
     .border-sample {{
       width: 80px;
@@ -213,7 +212,6 @@ def generate_preview_html() -> str:
       font-family: var(--typography-mono);
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
-      margin-bottom: 0.5lh;
     }}
     .icon-table {{
       width: 100%;
@@ -622,7 +620,7 @@ def _section_tables() -> str:
       <div class="subsection">
         <div class="subsection-heading">Content Table</div>
         <div class="demo-label">Sticky headers, no horizontal scroll. For tables embedded in prose. Headers stick when the page scrolls.</div>
-        <div class="content-table" style="margin-top: var(--spacing-md);">
+        <div class="content-table">
           <table>
             <caption>Design token categories</caption>
             <thead><tr><th>Category</th><th>Purpose</th><th>Example</th></tr></thead>
@@ -639,7 +637,7 @@ def _section_tables() -> str:
       <div class="subsection">
         <div class="subsection-heading">Data Table</div>
         <div class="demo-label">Horizontal scroll wrapper. For wide tables with many columns.</div>
-        <div class="data-table" style="margin-top: var(--spacing-md);">
+        <div class="data-table">
           <table>
             <thead><tr><th>Component</th><th>Category</th><th>Props</th><th>Events</th><th>Composition</th></tr></thead>
             <tbody>
