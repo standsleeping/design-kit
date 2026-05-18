@@ -671,6 +671,6 @@ main().catch((err) => {
   console.error('[storybook] fatal:', err);
   document.body.insertAdjacentHTML(
     'beforeend',
-    `<pre style="color:#a33;padding:1rem">[storybook] ${String(err)}</pre>`,
+    `<pre style="color:var(--color-danger);padding:var(--spacing-xl)">[storybook] ${String(err)}</pre>`,
   );
 });

@@ -178,6 +178,7 @@
         "black": 900
       },
       "line-height": {
+        "none": 1,
         "tight": 1.1,
         "base": 1.5,
         "relaxed": 1.6
