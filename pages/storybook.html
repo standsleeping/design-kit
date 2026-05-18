@@ -25,6 +25,8 @@
 
   .storybook-mobile-notice {
     display: none;
+    flex-direction: column;
+    gap: var(--spacing-md);
     padding: var(--spacing-2xl);
     font-family: var(--typography-mono);
     font-size: var(--font-size-sm);
@@ -36,7 +38,6 @@
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
-    margin-bottom: var(--spacing-md);
   }
 
   .storybook-mobile-notice-body {
@@ -46,7 +47,7 @@
 
   @media (max-width: 899px) {
     .dk-app-shell { display: none; }
-    .storybook-mobile-notice { display: block; }
+    .storybook-mobile-notice { display: flex; }
   }
 
   /* AppShell-header content: count + theme/luminance controls, all monospace
@@ -294,6 +295,9 @@
 
   /* Inspector content (lives in right Sidebar's main slot) */
   .storybook-inspector-host {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
     padding: var(--spacing-lg);
     font-family: var(--typography-mono);
     font-size: var(--font-size-xs);
@@ -337,7 +341,6 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-sm) var(--spacing-md);
-    margin-bottom: var(--spacing-md);
   }
 
   .storybook-inspector-tab {
@@ -373,11 +376,17 @@
 
   .storybook-inspector-panel[hidden] { display: none; }
 
+  /* Props panel: header + form stacked with sm gap. */
+  .storybook-inspector-panel[data-storybook-inspector-panel="props"] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
   .storybook-props-header {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    margin-bottom: var(--spacing-sm);
   }
 
   .storybook-props-reset {

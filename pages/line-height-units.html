@@ -26,8 +26,23 @@
 
     /* ── Page shell ── */
     .page {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xl);
       padding: var(--spacing-2xl);
       max-width: 1200px;
+    }
+
+    .page-header {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .scenarios {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-2xl);
     }
 
     .page-title {
@@ -39,7 +54,6 @@
     }
 
     .page-desc {
-      margin-top: var(--spacing-md);
       color: var(--color-text-muted);
       font-size: var(--font-size-sm);
       --mono: 0;
@@ -53,7 +67,6 @@
       align-items: center;
       gap: var(--spacing-xl);
       padding: var(--spacing-md) 0;
-      margin-top: var(--spacing-xl);
       border-top: var(--border-width-thin) solid var(--color-border);
       border-bottom: var(--border-width-thin) solid var(--color-border);
     }
@@ -64,7 +77,6 @@
       align-items: center;
       gap: var(--spacing-xl);
       padding: var(--spacing-sm) 0;
-      margin-bottom: var(--spacing-lg);
     }
 
     .control-label {
@@ -97,7 +109,9 @@
 
     /* ── Scenarios ── */
     .scenario {
-      margin-top: var(--spacing-2xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
     }
 
     .scenario-heading {
@@ -106,14 +120,12 @@
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
       --mono: 1;
-      margin-bottom: var(--spacing-lg);
     }
 
     .scenario-note {
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
       --mono: 0;
-      margin-bottom: var(--spacing-lg);
       max-width: 72ch;
     }
 
@@ -212,7 +224,6 @@
 
     /* ── Summary table ── */
     .summary {
-      margin-top: var(--spacing-2xl);
       border-top: var(--border-width-thin) solid var(--color-border);
       padding-top: var(--spacing-xl);
     }
@@ -233,12 +244,14 @@
     </aside>
     <main class="dk-app-shell-main">
   <div class="page">
-    <h1 class="page-title">Line Height Units</h1>
-    <p class="page-desc">
-      Comparing <code>gap: var(--spacing-xl)</code> (rem-based)
-      with <code>gap: 1lh</code> (line-height-based).
-      Toggle the grid overlay to see alignment.
-    </p>
+    <header class="page-header">
+      <h1 class="page-title">Line Height Units</h1>
+      <p class="page-desc">
+        Comparing <code>gap: var(--spacing-xl)</code> (rem-based)
+        with <code>gap: 1lh</code> (line-height-based).
+        Toggle the grid overlay to see alignment.
+      </p>
+    </header>
 
     <div class="controls">
       <label class="control-label">
@@ -254,6 +267,7 @@
     </div>
 
 
+    <div class="scenarios">
     <!-- ── Scenario 1: Interactive font-size ── -->
     <div class="scenario">
       <h2 class="scenario-heading">1. Adaptive Spacing</h2>
@@ -422,6 +436,7 @@
           </div>
         </div>
       </div>
+    </div>
     </div>
 
 

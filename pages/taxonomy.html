@@ -20,10 +20,19 @@
       color: var(--color-text);
       font-family: var(--typography-body);
     }
+    /* Grid-based centering (NEVER_MARGIN): single track of max 780px,
+       horizontally centered via justify-content. */
     .taxonomy-content {
-      max-width: 780px;
-      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 780px);
+      justify-content: center;
       padding: var(--spacing-2xl) var(--spacing-xl);
+      gap: var(--spacing-3xl);
+    }
+    .page-header {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
     }
     .page-title {
       font-family: var(--typography-mono);
@@ -32,16 +41,19 @@
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
       color: var(--color-text);
-      margin-bottom: var(--spacing-sm);
     }
     .page-subtitle {
       font-family: var(--typography-mono);
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
-      margin-bottom: var(--spacing-3xl);
     }
+    /* Section: stack of headings, descriptions, sub-blocks. Top inset comes
+       from padding-top (companion to the border-top rule above). */
     .section {
-      padding: var(--spacing-2xl) 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5lh;
+      padding-top: var(--spacing-2xl); /* padding-audit: ok */
       border-top: var(--border-width-thin) solid var(--color-border);
     }
     .section:first-of-type {
@@ -51,7 +63,6 @@
       font-family: var(--typography-mono);
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
-      margin-bottom: var(--spacing-xs);
     }
     .section-heading {
       font-family: var(--typography-mono);
@@ -60,7 +71,6 @@
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
       color: var(--color-text);
-      margin-bottom: 0.5lh;
     }
     .subsection-heading {
       font-family: var(--typography-mono);
@@ -69,22 +79,25 @@
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
       color: var(--color-text);
-      margin-top: 1lh;
-      margin-bottom: 0.5lh;
+    }
+    /* Extra rhythm above each subsection heading. In-flow ::before pseudo
+       (NEVER_MARGIN) acts as a structural spacer inside the heading box. */
+    .subsection-heading::before {
+      content: "";
+      display: block;
+      height: 0.5lh;
     }
     .description {
       font-family: var(--typography-body);
       font-size: var(--font-size-sm);
       line-height: var(--font-line-height-relaxed);
       color: var(--color-text);
-      margin-bottom: 0.5lh;
     }
     .feature-list {
       font-family: var(--typography-mono);
       font-size: var(--font-size-xs);
       color: var(--color-text);
       line-height: 1.8;
-      margin-bottom: 0.5lh;
     }
     .feature-list span {
       color: var(--color-text-muted);
@@ -97,10 +110,11 @@
       background: var(--color-code-bg);
       padding: var(--spacing-lg) var(--spacing-xl);
       border-left: var(--border-width-thick) solid var(--color-gray-400);
-      margin-bottom: var(--spacing-md);
     }
     .vocab-section {
-      margin-bottom: 1lh;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
     }
     .tag-list {
       font-family: var(--typography-mono);
@@ -118,7 +132,6 @@
       color: var(--color-text);
       background: var(--color-code-bg);
       padding: var(--spacing-lg) var(--spacing-xl);
-      margin-bottom: 1lh;
       display: flex;
       flex-direction: column;
       gap: var(--spacing-xs);
@@ -126,8 +139,10 @@
     .lineage-chain .arrow {
       color: var(--color-text-muted);
     }
-.template-block {
-      margin-bottom: 0.5lh;
+    .template-block {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
     }
     .template-label {
       font-family: var(--typography-mono);
@@ -136,7 +151,6 @@
       text-transform: uppercase;
       letter-spacing: var(--font-letter-spacing-wide);
       color: var(--color-text-muted);
-      margin-bottom: var(--spacing-xs);
     }
     @media (max-width: 600px) {
       .taxonomy-content {
@@ -157,8 +171,10 @@
     <main class="dk-app-shell-main">
       <div class="taxonomy-content">
 
-  <div class="page-title">Early-Tech Graphic Design Taxonomy</div>
-  <div class="page-subtitle">Design lineage and influences behind the visual language.</div>
+  <header class="page-header">
+    <div class="page-title">Early-Tech Graphic Design Taxonomy</div>
+    <div class="page-subtitle">Design lineage and influences behind the visual language.</div>
+  </header>
 
   <!-- ============================================================ -->
   <!-- 1. SYSTEMS MODERNISM -->

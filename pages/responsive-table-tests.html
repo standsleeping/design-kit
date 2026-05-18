@@ -24,14 +24,16 @@
   }
   .dk-app-shell-main {
     padding: var(--spacing-xl) var(--spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
   }
   .dk-app-shell-main h1 {
     font-size: var(--font-size-lg);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
-    margin: 0 0 var(--spacing-md) 0;
   }
-  .summary { padding: 0 0 var(--spacing-lg); margin-bottom: var(--spacing-lg); }
+  .summary {}
   .summary-ok { color: var(--color-success); }
   .summary-fail { color: var(--color-danger); }
   .results table { width: 100%; border-collapse: collapse; }

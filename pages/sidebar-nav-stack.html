@@ -45,8 +45,11 @@
   }
 
   /* Container owns inset (square padding); sibling sections separated by a
-     shared top rule. */
+     shared top rule. Section owns its internal rhythm via gap. */
   .pane-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
     padding: var(--spacing-2xl);
   }
 
@@ -66,7 +69,6 @@
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-md);
   }
 
   .event-log-list {
@@ -85,7 +87,7 @@
   .event-log-list li b {
     color: var(--color-text);
     font-weight: var(--font-weight-semibold);
-    margin-right: var(--spacing-sm);
+    padding-right: var(--spacing-sm); /* padding-audit: ok */
   }
 
   .event-log-empty {
@@ -97,6 +99,12 @@
     display: grid;
     grid-template-columns: repeat(2, max-content);
     gap: var(--spacing-lg) var(--spacing-2xl);
+  }
+
+  .matrix-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
   }
 
   .matrix-cell {
@@ -112,7 +120,6 @@
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
-    margin-bottom: var(--spacing-xs);
   }
 </style>
 </head>
