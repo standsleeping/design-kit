@@ -65,6 +65,9 @@
     border-right: var(--border-width-thin) solid var(--color-border);
   }
   .pane-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
     padding: var(--spacing-xl);
     border-bottom: var(--border-width-thin) solid var(--color-border);
     flex-shrink: 0;
@@ -75,19 +78,16 @@
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-xs);
   }
   .pane-title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
-    margin: 0;
     line-height: var(--font-line-height-tight);
   }
   .pane-tagline {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
-    margin: var(--spacing-sm) 0 0;
     --mono: 0;
     line-height: var(--font-line-height-relaxed);
   }
@@ -109,10 +109,29 @@
   .pane-flush .pane-body::-webkit-scrollbar-track { background: var(--color-border); }
   .pane-flush .pane-body::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
 
-  /* ---- Section inside a pane ---- */
+  /* ---- Section inside a pane ----
+     A section is a flex column. Section-intro wraps label + blurb with
+     tighter rhythm than the section's gap. Inset variant is the default;
+     the .section-flush modifier strips horizontal padding so child
+     full-bleed surfaces (flush-list, flush-scroll-frame) reach the pane
+     edges without negative margin (NEVER_MARGIN). */
   .section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
     padding: var(--spacing-xl);
     border-bottom: var(--border-width-thin) solid var(--color-border);
+  }
+  .section-intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+  .section-flush {
+    padding: var(--spacing-xl) 0; /* padding-audit: ok */
+  }
+  .section-flush .section-intro {
+    padding: 0 var(--spacing-xl); /* padding-audit: ok */
   }
   .section-label {
     font-size: var(--font-size-2xs);
@@ -120,12 +139,10 @@
     text-transform: uppercase;
     letter-spacing: var(--font-letter-spacing-wide);
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-md);
   }
   .section-blurb {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
-    margin: calc(var(--spacing-md) * -1 + var(--spacing-xs)) 0 var(--spacing-md);
     --mono: 0;
     line-height: var(--font-line-height-relaxed);
   }
@@ -186,12 +203,12 @@
      FLUSH TREATMENT (right pane)
      ============================================================ */
 
-  /* Flush list extends edge-to-edge by reversing the section's horizontal
-     padding; rows then own that horizontal inset themselves. */
+  /* Flush list extends pane edge-to-edge naturally because its host
+     .section-flush has no horizontal padding; rows own their own inline
+     padding (xl) below. */
   .flush-list {
     display: flex;
     flex-direction: column;
-    margin: 0 calc(var(--spacing-xl) * -1);
   }
   .flush-row {
     display: flex;
@@ -215,24 +232,24 @@
     color: var(--color-text-muted);
   }
 
-  /* Frame holds the top/bottom rules; they span the full pane width
-     (including the dead zone to the right of the inner scrollbar). */
+  /* Frame holds the top/bottom rules; spans the full pane width via its
+     full-bleed placement inside .section-flush. Right padding (3xl)
+     creates the mandatory dead zone between the inner scrollbar and the
+     pane's outer rail so they don't read as one thickened bar
+     (visual-language §Scroll containers). */
   .flush-scroll-frame {
     border-top: var(--border-width-thin) solid var(--color-border);
     border-bottom: var(--border-width-thin) solid var(--color-border);
-    margin: var(--spacing-md) calc(var(--spacing-xl) * -1) 0;
+    padding-right: var(--spacing-3xl); /* padding-audit: ok */
   }
 
   /* Nested boundary-rail inside a flush column — same gutter colors as the
-     pane's outer rail (inherited via scrollbar-color). The 2rem right margin
-     creates the mandatory dead zone between the two rails so they don't read
-     as a single thickened bar (visual-language §Scroll containers). */
+     pane's outer rail (inherited via scrollbar-color). */
   .flush-scroll {
     display: flex;
     flex-direction: column;
     max-height: 220px;
     overflow-y: scroll;
-    margin-right: var(--spacing-3xl);
   }
   .flush-scroll::-webkit-scrollbar { width: 8px; }
   .flush-scroll::-webkit-scrollbar-track { background: var(--color-border); }
@@ -314,8 +331,10 @@
           <div class="pane-body">
 
             <section class="section">
-              <div class="section-label">Same rows · inset cards</div>
-              <p class="section-blurb">Each row carries its own four-side border. Siblings are separated by gutter, not by a shared rule.</p>
+              <div class="section-intro">
+                <div class="section-label">Same rows · inset cards</div>
+                <p class="section-blurb">Each row carries its own four-side border. Siblings are separated by gutter, not by a shared rule.</p>
+              </div>
               <div class="inset-list">
                 <div class="inset-row inset-row-active">Pools <span class="inset-row-meta">12</span></div>
                 <div class="inset-row">Entities <span class="inset-row-meta">348</span></div>
@@ -326,8 +345,10 @@
             </section>
 
             <section class="section">
-              <div class="section-label">Invisible-gutter scrollbar</div>
-              <p class="section-blurb">Bar appears intermittently inside the bordered card. <code>scrollbar-gutter: stable</code> reserves the space so layout never shifts. Inherits the html-level transparent track.</p>
+              <div class="section-intro">
+                <div class="section-label">Invisible-gutter scrollbar</div>
+                <p class="section-blurb">Bar appears intermittently inside the bordered card. <code>scrollbar-gutter: stable</code> reserves the space so layout never shifts. Inherits the html-level transparent track.</p>
+              </div>
               <div class="inset-scroll">
                 <div class="inset-scroll-row"><span>Cron job</span><span>daily</span></div>
                 <div class="inset-scroll-row"><span>Build pipeline</span><span>success</span></div>
@@ -368,9 +389,11 @@
 
           <div class="pane-body">
 
-            <section class="section">
-              <div class="section-label">Same rows · flush items</div>
-              <p class="section-blurb">Rows extend pane edge-to-edge. The active row carries a left border (medium, color-link) and a full-bleed selected-bg fill.</p>
+            <section class="section section-flush">
+              <div class="section-intro">
+                <div class="section-label">Same rows · flush items</div>
+                <p class="section-blurb">Rows extend pane edge-to-edge. The active row carries a left border (medium, color-link) and a full-bleed selected-bg fill.</p>
+              </div>
               <div class="flush-list">
                 <div class="flush-row flush-row-active">Pools <span class="flush-row-meta">12</span></div>
                 <div class="flush-row">Entities <span class="flush-row-meta">348</span></div>
@@ -380,9 +403,11 @@
               </div>
             </section>
 
-            <section class="section section-frame-host">
-              <div class="section-label">Nested boundary-rail · 2rem dead zone</div>
-              <p class="section-blurb">Two boundary-rails along the same scroll-line — the inner list and the pane itself — share the same gutter colors. They're disambiguated by the 2rem horizontal dead zone between their tracks (visual-language minimum: 1rem). Adjacent rails without that gap would read as a single thickened bar.</p>
+            <section class="section section-flush section-frame-host">
+              <div class="section-intro">
+                <div class="section-label">Nested boundary-rail · 2rem dead zone</div>
+                <p class="section-blurb">Two boundary-rails along the same scroll-line — the inner list and the pane itself — share the same gutter colors. They're disambiguated by the 2rem horizontal dead zone between their tracks (visual-language minimum: 1rem). Adjacent rails without that gap would read as a single thickened bar.</p>
+              </div>
               <div class="flush-scroll-frame">
                 <div class="flush-scroll">
                   <div class="flush-scroll-row"><span>Cron job</span><span>daily</span></div>
