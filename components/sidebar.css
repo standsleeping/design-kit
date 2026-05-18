@@ -132,6 +132,6 @@
   left: calc(var(--scrollbar-width-thin) / -2);
 }
 
-.dk-sidebar-resizer:hover {
+.dk-sidebar-resizer:hover { /* state-audit: ok — drag-only handle; mouse-driven resize */
   background: var(--color-focus-ring-light, var(--color-focus-ring));
 }

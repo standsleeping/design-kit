@@ -47,7 +47,7 @@
   flex-shrink: 0;
 }
 
-.dk-modal-header:active,
+.dk-modal-header:active, /* state-audit: ok — drag-only handle; cursor flips grab→grabbing */
 .dk-modal-dragging .dk-modal-header {
   cursor: grabbing;
 }
