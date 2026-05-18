@@ -201,7 +201,8 @@
       "sidebar-width": "220px",
       "content-max-width": "680px",
       "three-col-sidebar": "240px",
-      "toc-width": "200px"
+      "toc-width": "200px",
+      "chrome-bar-h": "2.5rem"
     },
     "themes": {
       "mono-purple": {
