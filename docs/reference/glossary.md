@@ -42,9 +42,13 @@ See *Rule*. Prefer *rule* in new work; *divider* is acceptable when discussing M
 
 An element inside a flow container (a stack of siblings governed by the container's `gap`). Flow children carry square (or zero) padding; the rhythm between them lives in the parent's `gap`, not in the child's vertical padding. See `SQUARE_PADDING_DEFAULT`, `CONTAINER_OWNS_INSET`, and `PADDING_IS_INSET_ONLY`.
 
+## Flush layout
+
+A layout mode where the chrome (header, footer, sidebars) is flush against the viewport edge and the content region inside the chrome is also edge-to-edge with the chrome. Surfaces inside stack flush, separated by full-bleed rules. The shell-scale companion of *Flush list*. Contrast: *Inset layout*. See `INSET_VS_FLUSH_LAYOUT` in system-principles.
+
 ## Flush list
 
-A layout mode where cards stack edge-to-edge, separated by a single full-bleed rule rather than floating in a gutter. Apple calls this *plain*; Material calls it a *divider list*. Contrast: *Inset card*.
+A layout mode where cards stack edge-to-edge, separated by a single full-bleed rule rather than floating in a gutter. Apple calls this *plain*; Material calls it a *divider list*. The component-scale instance of *Flush layout*. Contrast: *Inset card*.
 
 In the flush mode, each card's own left/right borders collapse away; the outer container provides the horizontal boundary, and each card's top (or bottom) border serves as the divider above (or below) it.
 
@@ -71,7 +75,11 @@ Two related meanings — disambiguate by context.
 
 ## Inset card
 
-A card with four borders, floating inside a gutter. Each card is visually complete on its own; neighbors are separated by surrounding negative space rather than a shared divider. Apple's `UITableView.Style.insetGrouped`. Contrast: *Flush list*.
+A card with four borders, floating inside a gutter. Each card is visually complete on its own; neighbors are separated by surrounding negative space rather than a shared divider. Apple's `UITableView.Style.insetGrouped`. The component-scale instance of *Inset layout*. Contrast: *Flush list*.
+
+## Inset layout
+
+A layout mode where the chrome (header, footer, sidebars) is flush against the viewport edge and the content region inside the chrome is a recessed field with a gutter on all sides. Surfaces inside float in the gutter; each owns its four borders. The shell-scale companion of *Inset card*. Contrast: *Flush layout*. See `INSET_VS_FLUSH_LAYOUT` in system-principles.
 
 ## Luminance mode
 

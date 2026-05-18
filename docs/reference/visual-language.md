@@ -78,11 +78,24 @@ Prefer icon-only controls where the action is universally understood (clipboard 
 
 All interactive elements use the same gray palette as surrounding chrome. The only color exception is focus rings and active-state indicators, which use the standard interactive color (purple-500) for accessibility.
 
-### 11. Surfaces are inset, items are flush
+### 11. Inset and flush at every level
 
-Two visual modes coexist; role determines which.
+The structural mode of a region is its choice between **inset** and **flush**. Inset surfaces own their boundary and float in a gutter; flush surfaces share their boundary with siblings and stack edge-to-edge. The dichotomy operates at every nesting level — the layout shell, the regions inside the chrome, the surfaces inside those regions, the items inside those surfaces.
 
-**The asymmetry is ownership.** A *surface* owns its own boundary — it draws four borders and floats in its parent's gutter. An *item* doesn't own a boundary; the *column* it lives in does. The column's edge comes from a sibling rule, the parent's border, or a boundary-rail scrollbar. Get the ownership right and every downstream choice (scrollbar mode, active indicator, padding role, background) follows.
+**Layout level: chrome is always flush; the content region carries the layout's identity.**
+
+The viewport-locked shell forces chrome (header, footer, sidebars) to occupy every edge of the window. Chrome is flush by structural necessity — it owns the boundary against the viewport. What varies is the mode of the *content region* the chrome surrounds.
+
+| Layout mode | Content region | Surfaces inside |
+|---|---|---|
+| **Inset layout** | Recessed field with a gutter on all sides; background distinct from chrome | Surfaces float in the gutter; each owns four borders |
+| **Flush layout** | Edge-to-edge with chrome; shares the chrome's background or is marked by a rule | Surfaces stack flush; separated by full-bleed rules |
+
+In an inset layout, the field's recessed background is what makes the gutter visible against the chrome. In a flush layout, the chrome and the content region share a surface; the rule between items carries the structure. A single application can compose both — an inset layout in one pane, a flush layout in another — but the boundary between them must be the chrome itself; two modes meeting inside the same content region is the drift signal. See `INSET_VS_FLUSH_LAYOUT` in system-principles.
+
+**Surface / item level: the same dichotomy, one nesting down.**
+
+Within either layout mode, individual elements still divide into inset *surfaces* and flush *items*. The asymmetry is ownership: a surface owns its own boundary (four borders, square corners) and floats in its parent's gutter; an item doesn't own a boundary — the column it lives in does, via a sibling rule, the parent's border, or a boundary-rail scrollbar. Get the ownership right and every downstream choice (scrollbar mode, active indicator, padding role, background) follows.
 
 | Property | Surface (inset) | Item (flush) |
 |---|---|---|
@@ -94,9 +107,26 @@ Two visual modes coexist; role determines which.
 | Scrollbar | Invisible-gutter, inside the surface | Boundary-rail at the column edge, against a visible rule |
 | Examples | Modals, code blocks, expandable cards, preview cards | Menu items, nav rows, scroll-list rows, sticky-toc entries, collapsible-section headers, table rows |
 
-The most common drift is treating an item as a surface — a row with four borders and a radius. Even when the radius token resolves to 0, the four drawn lines still leak card vocabulary into a row context. Ask whether the element's neighbors are siblings of the same kind (item) or distinct content blocks (surface).
+The most common drift is treating an item as a surface — a row with four borders and a radius. Even when the radius token resolves to 0, the four drawn lines still leak card vocabulary into a row context. Ask whether the element's neighbors are siblings of the same kind (item) or distinct content blocks (surface). Mixing layout modes inside a single content region is the same drift one nesting up: a flush-mode list that draws four borders around each row leaks card vocabulary; an inset-mode card whose left edge touches the field's interior breaks the gutter that defines the mode.
 
 See `pages/inset-vs-flush.html` for the canonical side-by-side rendering.
+
+### 12. Chrome strip heights are quantized
+
+A chrome strip — a topbar in main, a NavStack header in a sidebar, a sticky-TOC summary at the top of a scroll body — is a peer-rail member: its top or bottom edge aligns horizontally with sibling strips across the columns at the same y. The shared height comes from a single base token plus a cascading multiplier.
+
+- **Base:** `--layout-chrome-bar-h` (defaults to `2.5rem`) — the height of one chrome row.
+- **Multiplier:** `--chrome-bar-rows` (defaults to `1`) — set on `.dk-app-shell-body`; cascades to every chrome strip inside the shell. A page that needs a two-row top rail (e.g., a filter strip above a results strip) declares it once:
+
+  ```html
+  <div class="dk-app-shell-body" data-chrome-rows="2">
+  ```
+
+  Every chrome strip inside reads `height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1))` and grows together. No per-component opt-in; coordination is automatic.
+
+- **Local override:** a single strip with a genuinely different role can shadow the multiplier inline (`style="--chrome-bar-rows: 1"`) — visible in markup, not buried in CSS.
+
+Half-row offsets are structurally impossible: legal chrome heights are integer multiples of the base. The border audit's near-rail check (`pages/border-audit.html`) is the enforcement backstop for strips that escape the cascade. See `PEER_RAIL` in system-principles for the full principle text including the quantization sharpening.
 
 ## Content Patterns for Developer Documentation
 
@@ -214,13 +244,13 @@ Different surfaces use different shades. Where two shades meet, a border creates
 
 ### Spacing defaults
 
-Tight by default. Use the lower end of the spacing scale for internal padding (xs, sm, md). Use the mid-range (lg, xl) for section separation. The 2xl-4xl range is reserved for page-level margins only.
+Tight by default. Use the lower end of the spacing scale for internal padding (xs, sm, md). Use the mid-range (lg, xl) for section separation. The 2xl-4xl range is reserved for page-level inset only.
 
 | Context | Spacing |
 |---------|---------|
 | Table cell padding | sm to md (0.25-0.5rem) |
 | Section gap | lg to xl (0.75-1rem) |
-| Page margin | 2xl (1.5rem) |
+| Page inset | 2xl (1.5rem) |
 | Between label and content | xs to sm (0.125-0.25rem) |
 
 ### Padding: always square, role determines scale
@@ -242,7 +272,7 @@ Asymmetric concerns migrate out of padding into the property whose name matches 
 
 - **Inline controls** that need horizontal breathing for short labels: square padding plus `min-width: var(--control-min-width-md)` (or `-sm` / `-lg` per context). The horizontal floor lives in `min-width`, where the concern is named.
 - **Flow children** that need vertical rhythm between rows: square (or zero) padding on the child plus `gap` on the parent. The rhythm lives in `gap`, where the concern is named.
-- **Top-heavy or bottom-heavy emphasis** (a section header that wants extra space above it): square padding plus `margin-top`. The layout concern lives in `margin`, where it belongs.
+- **Top-heavy or bottom-heavy emphasis** (a section header that wants extra space above it): square padding plus rhythm in the parent's `gap` (and, when the gap above the header differs from the regular section rhythm, a structural sibling spacer). The layout concern lives in `gap` or the spacer, where it is named. See `NEVER_MARGIN` in system-principles.
 
 ### Container owns inset, children own flow
 
@@ -326,7 +356,7 @@ Inline charts follow the same greyscale discipline as the rest of the interface.
 
 ### Icons
 
-A curated set of 15×15 icons (Radix Icons, vendored under `components/icons/`) covers the system's icon needs. Components that accept an `icon` prop look up the name in `components/icons.js`; unknown names fall back to literal text, so the prop stays backwards-compatible with bare-string glyphs.
+A curated set of 15×15 icons (Radix Icons, vendored under `components/icons/`) covers the system's icon needs. Components that accept an `icon` prop look up the name in `components/system/icons.js`; unknown names fall back to literal text, so the prop stays backwards-compatible with bare-string glyphs.
 
 Icons size with their host's `font-size` through the `.dk-icon` utility (`width: 1em; height: 1em`); a 32 px button rendering text at `--font-size-sm` shows a 14 px icon. Color flows through `currentColor`, so setting `color: var(--color-text)` on the parent is enough.
 
@@ -340,6 +370,6 @@ The registry is curated, not exhaustive. Five categories cover what a typical in
 | status | Status and meta indicators | `info-circled`, `bell` |
 | content | Resource-type markers | `file-text`, `code` |
 
-The full list with per-icon usage guidance is in the Icons section of `preview.html`. To add an icon, drop the `.svg` into `components/icons/` and append an entry to `CURATED_ICONS` in `src/design_kit/icon_registry.py`; the build regenerates `components/icons.js`.
+The full list with per-icon usage guidance is in the Icons section of `index.html`. To add an icon, drop the `.svg` into `components/icons/` and append an entry to `CURATED_ICONS` in `src/design_kit/icon_registry.py`; the build regenerates `components/system/icons.js`.
 
 Charts use no color unless encoding semantic meaning (e.g., a red segment for a threshold breach). The default chart is entirely greyscale. Prefer server-rendered inline SVG over client-side charting libraries; it keeps the page dependency-free and renders instantly.
