@@ -211,6 +211,12 @@
       "sticky": 10,
       "chrome": 20,
       "overlay": 1000
+    },
+    "breakpoint": {
+      "tablet": "600px",
+      "tablet-max": "899px",
+      "wide": "1100px",
+      "container-narrow": "200px"
     }
   },
   "semantic": {

@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from design_kit.breakpoints import load_breakpoints, substitute_breakpoints
+
 
 def _validate_tokens_shape(data: dict[str, object]) -> None:
     """Raise ValueError at the JSON boundary if the shape is malformed.
@@ -265,7 +267,7 @@ DEFAULTS_LAYER = """\
   .content-table { border-collapse: separate; border-spacing: 0; }
   .content-table th { position: sticky; top: 0; background: var(--color-bg); z-index: var(--z-sticky); }
   .data-table { overflow-x: auto; }
-  @media (max-width: 600px) { th, td { padding: var(--spacing-xs); font-size: var(--font-size-xs); } }
+  @media (max-width: $bp-tablet) { th, td { padding: var(--spacing-xs); font-size: var(--font-size-xs); } }
   .heading-anchor { color: inherit; text-decoration: none; font-weight: inherit; }
   .heading-anchor:hover { text-decoration: none; }
   .heading-anchor::after { content: " #"; color: transparent; font-weight: var(--font-weight-regular); transition: color 0.15s ease; }
@@ -322,11 +324,20 @@ UTILITIES_LAYER = """\
 }"""
 
 
-def generate_token_css(tokens_path: Path) -> str:
+def generate_token_css(
+    tokens_path: Path,
+    breakpoints: dict[str, str] | None = None,
+) -> str:
     """Read design-tokens.json and return a complete CSS string.
 
     The output uses @layer for specificity management:
     reset → tokens → defaults → utilities
+
+    ``breakpoints`` is used to substitute ``$bp-<name>`` references inside
+    static CSS strings (notably ``DEFAULTS_LAYER``). If ``None`` (default),
+    they are loaded from ``tokens_path``; pass an explicit dict to avoid
+    re-reading the file when the caller has already loaded them (e.g., in
+    ``build.py``) or to control them in tests.
     """
     data = json.loads(tokens_path.read_text(encoding="utf-8"))
     _validate_tokens_shape(data)
@@ -362,4 +373,6 @@ def generate_token_css(tokens_path: Path) -> str:
         UTILITIES_LAYER,
         "",
     ]
-    return "\n".join(sections)
+    if breakpoints is None:
+        breakpoints = load_breakpoints(tokens_path)
+    return substitute_breakpoints("\n".join(sections), breakpoints)

@@ -26,6 +26,7 @@ def test_multi_theme_emits_root_and_override_blocks(tmp_path: Path) -> None:
                 "blue": {"500": "#0000ff"},
             },
             "font": {"family": "monospace"},
+            "breakpoint": {"tablet": "600px"},
         },
         "semantic": {
             "default-theme": "alpha",

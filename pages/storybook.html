@@ -45,7 +45,7 @@
     line-height: var(--font-line-height-relaxed);
   }
 
-  @media (max-width: 899px) {
+  @media (max-width: $bp-tablet-max) {
     .dk-app-shell { display: none; }
     .storybook-mobile-notice { display: flex; }
   }
@@ -94,7 +94,7 @@
   }
 
   .storybook-controls-row input[type="number"] {
-    width: 5ch; /* dimension-audit: ok — character-relative width for compact numeric input */
+    width: 5ch; /* dimension-lint: ok — character-relative width for compact numeric input */
     padding: var(--spacing-2xs) var(--spacing-xs);
     border: var(--border-width-thin) solid var(--color-border);
     background: var(--color-bg);
@@ -157,11 +157,11 @@
     gap: var(--spacing-xs);
   }
 
-  .storybook-axes-control input[type="range"] { width: 80px; } /* dimension-audit: ok — compact range input for axes panel chrome */
+  .storybook-axes-control input[type="range"] { width: 80px; } /* dimension-lint: ok — compact range input for axes panel chrome */
 
   .storybook-axes-readout {
     color: var(--color-text);
-    min-width: 3ch; /* dimension-audit: ok — character-relative width for axis readout */
+    min-width: 3ch; /* dimension-lint: ok — character-relative width for axis readout */
     text-align: right;
   }
 
@@ -290,7 +290,7 @@
     justify-content: center;
     padding: var(--spacing-xl);
     position: relative;
-    min-height: 200px; /* dimension-audit: ok — storybook variant cell floor */
+    min-height: 200px; /* dimension-lint: ok — storybook variant cell floor */
   }
 
   /* Inspector content (lives in right Sidebar's main slot) */
