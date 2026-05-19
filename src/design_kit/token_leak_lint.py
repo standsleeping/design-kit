@@ -3,9 +3,9 @@
 This is the static-analysis corollary of TOKEN_DRIVEN_DESIGN: every surface
 that ships CSS consumes design tokens via ``var(--color-*)`` rather than
 hardcoding hex codes or color functions. Raw colors defeat theming
-(multi-theme, light-dark()) and break the contrast audit's coverage.
+(multi-theme, light-dark()) and break the contrast lint's coverage.
 
-The audit is a pure file scan — no browser, no Playwright. Three input kinds:
+The lint is a pure file scan — no browser, no Playwright. Three input kinds:
 
 - ``components/*.css`` — every component's stylesheet
 - ``pages/*.html`` — only the ``<style>`` block content is scanned; HTML
@@ -14,7 +14,7 @@ The audit is a pure file scan — no browser, no Playwright. Three input kinds:
   plain text so CSS embedded in f-strings is covered
 
 A trailing ``/* token-leak: ok */`` comment on the same line as the literal
-escapes the audit for that line — use it for cases where tokenizing isn't yet
+escapes the lint for that line — use it for cases where tokenizing isn't yet
 warranted (e.g., a debug outline, a single-use scrim awaiting a new token).
 """
 
@@ -45,7 +45,7 @@ STYLE_BLOCK_RE = re.compile(
 ALLOWLIST_MARKER = "token-leak: ok"
 
 
-class LeakAuditOutcome(Enum):
+class LeakLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
@@ -61,17 +61,17 @@ class TokenLeak:
 
 
 @dataclass(frozen=True)
-class LeakAuditResult:
-    outcome: LeakAuditOutcome
+class LeakLintResult:
+    outcome: LeakLintOutcome
     leaks: list[TokenLeak]
 
     @classmethod
-    def passed(cls) -> "LeakAuditResult":
-        return cls(outcome=LeakAuditOutcome.PASSED, leaks=[])
+    def passed(cls) -> "LeakLintResult":
+        return cls(outcome=LeakLintOutcome.PASSED, leaks=[])
 
     @classmethod
-    def failed(cls, leaks: list[TokenLeak]) -> "LeakAuditResult":
-        return cls(outcome=LeakAuditOutcome.FAILED, leaks=leaks)
+    def failed(cls, leaks: list[TokenLeak]) -> "LeakLintResult":
+        return cls(outcome=LeakLintOutcome.FAILED, leaks=leaks)
 
 
 def _html_to_css_text(html: str) -> str:
@@ -129,11 +129,11 @@ def _scan_file(path: Path) -> list[TokenLeak]:
     return leaks
 
 
-def run_token_leak_audit(
+def run_token_leak_lint(
     components_dir: Path,
     pages_dir: Path | None = None,
     extra_files: Iterable[Path] = (),
-) -> LeakAuditResult:
+) -> LeakLintResult:
     """Scan component CSS, page ``<style>`` blocks, and any extra files for
     raw color literals. Each input is optional; missing directories log a
     warning and are skipped (so token-only builds still complete)."""
@@ -162,5 +162,5 @@ def run_token_leak_audit(
     for path in paths:
         all_leaks.extend(_scan_file(path))
     if all_leaks:
-        return LeakAuditResult.failed(all_leaks)
-    return LeakAuditResult.passed()
+        return LeakLintResult.failed(all_leaks)
+    return LeakLintResult.passed()

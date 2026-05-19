@@ -7,13 +7,13 @@ medium = 2px, thick = 3px) rather than hardcoding the pixel value. Hardcoded
 border widths are silent drift surface — change the token, the literal sites
 stay frozen.
 
-Inputs mirror token-leak-audit: ``components/*.css`` always; ``pages/*.html``
+Inputs mirror token-leak-lint: ``components/*.css`` always; ``pages/*.html``
 ``<style>`` blocks when ``pages_dir`` is provided; any ``extra_files``
 (typically ``preview.py``) scanned as plain text. The same trailing
 ``/* token-leak: ok */`` comment allowlists a line.
 
-Scope note: this audit does NOT flag ``border-radius`` declarations — those
-are covered by ``radius_audit.py``. The pattern matcher excludes the
+Scope note: this lint does NOT flag ``border-radius`` declarations — those
+are covered by ``radius_lint.py``. The pattern matcher excludes the
 ``border-radius`` longhand and any ``border-*-radius`` variants.
 """
 
@@ -48,7 +48,7 @@ STYLE_BLOCK_RE = re.compile(
 ALLOWLIST_MARKER = "token-leak: ok"
 
 
-class BorderWidthAuditOutcome(Enum):
+class BorderWidthLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
@@ -63,19 +63,19 @@ class BorderWidthViolation:
 
 
 @dataclass(frozen=True)
-class BorderWidthAuditResult:
-    outcome: BorderWidthAuditOutcome
+class BorderWidthLintResult:
+    outcome: BorderWidthLintOutcome
     violations: list[BorderWidthViolation]
 
     @classmethod
-    def passed(cls) -> "BorderWidthAuditResult":
-        return cls(outcome=BorderWidthAuditOutcome.PASSED, violations=[])
+    def passed(cls) -> "BorderWidthLintResult":
+        return cls(outcome=BorderWidthLintOutcome.PASSED, violations=[])
 
     @classmethod
     def failed(
         cls, violations: list[BorderWidthViolation]
-    ) -> "BorderWidthAuditResult":
-        return cls(outcome=BorderWidthAuditOutcome.FAILED, violations=violations)
+    ) -> "BorderWidthLintResult":
+        return cls(outcome=BorderWidthLintOutcome.FAILED, violations=violations)
 
 
 def _html_to_css_text(html: str) -> str:
@@ -123,11 +123,11 @@ def _scan_file(path: Path) -> list[BorderWidthViolation]:
     return violations
 
 
-def run_border_width_audit(
+def run_border_width_lint(
     components_dir: Path,
     pages_dir: Path | None = None,
     extra_files: Iterable[Path] = (),
-) -> BorderWidthAuditResult:
+) -> BorderWidthLintResult:
     """Scan component CSS, page ``<style>`` blocks, and any extra files for
     raw border-width literals. Each input is optional; missing inputs log a
     warning and are skipped."""
@@ -156,5 +156,5 @@ def run_border_width_audit(
     for path in paths:
         all_violations.extend(_scan_file(path))
     if all_violations:
-        return BorderWidthAuditResult.failed(all_violations)
-    return BorderWidthAuditResult.passed()
+        return BorderWidthLintResult.failed(all_violations)
+    return BorderWidthLintResult.passed()

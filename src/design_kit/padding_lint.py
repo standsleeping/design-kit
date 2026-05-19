@@ -5,12 +5,12 @@ on all four sides. Any horizontal-vs-vertical, top-vs-bottom, or
 left-vs-right asymmetry belongs in a property whose name matches the
 concern (``min-width`` / ``gap`` / ``margin``), not in ``padding``.
 
-The audit walks component ``.css`` files, expands every ``padding``
+The lint walks component ``.css`` files, expands every ``padding``
 shorthand into its (top, right, bottom, left) 4-tuple, merges per-rule
 ``padding-*`` longhand declarations into the same tuple, and emits a
 finding for any tuple whose four values are not textually equal.
 
-Components are allowed an explicit escape via a ``/* padding-audit: ok */``
+Components are allowed an explicit escape via a ``/* padding-lint: ok */``
 trailing comment on the offending declaration line. Use the marker for
 documented exceptions; new asymmetric padding should be replaced with the
 property that owns the concern.
@@ -29,7 +29,7 @@ from design_kit.logging import get_logger
 logger = get_logger(__name__)
 
 
-ALLOWLIST_MARKER = "padding-audit: ok"
+ALLOWLIST_MARKER = "padding-lint: ok"
 
 
 class AsymmetryKind(Enum):
@@ -38,7 +38,7 @@ class AsymmetryKind(Enum):
     LEFT_VS_RIGHT = "left ≠ right"
 
 
-class PaddingAuditOutcome(Enum):
+class PaddingLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
@@ -72,17 +72,17 @@ class PaddingViolation:
 
 
 @dataclass(frozen=True)
-class PaddingAuditResult:
-    outcome: PaddingAuditOutcome
+class PaddingLintResult:
+    outcome: PaddingLintOutcome
     violations: list[PaddingViolation]
 
     @classmethod
-    def passed(cls) -> "PaddingAuditResult":
-        return cls(outcome=PaddingAuditOutcome.PASSED, violations=[])
+    def passed(cls) -> "PaddingLintResult":
+        return cls(outcome=PaddingLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(cls, violations: list[PaddingViolation]) -> "PaddingAuditResult":
-        return cls(outcome=PaddingAuditOutcome.FAILED, violations=violations)
+    def failed(cls, violations: list[PaddingViolation]) -> "PaddingLintResult":
+        return cls(outcome=PaddingLintOutcome.FAILED, violations=violations)
 
 
 # ------------------------- CSS structural helpers ------------------------
@@ -342,17 +342,17 @@ def _scan_file(path: Path) -> list[PaddingViolation]:
     return violations
 
 
-def run_padding_audit(components_dir: Path) -> PaddingAuditResult:
+def run_padding_lint(components_dir: Path) -> PaddingLintResult:
     """Scan every ``components/*.css`` for asymmetric padding declarations."""
     if not components_dir.is_dir():
         logger.warning(
             f"Components directory not found: {components_dir}; "
-            "skipping padding audit"
+            "skipping padding lint"
         )
-        return PaddingAuditResult.passed()
+        return PaddingLintResult.passed()
     all_violations: list[PaddingViolation] = []
     for path in sorted(components_dir.glob("*.css")):
         all_violations.extend(_scan_file(path))
     if all_violations:
-        return PaddingAuditResult.failed(all_violations)
-    return PaddingAuditResult.passed()
+        return PaddingLintResult.failed(all_violations)
+    return PaddingLintResult.passed()

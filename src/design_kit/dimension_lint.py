@@ -10,9 +10,9 @@ Properties scanned: ``width`` / ``min-width`` / ``max-width``,
 ``height`` / ``min-height`` / ``max-height``, ``gap`` / ``row-gap`` /
 ``column-gap``, ``font-size``, ``flex-basis``, ``top`` / ``right`` /
 ``bottom`` / ``left`` / ``inset``, ``scroll-margin-(side)`` /
-``scroll-padding-(side)``. Properties already owned by another audit
+``scroll-padding-(side)``. Properties already owned by another lint
 (``padding``, ``margin``, ``border``/``border-width``, ``border-radius``,
-color) are out of scope and handled by their respective audits.
+color) are out of scope and handled by their respective lints.
 
 Permitted literal values (do not flag):
 
@@ -27,20 +27,20 @@ Permitted literal values (do not flag):
   typographic rhythm inside a known type scale.
 * ``fr`` — grid fractional unit.
 * ``var(--*)``, ``env(*)``, ``calc(...)``, ``min(...)``, ``max(...)``,
-  ``clamp(...)`` as wrappers; the audit looks at the literal numbers
+  ``clamp(...)`` as wrappers; the lint looks at the literal numbers
   *inside* those expressions independently.
 
-Inputs mirror the other audits: ``components/*.css`` always;
+Inputs mirror the other lints: ``components/*.css`` always;
 ``pages/*.html`` ``<style>`` blocks when ``pages_dir`` is provided; any
 ``extra_files`` (typically ``preview.py``) scanned as plain text. A
-trailing ``/* dimension-audit: ok */`` comment allowlists a single line.
+trailing ``/* dimension-lint: ok */`` comment allowlists a single line.
 
 Scope notes:
 
 * CSS custom property assignments (``--dk-sidebar-width: 220px``) are not
   flagged — the leading hyphen fails the property regex's negative
   lookbehind. Token consumers parameterizing a component are out of scope;
-  the audit targets value-side magic numbers.
+  the lint targets value-side magic numbers.
 * ``@media (max-width: 600px)`` and ``@container (max-width: 200px)``
   preludes are stripped before scanning so the breakpoint literal does
   not false-positive as a ``max-width`` declaration. Breakpoints belong
@@ -60,8 +60,8 @@ from design_kit.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Properties whose dimension values this audit owns. Padding/margin/border/
-# border-radius and color are handled by their dedicated audits.
+# Properties whose dimension values this lint owns. Padding/margin/border/
+# border-radius and color are handled by their dedicated lints.
 _PROPERTIES = (
     "width",
     "min-width",
@@ -114,10 +114,10 @@ STYLE_BLOCK_RE = re.compile(
 AT_RULE_PRELUDE_RE = re.compile(
     r"@(?:media|container|supports)\b[^{]*", flags=re.IGNORECASE
 )
-ALLOWLIST_MARKER = "dimension-audit: ok"
+ALLOWLIST_MARKER = "dimension-lint: ok"
 
 
-class DimensionAuditOutcome(Enum):
+class DimensionLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
@@ -132,19 +132,19 @@ class DimensionViolation:
 
 
 @dataclass(frozen=True)
-class DimensionAuditResult:
-    outcome: DimensionAuditOutcome
+class DimensionLintResult:
+    outcome: DimensionLintOutcome
     violations: list[DimensionViolation]
 
     @classmethod
-    def passed(cls) -> "DimensionAuditResult":
-        return cls(outcome=DimensionAuditOutcome.PASSED, violations=[])
+    def passed(cls) -> "DimensionLintResult":
+        return cls(outcome=DimensionLintOutcome.PASSED, violations=[])
 
     @classmethod
     def failed(
         cls, violations: list[DimensionViolation]
-    ) -> "DimensionAuditResult":
-        return cls(outcome=DimensionAuditOutcome.FAILED, violations=violations)
+    ) -> "DimensionLintResult":
+        return cls(outcome=DimensionLintOutcome.FAILED, violations=violations)
 
 
 def _blank_preserving_newlines(text: str) -> str:
@@ -213,11 +213,11 @@ def _scan_file(path: Path) -> list[DimensionViolation]:
     return violations
 
 
-def run_dimension_audit(
+def run_dimension_lint(
     components_dir: Path,
     pages_dir: Path | None = None,
     extra_files: Iterable[Path] = (),
-) -> DimensionAuditResult:
+) -> DimensionLintResult:
     """Scan component CSS, page ``<style>`` blocks, and any extra files for
     raw layout-dimension literals. Each input is optional; missing inputs
     log a warning and are skipped."""
@@ -247,5 +247,5 @@ def run_dimension_audit(
     for path in paths:
         all_violations.extend(_scan_file(path))
     if all_violations:
-        return DimensionAuditResult.failed(all_violations)
-    return DimensionAuditResult.passed()
+        return DimensionLintResult.failed(all_violations)
+    return DimensionLintResult.passed()

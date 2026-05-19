@@ -10,12 +10,12 @@ element (``a``, ``button``, ``input``, ``select``, ``textarea``,
 
 When ``:hover`` or ``:active`` appears on a base whose focus state is not
 proven, the visual treatment promises an interaction the keyboard cannot
-reach. The audit flags every such case.
+reach. The lint flags every such case.
 
-Scope: ``components/*.css`` only. The audit walks each file independently
+Scope: ``components/*.css`` only. The lint walks each file independently
 (pages and ``preview.py`` don't currently declare interactive components).
 
-Allowlist marker: ``/* state-audit: ok */`` for documented exceptions
+Allowlist marker: ``/* state-lint: ok */`` for documented exceptions
 (e.g. group-hover effects where the focusable target is a descendant).
 """
 
@@ -31,7 +31,7 @@ from design_kit.logging import get_logger
 
 logger = get_logger(__name__)
 
-ALLOWLIST_MARKER = "state-audit: ok"
+ALLOWLIST_MARKER = "state-lint: ok"
 
 # Elements that are natively focusable; if the base selector ends with one
 # of these (as the rightmost simple selector), focusability is proved
@@ -42,11 +42,11 @@ _NATIVELY_FOCUSABLE = frozenset(
 )
 # Pseudo-classes that count as "this base is focusable."
 _FOCUS_PSEUDOS = (":focus-visible", ":focus-within", ":focus")
-# Pseudo-classes the audit flags when they appear on non-focusable bases.
+# Pseudo-classes the lint flags when they appear on non-focusable bases.
 _STATE_PSEUDOS = (":hover", ":active")
 
 
-class InteractiveStateAuditOutcome(Enum):
+class InteractiveStateLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
@@ -61,20 +61,20 @@ class InteractiveStateViolation:
 
 
 @dataclass(frozen=True)
-class InteractiveStateAuditResult:
-    outcome: InteractiveStateAuditOutcome
+class InteractiveStateLintResult:
+    outcome: InteractiveStateLintOutcome
     violations: list[InteractiveStateViolation]
 
     @classmethod
-    def passed(cls) -> "InteractiveStateAuditResult":
-        return cls(outcome=InteractiveStateAuditOutcome.PASSED, violations=[])
+    def passed(cls) -> "InteractiveStateLintResult":
+        return cls(outcome=InteractiveStateLintOutcome.PASSED, violations=[])
 
     @classmethod
     def failed(
         cls, violations: list[InteractiveStateViolation]
-    ) -> "InteractiveStateAuditResult":
+    ) -> "InteractiveStateLintResult":
         return cls(
-            outcome=InteractiveStateAuditOutcome.FAILED, violations=violations
+            outcome=InteractiveStateLintOutcome.FAILED, violations=violations
         )
 
 
@@ -167,7 +167,7 @@ def _iter_leaf_rules(text: str) -> Iterator[tuple[str, int]]:
 def _bem_parents(base: str) -> Iterator[str]:
     """Yield successive parent classes by stripping ``-<segment>`` suffixes.
 
-    The audit treats ``.dk-button-primary`` as inheriting focusability from
+    The lint treats ``.dk-button-primary`` as inheriting focusability from
     ``.dk-button`` (the root component class), the BEM modifier convention
     used across the system. Only single-class bases are walked; compound
     selectors (descendants, combinators) skip BEM matching.
@@ -214,7 +214,7 @@ def _strip_trailing_pseudo(selector: str, pseudo: str) -> str | None:
     """If ``selector`` ends with ``pseudo``, return the base (without it).
 
     Handles only the *trailing* occurrence; ``:hover`` in the middle of a
-    descendant chain is a contextual selector and the audit skips it.
+    descendant chain is a contextual selector and the lint skips it.
     """
     if not selector.endswith(pseudo):
         return None
@@ -284,19 +284,19 @@ def _scan_file(path: Path) -> list[InteractiveStateViolation]:
     return violations
 
 
-def run_interactive_state_audit(
+def run_interactive_state_lint(
     components_dir: Path,
-) -> InteractiveStateAuditResult:
+) -> InteractiveStateLintResult:
     """Scan every ``components/*.css`` for visual state on non-focusable bases."""
     if not components_dir.is_dir():
         logger.warning(
             f"Components directory not found: {components_dir}; "
-            "skipping interactive-state audit"
+            "skipping interactive-state lint"
         )
-        return InteractiveStateAuditResult.passed()
+        return InteractiveStateLintResult.passed()
     all_violations: list[InteractiveStateViolation] = []
     for path in sorted(components_dir.glob("*.css")):
         all_violations.extend(_scan_file(path))
     if all_violations:
-        return InteractiveStateAuditResult.failed(all_violations)
-    return InteractiveStateAuditResult.passed()
+        return InteractiveStateLintResult.failed(all_violations)
+    return InteractiveStateLintResult.passed()

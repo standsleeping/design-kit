@@ -5,7 +5,7 @@ production CSS as a rhythm or layout device. Inter-element rhythm lives in
 the parent's ``gap``; explicit gaps live in a structural sibling spacer;
 centering lives in ``place-items`` or grid alignment.
 
-The audit permits two narrow forms that do not express layout intent:
+The lint permits two narrow forms that do not express layout intent:
 
 * **Zero resets** — ``margin: 0`` and ``margin-(side): 0`` neutralize UA
   defaults so the rest of the system can rely on no implicit gaps. This is
@@ -22,9 +22,9 @@ with grid + ``justify-content`` / ``place-items``, replace negative-margin
 bleed with structural restructuring so the bleeding element sits outside
 the padded container.
 
-Inputs mirror the token-leak audit: ``components/*.css`` always;
+Inputs mirror the token-leak lint: ``components/*.css`` always;
 ``pages/*.html`` ``<style>`` blocks when ``pages_dir`` is provided; any
-``extra_files`` scanned as plain text. The trailing ``/* margin-audit: ok */``
+``extra_files`` scanned as plain text. The trailing ``/* margin-lint: ok */``
 comment allowlists a single line for documented exceptions.
 """
 
@@ -54,7 +54,7 @@ COMMENT_RE = re.compile(r"/\*.*?\*/", flags=re.DOTALL)
 STYLE_BLOCK_RE = re.compile(
     r"<style[^>]*>(.*?)</style>", flags=re.DOTALL | re.IGNORECASE
 )
-ALLOWLIST_MARKER = "margin-audit: ok"
+ALLOWLIST_MARKER = "margin-lint: ok"
 # A value token whose presence is benign — zero (any unit) or auto. Anything
 # else (a positive length, a var() reference, a calc(), a percentage) means
 # the declaration carries layout intent.
@@ -62,7 +62,7 @@ _ZERO_TOKEN_RE = re.compile(r"^0(?:px|em|rem|lh|rlh|ch|vw|vh|%)?$", re.IGNORECAS
 _AUTO_TOKEN_RE = re.compile(r"^auto$", re.IGNORECASE)
 
 
-class MarginAuditOutcome(Enum):
+class MarginLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
@@ -77,17 +77,17 @@ class MarginViolation:
 
 
 @dataclass(frozen=True)
-class MarginAuditResult:
-    outcome: MarginAuditOutcome
+class MarginLintResult:
+    outcome: MarginLintOutcome
     violations: list[MarginViolation]
 
     @classmethod
-    def passed(cls) -> "MarginAuditResult":
-        return cls(outcome=MarginAuditOutcome.PASSED, violations=[])
+    def passed(cls) -> "MarginLintResult":
+        return cls(outcome=MarginLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(cls, violations: list[MarginViolation]) -> "MarginAuditResult":
-        return cls(outcome=MarginAuditOutcome.FAILED, violations=violations)
+    def failed(cls, violations: list[MarginViolation]) -> "MarginLintResult":
+        return cls(outcome=MarginLintOutcome.FAILED, violations=violations)
 
 
 def _html_to_css_text(html: str) -> str:
@@ -175,11 +175,11 @@ def _scan_file(path: Path) -> list[MarginViolation]:
     return violations
 
 
-def run_margin_audit(
+def run_margin_lint(
     components_dir: Path,
     pages_dir: Path | None = None,
     extra_files: Iterable[Path] = (),
-) -> MarginAuditResult:
+) -> MarginLintResult:
     """Scan component CSS, page ``<style>`` blocks, and any extra files for
     margin declarations that carry layout intent. Each input is optional;
     missing inputs log a warning and are skipped."""
@@ -209,5 +209,5 @@ def run_margin_audit(
     for path in paths:
         all_violations.extend(_scan_file(path))
     if all_violations:
-        return MarginAuditResult.failed(all_violations)
-    return MarginAuditResult.passed()
+        return MarginLintResult.failed(all_violations)
+    return MarginLintResult.passed()

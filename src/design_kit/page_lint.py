@@ -1,6 +1,6 @@
 """Static scan of pages/*.html for conformance to the Design-kit page contract.
 
-The contract is documented in docs/reference/page-contract.md. This audit runs
+The contract is documented in docs/reference/page-contract.md. This lint runs
 as part of `design-kit build` and fails the build if any non-allowlisted page
 violates the contract.
 
@@ -18,7 +18,7 @@ from enum import Enum
 from pathlib import Path
 
 
-class PageAuditOutcome(Enum):
+class PageLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
@@ -31,8 +31,8 @@ class PageViolation:
 
 
 @dataclass(frozen=True)
-class PageAuditResult:
-    outcome: PageAuditOutcome
+class PageLintResult:
+    outcome: PageLintOutcome
     violations: tuple[PageViolation, ...]
     scanned: int
     deferred: tuple[str, ...]
@@ -113,15 +113,15 @@ CHECKS: tuple[tuple[str, CheckFn], ...] = (
 )
 
 
-def run_page_audit(pages_dir: Path) -> PageAuditResult:
+def run_page_lint(pages_dir: Path) -> PageLintResult:
     """Scan pages_dir for HTML files and check each against the contract."""
     violations: list[PageViolation] = []
     deferred: list[str] = []
     stale: list[str] = []
     scanned = 0
     if not pages_dir.is_dir():
-        return PageAuditResult(
-            outcome=PageAuditOutcome.PASSED,
+        return PageLintResult(
+            outcome=PageLintOutcome.PASSED,
             violations=(),
             scanned=0,
             deferred=(),
@@ -147,9 +147,9 @@ def run_page_audit(pages_dir: Path) -> PageAuditResult:
                     PageViolation(page=page, rule=rule, message=problem)
                 )
     outcome = (
-        PageAuditOutcome.FAILED if violations else PageAuditOutcome.PASSED
+        PageLintOutcome.FAILED if violations else PageLintOutcome.PASSED
     )
-    return PageAuditResult(
+    return PageLintResult(
         outcome=outcome,
         violations=tuple(violations),
         scanned=scanned,

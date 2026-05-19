@@ -4,9 +4,9 @@ Static-analysis corollary of the visual language's "all corners square"
 convention: ``border-radius`` defaults to ``0``, and any explicit non-zero
 value is a smell. A few genuine circles (status dots, presence indicators)
 need ``border-radius: 50%`` — those are allowed via the
-``/* radius-audit: ok */`` marker.
+``/* radius-lint: ok */`` marker.
 
-The audit walks ``components/*.css`` and flags any ``border-radius``
+The lint walks ``components/*.css`` and flags any ``border-radius``
 declaration whose value is not literally ``0`` (after token-var lookup —
 even ``var(--radius-md)`` is flagged, because the var resolves to 0 today
 and the source should be explicit about that fact rather than implying a
@@ -25,11 +25,11 @@ from design_kit.logging import get_logger
 logger = get_logger(__name__)
 
 
-ALLOWLIST_MARKER = "radius-audit: ok"
+ALLOWLIST_MARKER = "radius-lint: ok"
 RADIUS_RE = re.compile(r"\bborder-radius\s*:\s*([^;}]+?)\s*(?:;|$)")
 
 
-class RadiusAuditOutcome(Enum):
+class RadiusLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
@@ -43,17 +43,17 @@ class RadiusViolation:
 
 
 @dataclass(frozen=True)
-class RadiusAuditResult:
-    outcome: RadiusAuditOutcome
+class RadiusLintResult:
+    outcome: RadiusLintOutcome
     violations: list[RadiusViolation]
 
     @classmethod
-    def passed(cls) -> "RadiusAuditResult":
-        return cls(outcome=RadiusAuditOutcome.PASSED, violations=[])
+    def passed(cls) -> "RadiusLintResult":
+        return cls(outcome=RadiusLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(cls, violations: list[RadiusViolation]) -> "RadiusAuditResult":
-        return cls(outcome=RadiusAuditOutcome.FAILED, violations=violations)
+    def failed(cls, violations: list[RadiusViolation]) -> "RadiusLintResult":
+        return cls(outcome=RadiusLintOutcome.FAILED, violations=violations)
 
 
 def _is_zero(value: str) -> bool:
@@ -100,17 +100,17 @@ def _scan_file(path: Path) -> list[RadiusViolation]:
     return violations
 
 
-def run_radius_audit(components_dir: Path) -> RadiusAuditResult:
+def run_radius_lint(components_dir: Path) -> RadiusLintResult:
     """Scan every ``components/*.css`` for non-zero border-radius declarations."""
     if not components_dir.is_dir():
         logger.warning(
             f"Components directory not found: {components_dir}; "
-            "skipping radius audit"
+            "skipping radius lint"
         )
-        return RadiusAuditResult.passed()
+        return RadiusLintResult.passed()
     all_violations: list[RadiusViolation] = []
     for path in sorted(components_dir.glob("*.css")):
         all_violations.extend(_scan_file(path))
     if all_violations:
-        return RadiusAuditResult.failed(all_violations)
-    return RadiusAuditResult.passed()
+        return RadiusLintResult.failed(all_violations)
+    return RadiusLintResult.passed()

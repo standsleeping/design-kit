@@ -27,7 +27,7 @@ OFFSET_RE = re.compile(r"outline-offset:\s*(-?[0-9]*\.?[0-9]+)")
 ALLOWLIST_MARKER = "focus-ring: standalone"
 
 
-class FocusRingAuditOutcome(Enum):
+class FocusRingLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
@@ -43,19 +43,19 @@ class FocusRingViolation:
 
 
 @dataclass(frozen=True)
-class FocusRingAuditResult:
-    outcome: FocusRingAuditOutcome
+class FocusRingLintResult:
+    outcome: FocusRingLintOutcome
     violations: list[FocusRingViolation]
 
     @classmethod
-    def passed(cls) -> "FocusRingAuditResult":
-        return cls(outcome=FocusRingAuditOutcome.PASSED, violations=[])
+    def passed(cls) -> "FocusRingLintResult":
+        return cls(outcome=FocusRingLintOutcome.PASSED, violations=[])
 
     @classmethod
     def failed(
         cls, violations: list[FocusRingViolation]
-    ) -> "FocusRingAuditResult":
-        return cls(outcome=FocusRingAuditOutcome.FAILED, violations=violations)
+    ) -> "FocusRingLintResult":
+        return cls(outcome=FocusRingLintOutcome.FAILED, violations=violations)
 
 
 def _scan_file(path: Path) -> list[FocusRingViolation]:
@@ -162,17 +162,17 @@ def _check_declaration(
     )
 
 
-def run_focus_ring_audit(components_dir: Path) -> FocusRingAuditResult:
+def run_focus_ring_lint(components_dir: Path) -> FocusRingLintResult:
     """Scan every ``components/*.css`` for outwardly offset focus rings."""
     if not components_dir.is_dir():
         logger.warning(
             f"Components directory not found: {components_dir}; "
-            "skipping focus-ring audit"
+            "skipping focus-ring lint"
         )
-        return FocusRingAuditResult.passed()
+        return FocusRingLintResult.passed()
     all_violations: list[FocusRingViolation] = []
     for path in sorted(components_dir.glob("*.css")):
         all_violations.extend(_scan_file(path))
     if all_violations:
-        return FocusRingAuditResult.failed(all_violations)
-    return FocusRingAuditResult.passed()
+        return FocusRingLintResult.failed(all_violations)
+    return FocusRingLintResult.passed()
