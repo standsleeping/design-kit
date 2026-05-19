@@ -6,7 +6,7 @@
 }
 
 .dk-tab-bar-tab {
-  padding: var(--spacing-xs) 0; /* padding-audit: ok */
+  padding: var(--spacing-xs) 0; /* padding-lint: ok */
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);

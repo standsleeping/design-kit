@@ -17,7 +17,7 @@
   display: grid;
   grid-template-columns: minmax(0, var(--layout-content-max-width, 680px));
   justify-content: center;
-  padding: var(--spacing-2xl) var(--spacing-xl); /* padding-audit: ok */
+  padding: var(--spacing-2xl) var(--spacing-xl); /* padding-lint: ok */
   gap: 1lh;
 }
 

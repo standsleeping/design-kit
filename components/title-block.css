@@ -9,12 +9,12 @@
   font-family: var(--typography-mono);
   display: grid;
   background: var(--color-border);
-  gap: 1px; /* dimension-audit: ok — hairline grid divider (background-bleed technique) */
+  gap: 1px; /* dimension-lint: ok — hairline grid divider (background-bleed technique) */
 }
 
 .dk-title-block-field {
   background: var(--color-bg);
-  padding: var(--spacing-xs) var(--spacing-sm); /* padding-audit: ok */
+  padding: var(--spacing-xs) var(--spacing-sm); /* padding-lint: ok */
 }
 
 .dk-title-block-label {
@@ -43,7 +43,7 @@
 .dk-title-block-meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 1px; /* dimension-audit: ok — hairline grid divider (background-bleed technique) */
+  gap: 1px; /* dimension-lint: ok — hairline grid divider (background-bleed technique) */
   background: var(--color-border);
   grid-column: 1 / -1;
 }

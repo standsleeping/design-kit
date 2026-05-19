@@ -3,7 +3,7 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--spacing-xl);
-  padding: var(--spacing-xl) 0; /* padding-audit: ok */
+  padding: var(--spacing-xl) 0; /* padding-lint: ok */
   border-top: var(--border-width-thin) solid var(--color-border);
 }
 

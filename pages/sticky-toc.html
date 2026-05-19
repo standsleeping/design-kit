@@ -35,7 +35,7 @@
     grid-template-columns: minmax(0, 480px);
     justify-content: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-xl) var(--spacing-lg); /* padding-audit: ok */
+    padding: var(--spacing-xl) var(--spacing-lg); /* padding-lint: ok */
   }
 
   .dk-app-shell-main article h1 {
@@ -52,7 +52,7 @@
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
     line-height: var(--font-line-height-tight);
-    scroll-margin-top: 3.5rem; /* dimension-audit: ok — ad-hoc offset clears sticky TOC chrome */
+    scroll-margin-top: 3.5rem; /* dimension-lint: ok — ad-hoc offset clears sticky TOC chrome */
   }
 
   /* Extra rhythm above section headings: in-flow ::before pseudo augments
@@ -66,7 +66,7 @@
   .dk-app-shell-main article code {
     font-family: var(--typography-mono);
     --mono: 1;
-    font-size: 0.92em; /* dimension-audit: ok — OPTICAL_SCALE_INLINE_MONO; mono blends with proportional prose */
+    font-size: 0.92em; /* dimension-lint: ok — OPTICAL_SCALE_INLINE_MONO; mono blends with proportional prose */
   }
 
   .dk-app-shell-main .filler {

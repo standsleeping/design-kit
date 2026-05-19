@@ -3,7 +3,7 @@
 }
 
 .dk-segmented-toggle-button {
-  padding: var(--spacing-sm) var(--spacing-lg); /* padding-audit: ok */
+  padding: var(--spacing-sm) var(--spacing-lg); /* padding-lint: ok */
   font-size: var(--font-size-xs);
   font-family: var(--typography-mono);
   border: var(--border-width-thin) solid var(--color-border);

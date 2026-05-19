@@ -12,7 +12,7 @@
   text-transform: uppercase;
   letter-spacing: var(--font-letter-spacing-wide);
   color: var(--color-text-muted);
-  padding: var(--spacing-xs) var(--spacing-sm); /* padding-audit: ok */
+  padding: var(--spacing-xs) var(--spacing-sm); /* padding-lint: ok */
   background: var(--color-bg);
   border-bottom: var(--border-width-thin) solid var(--color-border);
 }
@@ -20,7 +20,7 @@
 .dk-form-layout-rows {
   display: grid;
   grid-template-columns: repeat(var(--dk-form-columns, 2), 1fr);
-  gap: 1px; /* dimension-audit: ok — hairline grid divider (background-bleed technique) */
+  gap: 1px; /* dimension-lint: ok — hairline grid divider (background-bleed technique) */
   background: var(--color-border);
 }
 

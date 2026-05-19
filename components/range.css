@@ -11,7 +11,7 @@
 }
 
 .dk-range-value {
-  min-width: 3ch; /* dimension-audit: ok — character-relative width for digit alignment */
+  min-width: 3ch; /* dimension-lint: ok — character-relative width for digit alignment */
   text-align: right;
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);

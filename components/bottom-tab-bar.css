@@ -4,7 +4,7 @@
   height: var(--control-touch-target-lg);
   background: var(--color-bg);
   border-top: var(--border-width-thin) solid var(--color-border);
-  padding-bottom: env(safe-area-inset-bottom, 0); /* padding-audit: ok */
+  padding-bottom: env(safe-area-inset-bottom, 0); /* padding-lint: ok */
 }
 
 .dk-bottom-tab-bar-tab {
@@ -13,7 +13,7 @@
   align-items: center;
   justify-content: center;
   min-height: var(--control-touch-target-md);
-  padding: var(--spacing-sm) var(--spacing-md); /* padding-audit: ok */
+  padding: var(--spacing-sm) var(--spacing-md); /* padding-lint: ok */
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);

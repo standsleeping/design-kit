@@ -128,10 +128,10 @@
     gap: var(--spacing-xs);
   }
   .section-flush {
-    padding: var(--spacing-xl) 0; /* padding-audit: ok */
+    padding: var(--spacing-xl) 0; /* padding-lint: ok */
   }
   .section-flush .section-intro {
-    padding: 0 var(--spacing-xl); /* padding-audit: ok */
+    padding: 0 var(--spacing-xl); /* padding-lint: ok */
   }
   .section-label {
     font-size: var(--font-size-2xs);
@@ -183,7 +183,7 @@
   .inset-scroll {
     border: var(--border-width-thin) solid var(--color-border);
     background: var(--color-code-bg);
-    max-height: 220px; /* dimension-audit: ok — demo pane height tuned to fit example rows */
+    max-height: 220px; /* dimension-lint: ok — demo pane height tuned to fit example rows */
     overflow-y: auto;
     scrollbar-gutter: stable;
   }
@@ -240,7 +240,7 @@
   .flush-scroll-frame {
     border-top: var(--border-width-thin) solid var(--color-border);
     border-bottom: var(--border-width-thin) solid var(--color-border);
-    padding-right: var(--spacing-3xl); /* padding-audit: ok */
+    padding-right: var(--spacing-3xl); /* padding-lint: ok */
   }
 
   /* Nested boundary-rail inside a flush column — same gutter colors as the
@@ -248,7 +248,7 @@
   .flush-scroll {
     display: flex;
     flex-direction: column;
-    max-height: 220px; /* dimension-audit: ok — demo pane height tuned to fit example rows */
+    max-height: 220px; /* dimension-lint: ok — demo pane height tuned to fit example rows */
     overflow-y: scroll;
   }
   .flush-scroll::-webkit-scrollbar { width: var(--scrollbar-width-thin); }

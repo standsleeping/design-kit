@@ -4,13 +4,13 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-md); /* padding-audit: ok */
+  padding: var(--spacing-sm) var(--spacing-md); /* padding-lint: ok */
   border-bottom: var(--dk-field-row-border, var(--border-width-thin) solid var(--color-border));
 }
 
 .dk-field-row-compact {
   min-height: var(--control-touch-target-sm);
-  padding-top: var(--spacing-xs); /* padding-audit: ok */
+  padding-top: var(--spacing-xs); /* padding-lint: ok */
   padding-bottom: var(--spacing-xs);
 }
 
