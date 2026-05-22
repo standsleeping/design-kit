@@ -33,6 +33,11 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ label?: string, href?: string }} BreadcrumbItem
+ * @param {{ items?: BreadcrumbItem[], separator?: string }} [props]
+ * @returns {HTMLElement}
+ */
 export function render(props = {}) {
   const items = props.items ?? propTypes.items.default;
   const separator = props.separator ?? propTypes.separator.default;
@@ -43,24 +48,25 @@ export function render(props = {}) {
 
   items.forEach((item, i) => {
     const isLast = i === items.length - 1;
-    const crumb = isLast
-      ? document.createElement('span')
-      : document.createElement('a');
-    crumb.className = 'dk-breadcrumb-crumb';
-    crumb.textContent = item.label ?? '';
     if (isLast) {
-      crumb.classList.add('dk-breadcrumb-current');
+      const crumb = document.createElement('span');
+      crumb.className = 'dk-breadcrumb-crumb dk-breadcrumb-current';
+      crumb.textContent = item.label ?? '';
       crumb.setAttribute('aria-current', 'page');
+      root.append(crumb);
     } else {
+      const crumb = document.createElement('a');
+      crumb.className = 'dk-breadcrumb-crumb';
+      crumb.textContent = item.label ?? '';
       crumb.href = item.href ?? '#';
-      crumb.addEventListener('click', (event) => {
+      crumb.addEventListener('click', () => {
         root.dispatchEvent(new CustomEvent('breadcrumb:navigate', {
           bubbles: true,
           detail: { label: item.label, href: item.href, index: i },
         }));
       });
+      root.append(crumb);
     }
-    root.append(crumb);
 
     if (!isLast) {
       const sep = document.createElement('span');

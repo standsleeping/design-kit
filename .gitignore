@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+# Node / TypeScript tooling (tsc --noEmit type-check; see tsconfig.json)
+node_modules/
+
 # Other
 .DS_Store
 .mypy_cache

@@ -35,6 +35,10 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {{ preset?: 'standard' | 'centered', padding?: string, gap?: string }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const preset = props.preset ?? propTypes.preset.default;
   const padding = props.padding ?? propTypes.padding.default;

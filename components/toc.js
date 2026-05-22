@@ -50,6 +50,11 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ href?: string, label?: string, level?: number }} TocItem
+ * @param {{ items?: TocItem[], label?: string }} [props]
+ * @returns {{ node: HTMLElement, cleanup: () => void }}
+ */
 export function render(props = {}) {
   const items = props.items ?? propTypes.items.default;
   const label = props.label ?? propTypes.label.default;
@@ -96,6 +101,7 @@ export function render(props = {}) {
     if (id) itemEls.set(id, li);
   }
 
+  /** @param {string} id */
   const setActive = (id) => {
     if (id === activeId) return;
     activeId = id;
@@ -108,6 +114,7 @@ export function render(props = {}) {
     }));
   };
 
+  /** @type {IntersectionObserver | null} */
   let observer = null;
   const ids = Array.from(itemEls.keys());
   if (ids.length > 0 && typeof IntersectionObserver !== 'undefined') {

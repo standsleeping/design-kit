@@ -20,6 +20,10 @@ export const variants = [
   { name: 'disabled', description: 'Disabled state', props: { value: 7, disabled: true } },
 ];
 
+/**
+ * @param {{ value?: number, min?: number, max?: number, step?: number, placeholder?: string, disabled?: boolean }} [props]
+ * @returns {HTMLInputElement}
+ */
 export function render(props = {}) {
   const rawValue = props.value;
   const value = Number.isFinite(rawValue) ? rawValue : propTypes.value.default;
@@ -40,18 +44,20 @@ export function render(props = {}) {
   if (Number.isFinite(rawValue)) root.value = String(rawValue);
 
   root.addEventListener('input', (event) => {
-    const numeric = Number(event.target.value);
+    const target = /** @type {HTMLInputElement} */ (event.target);
+    const numeric = Number(target.value);
     root.dispatchEvent(new CustomEvent('number-input:input', {
       bubbles: true,
-      detail: { value: Number.isFinite(numeric) ? numeric : null, raw: event.target.value },
+      detail: { value: Number.isFinite(numeric) ? numeric : null, raw: target.value },
     }));
   });
 
   root.addEventListener('change', (event) => {
-    const numeric = Number(event.target.value);
+    const target = /** @type {HTMLInputElement} */ (event.target);
+    const numeric = Number(target.value);
     root.dispatchEvent(new CustomEvent('number-input:change', {
       bubbles: true,
-      detail: { value: Number.isFinite(numeric) ? numeric : null, raw: event.target.value },
+      detail: { value: Number.isFinite(numeric) ? numeric : null, raw: target.value },
     }));
   });
 

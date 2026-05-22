@@ -50,12 +50,25 @@ export const variants = [
     props: { levels: DEMO_LEVELS, initialPath: ['root', 'settings'], displayState: 'icon' } },
 ];
 
+/**
+ * @typedef {{ kind: string, id: string, label?: string, icon?: string, selected?: boolean, branchTo?: string }} NavItem
+ * @typedef {{ id: string, title?: string, items: NavItem[] }} NavLevel
+ * @typedef {{ path: string[], levels: NavLevel[], backLabel: string, backIcon: string }} NavState
+ */
+
 // Per-instance state lives in a WeakMap keyed by the returned root node.
 // This keeps internal state out of the public DOM (no mangled __properties)
 // while preserving the no-callbacks contract: state is mutated in place by
 // internal handlers, the storybook re-renders by calling render() afresh.
+/** @type {WeakMap<HTMLElement, NavState>} */
 const STATE = new WeakMap();
 
+/**
+ * @param {HTMLElement} root
+ * @param {string} name
+ * @param {Record<string, unknown>} detail
+ * @returns {void}
+ */
 function emit(root, name, detail) {
   root.dispatchEvent(new CustomEvent(`nav-stack:${name}`, {
     bubbles: true,
@@ -63,10 +76,23 @@ function emit(root, name, detail) {
   }));
 }
 
+/**
+ * @param {NavLevel[]} levels
+ * @param {string} id
+ * @returns {NavLevel | undefined}
+ */
 function findLevel(levels, id) {
   return levels.find((l) => l.id === id);
 }
 
+/**
+ * @param {HTMLElement} root
+ * @param {NavLevel} level
+ * @param {number} depth
+ * @param {string} backLabel
+ * @param {string} backIcon
+ * @returns {HTMLDivElement}
+ */
 function renderHeader(root, level, depth, backLabel, backIcon) {
   const header = document.createElement('div');
   header.className = 'dk-nav-stack-header';
@@ -103,6 +129,11 @@ function renderHeader(root, level, depth, backLabel, backIcon) {
   return header;
 }
 
+/**
+ * @param {HTMLElement} root
+ * @param {NavItem} item
+ * @returns {HTMLElement}
+ */
 function renderItem(root, item) {
   if (item.kind === 'section-header') {
     const node = document.createElement('div');
@@ -167,6 +198,10 @@ function renderItem(root, item) {
   return btn;
 }
 
+/**
+ * @param {HTMLElement} root
+ * @returns {void}
+ */
 function renderBody(root) {
   const s = STATE.get(root);
   if (!s) return;
@@ -195,13 +230,17 @@ function renderBody(root) {
   root.append(body);
 }
 
+/**
+ * @param {{ levels?: NavLevel[], initialPath?: string[], displayState?: 'expanded' | 'icon', backLabel?: string, backIcon?: string }} [props]
+ * @returns {HTMLElement}
+ */
 export function render(props = {}) {
-  const levels = props.levels ?? propTypes.levels.default;
-  const displayState = props.displayState ?? propTypes.displayState.default;
+  const levels = props.levels ?? /** @type {NavLevel[]} */ (propTypes.levels.default);
+  const displayState = /** @type {'expanded' | 'icon'} */ (props.displayState ?? propTypes.displayState.default);
   const backLabel = props.backLabel ?? propTypes.backLabel.default;
   const backIcon = props.backIcon ?? propTypes.backIcon.default;
 
-  let initialPath = props.initialPath ?? propTypes.initialPath.default;
+  let initialPath = props.initialPath ?? /** @type {string[]} */ (propTypes.initialPath.default);
   if (!initialPath.length && levels.length) initialPath = [levels[0].id];
 
   const root = document.createElement('nav');

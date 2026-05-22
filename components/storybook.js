@@ -4,6 +4,18 @@
 // storybook-specific UI: the component nav list with pool tabs, resizable
 // variant cards, the propTypes inspector, layout persistence across the two
 // resizable Sidebars, the hash-routed selection, and the main() orchestrator.
+
+/**
+ * @typedef {{ type: string, default?: unknown, options?: unknown[] }} PropDescriptor
+ * @typedef {{ name: string, description?: string, props?: Record<string, unknown>, slots?: Record<string, unknown> }} VariantDef
+ * @typedef {{ metadata: { name: string, examplePage?: string }, propTypes?: Record<string, PropDescriptor>, variants: VariantDef[], render: (props: Record<string, unknown>) => HTMLElement | { node: HTMLElement, cleanup: () => void } }} ComponentModule
+ * @typedef {{ pool: string, url: string, mod: ComponentModule }} RegistryEntry
+ * @typedef {{ nav: number, inspector: number }} LayoutState
+ * @typedef {{ w?: number, h?: number }} SizeOverride
+ * @typedef {{ kind: string, id: string, label?: string, selected?: boolean, branchTo?: string }} NavItem
+ * @typedef {{ id: string, title?: string, items: NavItem[] }} NavLevel
+ */
+
 import {
   mountLuminanceToggle,
   mountColorThemeToggle,
@@ -27,7 +39,8 @@ async function loadConfig() {
     const localRes = await fetch(LOCAL_CONFIG_URL, { cache: 'no-cache' });
     if (localRes.ok) {
       const local = await localRes.json();
-      const byName = new Map((config.pools ?? []).map((p) => [p.name, p]));
+      /** @type {Map<string, unknown>} */
+      const byName = new Map((config.pools ?? []).map((/** @type {{ name: string }} */ p) => [p.name, p]));
       for (const pool of local.pools ?? []) byName.set(pool.name, pool);
       config.pools = [...byName.values()];
     }
@@ -42,8 +55,16 @@ async function loadConfig() {
 // The id is `<pool>/<componentName>` — same shape as the URL hash that
 // storybook routes on. Matches the canonical sidebar pattern in
 // components/system/nav-data.js (used on the index page).
+/**
+ * @param {RegistryEntry[]} registry
+ * @param {RegistryEntry | null | undefined} active
+ * @param {boolean} showPoolHeaders
+ * @returns {NavItem[]}
+ */
 function buildNavStackItems(registry, active, showPoolHeaders) {
+  /** @type {NavItem[]} */
   const items = [];
+  /** @type {string | null} */
   let lastPool = null;
   for (const entry of registry) {
     if (showPoolHeaders && entry.pool !== lastPool) {
@@ -73,16 +94,27 @@ const RESIZE_MAX = 2400;
 const RESIZE_KEY_STEP = 8;
 const RESIZE_KEY_STEP_LARGE = 32;
 
+/**
+ * @param {number} value
+ * @returns {number}
+ */
 function clampSize(value) {
   return Math.max(RESIZE_MIN, Math.min(RESIZE_MAX, Math.round(value)));
 }
 
 // Wires drag and keyboard resize affordances into a variant card. All inline
 // style + override-map mutation lives here; renderVariants stays declarative.
+/**
+ * @param {HTMLElement} card
+ * @param {HTMLElement} body
+ * @param {{ variantName: string, sizeOverrides: Map<string, SizeOverride>, defaults: { w: number, h: number }, footerText: HTMLElement, onChange?: () => void }} opts
+ * @returns {void}
+ */
 function installResizableCard(card, body, opts) {
   const { variantName, sizeOverrides, defaults, footerText, onChange } = opts;
   const initial = sizeOverrides.get(variantName);
 
+  /** @param {number} h */
   const applyHeightOverride = (h) => {
     card.style.height = `${h}px`;
     body.style.minHeight = '0';
@@ -101,13 +133,21 @@ function installResizableCard(card, body, opts) {
   };
   requestAnimationFrame(updateFooter);
 
+  /** @param {Partial<SizeOverride>} patch */
   const setOverrides = (patch) => {
     const cur = sizeOverrides.get(variantName) ?? {};
     sizeOverrides.set(variantName, { ...cur, ...patch });
     card.classList.add('storybook-variant-card-overridden');
   };
 
+  /**
+   * @param {'x' | 'y' | 'xy'} axis
+   * @param {number} dx
+   * @param {number} dy
+   * @param {{ w: number, h: number }} base
+   */
   const applyDelta = (axis, dx, dy, base) => {
+    /** @type {Partial<SizeOverride>} */
     const patch = {};
     if (axis === 'x' || axis === 'xy') {
       const w = clampSize(base.w + dx);
@@ -135,6 +175,11 @@ function installResizableCard(card, body, opts) {
     onChange?.();
   };
 
+  /**
+   * @param {'x' | 'y' | 'xy'} axis
+   * @param {string} className
+   * @param {string} label
+   */
   const installHandle = (axis, className, label) => {
     const handle = document.createElement('div');
     handle.className = `storybook-variant-resize ${className}`;
@@ -152,7 +197,9 @@ function installResizableCard(card, body, opts) {
       const startY = e.clientY;
       const rect = card.getBoundingClientRect();
       const base = { w: rect.width, h: rect.height };
+      /** @param {PointerEvent} mv */
       const onMove = (mv) => applyDelta(axis, mv.clientX - startX, mv.clientY - startY, base);
+      /** @param {PointerEvent} up */
       const onUp = (up) => {
         handle.releasePointerCapture(up.pointerId);
         handle.removeEventListener('pointermove', onMove);
@@ -186,6 +233,18 @@ function installResizableCard(card, body, opts) {
   installHandle('xy', 'storybook-variant-resize-xy', `Resize ${variantName} width and height`);
 }
 
+/**
+ * @param {HTMLElement} variantsEl
+ * @param {RegistryEntry} entry
+ * @param {number} width
+ * @param {number} height
+ * @param {RegistryEntry[]} registry
+ * @param {(() => void)[]} cleanups
+ * @param {Record<string, unknown>} overrides
+ * @param {Map<string, SizeOverride> | null} sizeOverrides
+ * @param {{ onResize?: () => void } | null} callbacks
+ * @returns {void}
+ */
 function renderVariants(variantsEl, entry, width, height, registry, cleanups, overrides, sizeOverrides, callbacks) {
   runCleanups(cleanups);
   variantsEl.innerHTML = '';
@@ -211,9 +270,9 @@ function renderVariants(variantsEl, entry, width, height, registry, cleanups, ov
     const body = document.createElement('div');
     body.className = 'storybook-variant-body';
     if (height > 0) body.style.minHeight = `${height}px`;
-    const mergedProps = overrides ? { ...(variant.props ?? {}), ...overrides } : variant.props;
+    const mergedProps = overrides ? { ...(variant.props ?? {}), ...overrides } : (variant.props ?? {});
     const node = renderEntry(entry.mod, mergedProps, cleanups);
-    if (variant.slots) resolveSlots(node, variant.slots, registry, cleanups);
+    if (variant.slots) resolveSlots(node, /** @type {Record<string, import('./system/runtime.js').SlotSpec | import('./system/runtime.js').SlotSpec[]>} */ (variant.slots), registry, cleanups);
     body.append(node);
     card.append(body);
 
@@ -242,6 +301,11 @@ function renderVariants(variantsEl, entry, width, height, registry, cleanups, ov
   }
 }
 
+/**
+ * @param {string} hash
+ * @param {RegistryEntry[]} registry
+ * @returns {RegistryEntry}
+ */
 function hashToSelection(hash, registry) {
   if (!hash || !hash.startsWith('#')) return registry[0];
   const [poolName, name] = hash.slice(1).split('/');
@@ -258,6 +322,9 @@ const LAYOUT_CONSTRAINTS = {
   inspector: { min: 240, max: 480 },
 };
 
+/**
+ * @returns {LayoutState}
+ */
 function loadLayout() {
   try {
     const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
@@ -272,6 +339,10 @@ function loadLayout() {
   }
 }
 
+/**
+ * @param {LayoutState} layout
+ * @returns {void}
+ */
 function saveLayout(layout) {
   try {
     localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout));
@@ -283,6 +354,9 @@ function saveLayout(layout) {
 // Mount nav and inspector content into left + right Sidebars inside the
 // AppShell. Sidebar's built-in resizer + sidebar:resize event drives
 // persistence; LAYOUT_CONSTRAINTS becomes minWidth/maxWidth props.
+/**
+ * @returns {Promise<{ navSlot: Element | null } | null>}
+ */
 async function mountSidebars() {
   const inspectorHost = document.querySelector('[data-storybook-inspector-host]');
   const navMount = document.querySelector('.dk-app-shell-left');
@@ -292,31 +366,34 @@ async function mountSidebars() {
   const layout = loadLayout();
   const sidebarMod = await import('./sidebar.js');
 
-  const navSb = sidebarMod.render({
+  const navSb = /** @type {HTMLElement} */ (sidebarMod.render({
     side: 'left',
     width: layout.nav,
     minWidth: LAYOUT_CONSTRAINTS.nav.min,
     maxWidth: LAYOUT_CONSTRAINTS.nav.max,
     resizable: true,
-  });
-  const inspectorSb = sidebarMod.render({
+  }));
+  const inspectorSb = /** @type {HTMLElement} */ (sidebarMod.render({
     side: 'right',
     width: layout.inspector,
     minWidth: LAYOUT_CONSTRAINTS.inspector.min,
     maxWidth: LAYOUT_CONSTRAINTS.inspector.max,
     resizable: true,
-  });
+  }));
 
-  inspectorSb.querySelector('[data-slot="main"]').append(inspectorHost);
+  const inspectorMainSlot = inspectorSb.querySelector('[data-slot="main"]');
+  if (inspectorMainSlot) inspectorMainSlot.append(inspectorHost);
   navMount.append(navSb);
   inspectorMount.append(inspectorSb);
 
   navSb.addEventListener('sidebar:resize', (e) => {
-    layout.nav = e.detail.width;
+    const ce = /** @type {CustomEvent<{ width: number }>} */ (e);
+    layout.nav = ce.detail.width;
     saveLayout(layout);
   });
   inspectorSb.addEventListener('sidebar:resize', (e) => {
-    layout.inspector = e.detail.width;
+    const ce = /** @type {CustomEvent<{ width: number }>} */ (e);
+    layout.inspector = ce.detail.width;
     saveLayout(layout);
   });
 
@@ -329,12 +406,12 @@ async function main() {
   const el = {
     count: document.querySelector('[data-storybook-count]'),
     name: document.querySelector('[data-storybook-component-name]'),
-    example: document.querySelector('[data-storybook-component-example]'),
-    widthSlider: document.querySelector('[data-storybook-width-slider]'),
-    widthNumber: document.querySelector('[data-storybook-width-number]'),
-    heightSlider: document.querySelector('[data-storybook-height-slider]'),
-    heightNumber: document.querySelector('[data-storybook-height-number]'),
-    variants: document.querySelector('[data-storybook-variants]'),
+    example: /** @type {HTMLAnchorElement | null} */ (document.querySelector('[data-storybook-component-example]')),
+    widthSlider: /** @type {HTMLInputElement | null} */ (document.querySelector('[data-storybook-width-slider]')),
+    widthNumber: /** @type {HTMLInputElement | null} */ (document.querySelector('[data-storybook-width-number]')),
+    heightSlider: /** @type {HTMLInputElement | null} */ (document.querySelector('[data-storybook-height-slider]')),
+    heightNumber: /** @type {HTMLInputElement | null} */ (document.querySelector('[data-storybook-height-number]')),
+    variants: /** @type {HTMLElement | null} */ (document.querySelector('[data-storybook-variants]')),
     events: document.querySelector('[data-storybook-events]'),
     footerHash: document.querySelector('[data-storybook-footer-hash]'),
     footerSize: document.querySelector('[data-storybook-footer-size]'),
@@ -350,30 +427,41 @@ async function main() {
     mountSidebars(),
   ]);
 
+  /** @type {RegistryEntry[]} */
   let registry = [];
+  /** @type {string[]} */
   const poolNames = [];
   for (const pool of config.pools ?? []) {
-    const poolRegistry = await scanPool(pool);
+    const poolRegistry = /** @type {RegistryEntry[]} */ (await scanPool(pool));
     if (poolRegistry.length > 0 && !poolNames.includes(pool.name)) {
       poolNames.push(pool.name);
     }
-    registry = registry.concat(poolRegistry);
+    registry = [...registry, ...poolRegistry];
   }
 
-  el.count.textContent = `${registry.length} registered`;
+  if (el.count) el.count.textContent = `${registry.length} registered`;
 
   if (registry.length === 0) {
-    el.variants.textContent = 'No components loaded. Check storybook.config.json.';
+    if (el.variants) el.variants.textContent = 'No components loaded. Check storybook.config.json.';
     return;
   }
 
-  const eventLog = installEventLog(el.variants, el.events);
+  if (!el.variants || !el.widthSlider || !el.heightSlider) return;
+
+  const variantsEl = el.variants;
+  const widthSlider = el.widthSlider;
+  const heightSlider = el.heightSlider;
+
+  const eventLog = installEventLog(variantsEl, /** @type {HTMLElement} */ (el.events));
+  /** @type {(() => void)[]} */
   const cleanups = [];
 
   let active = hashToSelection(window.location.hash, registry);
-  let width = Number(el.widthSlider.value);
-  let height = Number(el.heightSlider.value);
+  let width = Number(widthSlider.value);
+  let height = Number(heightSlider.value);
+  /** @type {Record<string, unknown>} */
   let overrides = {};
+  /** @type {Map<string, SizeOverride>} */
   const sizeOverrides = new Map();
   const updateFooter = () => {
     if (el.footerHash) {
@@ -397,12 +485,15 @@ async function main() {
   // NavStack back button pops them to the system root, from which any
   // other system page is one click away. Re-renders on every paint so the
   // selected component reflects the active entry.
+  /** @type {HTMLElement | null} */
   let currentNav = null;
+  /** @param {CustomEvent<{ id: string }>} e */
   const handleNavSelect = (e) => {
     const id = e.detail.id;
     if (id.startsWith('pool-')) return;
-    if (id in TARGETS) {
-      const target = TARGETS[id];
+    const targetsRecord = /** @type {Record<string, string>} */ (/** @type {unknown} */ (TARGETS));
+    if (id in targetsRecord) {
+      const target = targetsRecord[id];
       // Token anchors (#colors, #typography, ...) live on the index page;
       // navigate there rather than mutate storybook's own #pool/component
       // hash, which would mis-route the component selection.
@@ -436,18 +527,18 @@ async function main() {
       title: 'Components',
       items: componentItems,
     };
-    currentNav = await mountSystemSidebar({
+    currentNav = /** @type {HTMLElement} */ (await mountSystemSidebar({
       host: sidebars.navSlot,
       levels: [systemRoot, storybookLevel],
       current: 'storybook',
       initialPath: ['root', 'storybook'],
       onSelect: handleNavSelect,
-    });
+    }));
   };
 
   const paint = () => {
     renderNav();
-    el.name.textContent = active.mod.metadata.name;
+    if (el.name) el.name.textContent = active.mod.metadata.name;
     if (el.example) {
       const examplePage = active.mod.metadata.examplePage;
       if (examplePage) {
@@ -459,15 +550,16 @@ async function main() {
         el.example.removeAttribute('href');
       }
     }
-    renderVariants(el.variants, active, width, height, registry, cleanups, overrides, sizeOverrides, variantCallbacks);
+    renderVariants(variantsEl, active, width, height, registry, cleanups, overrides, sizeOverrides, variantCallbacks);
     renderPropsForm();
     updateFooter();
   };
 
   const repaintVariants = () => {
-    renderVariants(el.variants, active, width, height, registry, cleanups, overrides, sizeOverrides, variantCallbacks);
+    renderVariants(variantsEl, active, width, height, registry, cleanups, overrides, sizeOverrides, variantCallbacks);
   };
 
+  /** @param {RegistryEntry} entry */
   const select = (entry) => {
     active = entry;
     window.location.hash = `${entry.pool}/${entry.mod.metadata.name}`;
@@ -477,24 +569,26 @@ async function main() {
     paint();
   };
 
+  /** @param {number} next */
   const setWidth = (next) => {
     width = Math.max(
-      Number(el.widthSlider.min),
-      Math.min(Number(el.widthSlider.max), next),
+      Number(widthSlider.min),
+      Math.min(Number(widthSlider.max), next),
     );
-    el.widthSlider.value = String(width);
-    el.widthNumber.value = String(width);
+    widthSlider.value = String(width);
+    if (el.widthNumber) el.widthNumber.value = String(width);
     repaintVariants();
     updateFooter();
   };
 
+  /** @param {number} next */
   const setHeight = (next) => {
     height = Math.max(
-      Number(el.heightSlider.min),
-      Math.min(Number(el.heightSlider.max), next),
+      Number(heightSlider.min),
+      Math.min(Number(heightSlider.max), next),
     );
-    el.heightSlider.value = String(height);
-    el.heightNumber.value = height > 0 ? String(height) : '';
+    heightSlider.value = String(height);
+    if (el.heightNumber) el.heightNumber.value = height > 0 ? String(height) : '';
     repaintVariants();
     updateFooter();
   };
@@ -511,7 +605,7 @@ async function main() {
       el.propsForm.append(empty);
       return;
     }
-    const baseVariantProps = active.mod.variants?.[0]?.props ?? {};
+    const baseVariantProps = /** @type {Record<string, unknown>} */ (active.mod.variants?.[0]?.props ?? {});
     for (const key of keys) {
       const descriptor = propTypes[key];
       const current = overrides[key] !== undefined
@@ -524,6 +618,13 @@ async function main() {
     }
   }
 
+  /**
+   * @param {string} key
+   * @param {PropDescriptor} descriptor
+   * @param {unknown} value
+   * @param {(v: unknown) => void} onChange
+   * @returns {HTMLDivElement}
+   */
   function buildPropRow(key, descriptor, value, onChange) {
     const row = document.createElement('div');
     row.className = 'storybook-prop-row';
@@ -595,16 +696,18 @@ async function main() {
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'storybook-prop-input';
-    input.value = value ?? '';
+    input.value = value != null ? String(value) : '';
     input.addEventListener('input', () => onChange(input.value));
     row.append(input);
     return row;
   }
 
-  el.widthSlider.addEventListener('input', () => setWidth(Number(el.widthSlider.value)));
-  el.widthNumber.addEventListener('input', () => setWidth(Number(el.widthNumber.value)));
-  el.heightSlider.addEventListener('input', () => setHeight(Number(el.heightSlider.value)));
-  el.heightNumber.addEventListener('input', () => setHeight(Number(el.heightNumber.value)));
+  widthSlider.addEventListener('input', () => setWidth(Number(widthSlider.value)));
+  const widthNumber = el.widthNumber;
+  if (widthNumber) widthNumber.addEventListener('input', () => setWidth(Number(widthNumber.value)));
+  heightSlider.addEventListener('input', () => setHeight(Number(heightSlider.value)));
+  const heightNumber = el.heightNumber;
+  if (heightNumber) heightNumber.addEventListener('input', () => setHeight(Number(heightNumber.value)));
 
   const AXES = [
     { key: 'mono', def: 1,   digits: 1 },
@@ -612,37 +715,41 @@ async function main() {
     { key: 'slnt', def: 0,   digits: 0 },
     { key: 'crsv', def: 0.5, digits: 1 },
   ];
-  const axisInputs = document.querySelectorAll('[data-storybook-axis]');
+  const axisInputs = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('[data-storybook-axis]'));
+  /**
+   * @param {string} key
+   * @param {number | string} value
+   */
   const applyAxis = (key, value) => {
     const axis = AXES.find((a) => a.key === key);
     if (!axis) return;
     const readout = document.querySelector(`[data-storybook-axis-readout="${key}"]`);
     if (readout) readout.textContent = Number(value).toFixed(axis.digits);
-    el.variants.style.setProperty(`--${key}`, String(value));
+    variantsEl.style.setProperty(`--${key}`, String(value));
   };
-  for (const input of axisInputs) {
-    input.addEventListener('input', () => applyAxis(input.dataset.storybookAxis, input.value));
+  for (const input of Array.from(axisInputs)) {
+    input.addEventListener('input', () => applyAxis(input.dataset.storybookAxis ?? '', input.value));
   }
   const resetBtn = document.querySelector('[data-storybook-axes-reset]');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       for (const axis of AXES) {
-        const input = document.querySelector(`[data-storybook-axis="${axis.key}"]`);
+        const input = /** @type {HTMLInputElement | null} */ (document.querySelector(`[data-storybook-axis="${axis.key}"]`));
         if (input) input.value = String(axis.def);
         applyAxis(axis.key, axis.def);
       }
     });
   }
 
-  for (const tab of document.querySelectorAll('[data-storybook-inspector-tab]')) {
+  for (const tab of Array.from(/** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('[data-storybook-inspector-tab]')))) {
     tab.addEventListener('click', () => {
       const target = tab.dataset.storybookInspectorTab;
-      for (const t of document.querySelectorAll('[data-storybook-inspector-tab]')) {
+      for (const t of Array.from(/** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('[data-storybook-inspector-tab]')))) {
         const isActive = t === tab;
         t.classList.toggle('storybook-inspector-tab-active', isActive);
         t.setAttribute('aria-selected', String(isActive));
       }
-      for (const panel of document.querySelectorAll('[data-storybook-inspector-panel]')) {
+      for (const panel of Array.from(/** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('[data-storybook-inspector-panel]')))) {
         panel.hidden = panel.dataset.storybookInspectorPanel !== target;
       }
     });

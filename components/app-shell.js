@@ -38,6 +38,9 @@ export const variants = [
   },
 ];
 
+/**
+ * @returns {HTMLDivElement}
+ */
 export function render() {
   const root = document.createElement('div');
   root.className = 'dk-app-shell';

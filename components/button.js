@@ -18,11 +18,17 @@ export const variants = [
   { name: 'primary-disabled', description: 'Disabled primary', props: { label: 'Saving…', variant: 'primary', disabled: true } },
 ];
 
+/**
+ * @param {{ label?: string, variant?: 'default' | 'primary', disabled?: boolean, type?: 'button' | 'submit' | 'reset' }} [props]
+ * @returns {HTMLButtonElement}
+ */
 export function render(props = {}) {
   const label = props.label ?? propTypes.label.default;
   const variant = props.variant ?? propTypes.variant.default;
   const disabled = props.disabled ?? propTypes.disabled.default;
-  const type = props.type ?? propTypes.type.default;
+  const type = /** @type {'button' | 'submit' | 'reset'} */ (
+    props.type ?? propTypes.type.default
+  );
 
   const root = document.createElement('button');
   root.type = type;

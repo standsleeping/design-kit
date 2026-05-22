@@ -35,6 +35,11 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ id: string, label?: string }} SegmentedOption
+ * @param {{ options?: SegmentedOption[], active?: string }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const options = props.options ?? propTypes.options.default;
   const initialActive = props.active ?? propTypes.active.default;
@@ -44,6 +49,7 @@ export function render(props = {}) {
   root.className = 'dk-segmented-toggle';
   root.setAttribute('role', 'radiogroup');
 
+  /** @type {{ el: HTMLButtonElement, id: string }[]} */
   const buttons = options.map((opt) => {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -51,6 +57,7 @@ export function render(props = {}) {
     btn.dataset.option = opt.id;
     btn.setAttribute('role', 'radio');
     btn.textContent = opt.label ?? opt.id;
+    /** @param {boolean} isActive */
     const setActive = (isActive) => {
       btn.classList.toggle('dk-segmented-toggle-button-active', isActive);
       btn.setAttribute('aria-checked', String(isActive));

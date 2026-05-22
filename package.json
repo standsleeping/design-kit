@@ -1,0 +1,12 @@
+{
+  "name": "design-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Type-checking (and JS test) tooling for the design-kit component sources. The build itself is Python (uv); this exists only so `tsc --noEmit` can statically check the vanilla-JS components.",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

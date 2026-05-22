@@ -35,6 +35,11 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {string | { label?: string, disabled?: boolean }} ScrollListItem
+ * @param {{ items?: ScrollListItem[], selectedIndex?: number, height?: string }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const items = props.items ?? propTypes.items.default;
   const selectedIndex = props.selectedIndex ?? propTypes.selectedIndex.default;

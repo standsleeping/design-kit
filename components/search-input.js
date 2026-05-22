@@ -16,6 +16,10 @@ export const variants = [
   { name: 'disabled', description: 'Disabled state', props: { value: 'frozen', disabled: true } },
 ];
 
+/**
+ * @param {{ value?: string, placeholder?: string, disabled?: boolean }} [props]
+ * @returns {HTMLInputElement}
+ */
 export function render(props = {}) {
   const value = props.value ?? propTypes.value.default;
   const placeholder = props.placeholder ?? propTypes.placeholder.default;
@@ -29,16 +33,18 @@ export function render(props = {}) {
   root.disabled = disabled;
 
   root.addEventListener('input', (event) => {
+    const target = /** @type {HTMLInputElement} */ (event.target);
     root.dispatchEvent(new CustomEvent('search-input:input', {
       bubbles: true,
-      detail: { value: event.target.value },
+      detail: { value: target.value },
     }));
   });
 
   root.addEventListener('change', (event) => {
+    const target = /** @type {HTMLInputElement} */ (event.target);
     root.dispatchEvent(new CustomEvent('search-input:change', {
       bubbles: true,
-      detail: { value: event.target.value },
+      detail: { value: target.value },
     }));
   });
 

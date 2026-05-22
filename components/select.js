@@ -42,21 +42,31 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {unknown} raw
+ * @returns {Array<{ value: string, label: string }>}
+ */
 function normalizeOptions(raw) {
   if (!Array.isArray(raw)) return [];
-  return raw
-    .map((opt) => {
-      if (typeof opt === 'string') return { value: opt, label: opt };
-      if (opt && typeof opt === 'object') {
-        const value = opt.value ?? opt.label ?? '';
-        const label = opt.label ?? opt.value ?? '';
-        return { value: String(value), label: String(label) };
-      }
-      return null;
-    })
-    .filter(Boolean);
+  /** @type {Array<{ value: string, label: string }>} */
+  const result = [];
+  for (const opt of raw) {
+    if (typeof opt === 'string') {
+      result.push({ value: opt, label: opt });
+    } else if (opt && typeof opt === 'object') {
+      const o = /** @type {Record<string, unknown>} */ (opt);
+      const value = String(o['value'] ?? o['label'] ?? '');
+      const label = String(o['label'] ?? o['value'] ?? '');
+      result.push({ value, label });
+    }
+  }
+  return result;
 }
 
+/**
+ * @param {{ value?: string, options?: unknown, disabled?: boolean }} [props]
+ * @returns {HTMLSelectElement}
+ */
 export function render(props = {}) {
   const value = props.value ?? propTypes.value.default;
   const disabled = props.disabled ?? propTypes.disabled.default;
@@ -75,9 +85,10 @@ export function render(props = {}) {
   }
 
   root.addEventListener('change', (event) => {
+    const target = /** @type {HTMLSelectElement} */ (event.target);
     root.dispatchEvent(new CustomEvent('select:change', {
       bubbles: true,
-      detail: { value: event.target.value },
+      detail: { value: target.value },
     }));
   });
 

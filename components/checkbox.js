@@ -16,6 +16,10 @@ export const variants = [
   { name: 'disabled-checked', description: 'Disabled checked', props: { checked: true, disabled: true } },
 ];
 
+/**
+ * @param {{ checked?: boolean, disabled?: boolean }} [props]
+ * @returns {HTMLInputElement}
+ */
 export function render(props = {}) {
   const checked = props.checked ?? propTypes.checked.default;
   const disabled = props.disabled ?? propTypes.disabled.default;
@@ -27,9 +31,10 @@ export function render(props = {}) {
   root.disabled = disabled;
 
   root.addEventListener('change', (event) => {
+    const target = /** @type {HTMLInputElement} */ (event.target);
     root.dispatchEvent(new CustomEvent('checkbox:change', {
       bubbles: true,
-      detail: { checked: event.target.checked },
+      detail: { checked: target.checked },
     }));
   });
 

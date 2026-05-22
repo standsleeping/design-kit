@@ -42,6 +42,12 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ label?: string, href?: string, subtitle?: string }} PageNavLink
+ * @param {PageNavLink | null | undefined} link
+ * @param {'prev' | 'next'} direction
+ * @returns {HTMLAnchorElement | HTMLSpanElement}
+ */
 function renderLink(link, direction) {
   if (!link || !link.label || !link.href) {
     const placeholder = document.createElement('span');
@@ -72,6 +78,10 @@ function renderLink(link, direction) {
   return anchor;
 }
 
+/**
+ * @param {{ prev?: PageNavLink | null, next?: PageNavLink | null }} [props]
+ * @returns {HTMLElement}
+ */
 export function render(props = {}) {
   const prev = props.prev ?? propTypes.prev.default;
   const next = props.next ?? propTypes.next.default;

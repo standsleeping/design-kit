@@ -39,12 +39,21 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
 function formatValue(value) {
   if (value === null || value === undefined) return '\u2014';
   if (typeof value === 'number') return value.toLocaleString();
   return String(value);
 }
 
+/**
+ * @typedef {{ label?: string, value?: unknown }} Metric
+ * @param {{ metrics?: Metric[], loading?: boolean, error?: string }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const metrics = props.metrics ?? propTypes.metrics.default;
   const loading = props.loading ?? propTypes.loading.default;

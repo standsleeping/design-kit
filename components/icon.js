@@ -14,8 +14,12 @@ const FALLBACK_NAMES = ['check', 'chevron-down', 'cross-1', 'plus', 'magnifying-
 
 const variantNames = iconNames.length ? iconNames : FALLBACK_NAMES;
 
+const iconMetaRecord = /** @type {Record<string, { category: string, guidance: string }>} */ (
+  iconMeta
+);
+
 export const variants = variantNames.map((name) => {
-  const meta = iconMeta[name];
+  const meta = iconMetaRecord[name];
   return {
     name,
     description: meta ? `${meta.category} - ${meta.guidance}` : name,
@@ -23,6 +27,10 @@ export const variants = variantNames.map((name) => {
   };
 });
 
+/**
+ * @param {{ name?: string }} [props]
+ * @returns {HTMLSpanElement}
+ */
 export function render(props = {}) {
   const name = props.name ?? propTypes.name.default;
   const root = document.createElement('span');

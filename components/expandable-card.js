@@ -41,6 +41,10 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {{ title?: string, count?: number, expanded?: boolean, disabled?: boolean }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const title = props.title ?? propTypes.title.default;
   const count = props.count ?? propTypes.count.default;

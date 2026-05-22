@@ -205,12 +205,29 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ key: string, label?: string, priority?: number, primary?: boolean, nowrap?: boolean, type?: string, categories?: Array<{ key: string, label: string }>, align?: string, width?: string, minCh?: number, hideBelow?: string }} ColumnDef
+ * @typedef {{ [key: string]: unknown }} RowData
+ * @typedef {{ tableId: string, sidenoteIndex: number, sidenoteStore: Map<string, unknown>, clampLines: number }} RenderCtx
+ * @typedef {{ kind: 'closed' } | { kind: 'inline', id: string, ref: HTMLButtonElement, panel: HTMLDivElement } | { kind: 'popup', id: string, ref: HTMLButtonElement, popup: HTMLDivElement, backdrop: HTMLDivElement }} SidenoteState
+ * @typedef {{ caption?: string, columns?: ColumnDef[], rows?: RowData[], widthStrategy?: 'auto' | 'proportional' | 'floor', narrowMode?: 'hide' | 'stack', stickyHeader?: boolean, scroll?: 'affordance' | 'plain' | 'off', breakpoints?: { narrow?: number, medium?: number }, emptyMessage?: string, rowKey?: string, clampLines?: number, rowClickable?: boolean, initialMode?: 'narrow' | 'medium' | 'wide' }} RenderProps
+ */
+
+/**
+ * @returns {RenderProps}
+ */
 function defaults() {
+  /** @type {Record<string, unknown>} */
   const out = {};
   for (const [k, v] of Object.entries(propTypes)) out[k] = v.default;
-  return out;
+  return /** @type {RenderProps} */ (out);
 }
 
+/**
+ * @param {number} width
+ * @param {{ narrow?: number, medium?: number } | undefined} breakpoints
+ * @returns {'narrow' | 'medium' | 'wide'}
+ */
 function modeFor(width, breakpoints) {
   const narrow = breakpoints?.narrow ?? 360;
   const medium = breakpoints?.medium ?? 600;
@@ -219,6 +236,11 @@ function modeFor(width, breakpoints) {
   return 'wide';
 }
 
+/**
+ * @param {ColumnDef[]} columns
+ * @param {'narrow' | 'medium' | 'wide'} mode
+ * @returns {ColumnDef[]}
+ */
 function visibleColumns(columns, mode) {
   return columns.filter((c) => {
     const hb = c.hideBelow;
@@ -230,12 +252,21 @@ function visibleColumns(columns, mode) {
   });
 }
 
+/**
+ * @param {string | undefined} align
+ * @returns {string}
+ */
 function alignClass(align) {
   if (align === 'right') return ' dk-table-align-right';
   if (align === 'center') return ' dk-table-align-center';
   return '';
 }
 
+/**
+ * @param {ColumnDef[]} columns
+ * @param {string} widthStrategy
+ * @returns {HTMLTableColElement | null}
+ */
 function buildColgroup(columns, widthStrategy) {
   if (widthStrategy !== 'proportional') return null;
   const colgroup = document.createElement('colgroup');
@@ -244,15 +275,25 @@ function buildColgroup(columns, widthStrategy) {
     if (c.width) col.style.width = String(c.width);
     colgroup.append(col);
   }
-  return colgroup;
+  return /** @type {HTMLTableColElement} */ (/** @type {unknown} */ (colgroup));
 }
 
+/**
+ * @param {HTMLTableCellElement} td
+ * @param {ColumnDef} column
+ * @returns {void}
+ */
 function applyFloor(td, column) {
   if (typeof column.minCh === 'number') {
     td.style.minWidth = `${column.minCh}ch`;
   }
 }
 
+/**
+ * @param {unknown} note
+ * @param {RenderCtx} ctx
+ * @returns {HTMLButtonElement}
+ */
 function sidenoteRef(note, ctx) {
   const index = ctx.sidenoteIndex++;
   const id = `${ctx.tableId}-sn-${index}`;
@@ -268,12 +309,21 @@ function sidenoteRef(note, ctx) {
   return ref;
 }
 
+/**
+ * @param {HTMLTableCellElement} td
+ * @param {unknown} value
+ * @param {ColumnDef} column
+ * @param {RenderCtx} ctx
+ * @param {boolean} isStacked
+ * @returns {void}
+ */
 function renderTextContent(td, value, column, ctx, isStacked) {
   let text;
   let sidenote = null;
   if (value && typeof value === 'object' && !Array.isArray(value)) {
-    text = value.text ?? '';
-    sidenote = value.sidenote ?? null;
+    const obj = /** @type {Record<string, unknown>} */ (value);
+    text = typeof obj['text'] === 'string' ? obj['text'] : '';
+    sidenote = obj['sidenote'] ?? null;
   } else {
     text = value === null || value === undefined || value === '' ? '—' : String(value);
   }
@@ -290,6 +340,12 @@ function renderTextContent(td, value, column, ctx, isStacked) {
   if (sidenote) td.append(sidenoteRef(sidenote, ctx));
 }
 
+/**
+ * @param {HTMLTableCellElement} td
+ * @param {unknown} value
+ * @param {RenderCtx} ctx
+ * @returns {void}
+ */
 function renderSentencesContent(td, value, ctx) {
   const sentences = Array.isArray(value) ? value : [];
   if (sentences.length === 0) {
@@ -312,6 +368,12 @@ function renderSentencesContent(td, value, ctx) {
   td.append(list);
 }
 
+/**
+ * @param {HTMLTableCellElement} td
+ * @param {ColumnDef} column
+ * @param {unknown} value
+ * @returns {void}
+ */
 function renderPresenceContent(td, column, value) {
   const categories = Array.isArray(column.categories) ? column.categories : [];
   const present = new Set(Array.isArray(value) ? value : []);
@@ -339,12 +401,17 @@ function renderPresenceContent(td, column, value) {
 
 let tableInstanceCounter = 0;
 
+/**
+ * @param {{ caption?: string, columns?: ColumnDef[], rows?: RowData[], widthStrategy?: 'auto' | 'proportional' | 'floor', narrowMode?: 'hide' | 'stack', stickyHeader?: boolean, scroll?: 'affordance' | 'plain' | 'off', breakpoints?: { narrow?: number, medium?: number }, emptyMessage?: string, rowKey?: string, clampLines?: number, rowClickable?: boolean, initialMode?: 'narrow' | 'medium' | 'wide' }} [props]
+ * @returns {{ node: HTMLDivElement, cleanup: () => void }}
+ */
 export function render(props = {}) {
-  const p = { ...defaults(), ...props };
-  const columns = Array.isArray(p.columns) && p.columns.length > 0 ? p.columns : DEFAULT_COLUMNS;
-  const rows = Array.isArray(p.rows) ? p.rows : [];
+  const p = /** @type {Required<RenderProps>} */ ({ ...defaults(), ...props });
+  const columns = /** @type {ColumnDef[]} */ (Array.isArray(p.columns) && p.columns.length > 0 ? p.columns : DEFAULT_COLUMNS);
+  const rows = /** @type {RowData[]} */ (Array.isArray(p.rows) ? p.rows : []);
   const tableId = `dk-rt-${++tableInstanceCounter}`;
 
+  /** @type {'narrow' | 'medium' | 'wide'} */
   let mode = p.initialMode;
   let containerWidth = 0;
 
@@ -360,6 +427,7 @@ export function render(props = {}) {
   }
   wrap.append(scrollHost);
 
+  /** @type {Map<string, unknown>} */
   const sidenoteStore = new Map();
   // Sidenote overlay state — tagged variant. Only one of these shapes is ever live:
   //   { kind: 'closed' }
@@ -367,6 +435,7 @@ export function render(props = {}) {
   //   { kind: 'popup',  id, ref, popup, backdrop }
   // Extraction candidate: when a second component needs annotations, lift the
   // overlay (state + open/close/toggle + keydown) into components/sidenote-overlay.js.
+  /** @type {SidenoteState} */
   let sidenoteState = { kind: 'closed' };
 
   const updateOverflowAffordances = () => {
@@ -385,13 +454,18 @@ export function render(props = {}) {
 
   // Body contract: Node (trusted by construction), { html: string } (trusted markup,
   // explicit opt-in), { text: string } or bare string (treated as plain text — safe default).
+  /**
+   * @param {HTMLElement} container
+   * @param {unknown} body
+   * @returns {void}
+   */
   const appendNoteBody = (container, body) => {
     if (body instanceof Node) {
       container.append(body);
-    } else if (body && typeof body === 'object' && typeof body.html === 'string') {
-      container.innerHTML = body.html;
-    } else if (body && typeof body === 'object' && typeof body.text === 'string') {
-      container.textContent = body.text;
+    } else if (body && typeof body === 'object' && typeof (/** @type {Record<string,unknown>} */ (body))['html'] === 'string') {
+      container.innerHTML = /** @type {Record<string,unknown>} */ (body)['html'] + '';
+    } else if (body && typeof body === 'object' && typeof (/** @type {Record<string,unknown>} */ (body))['text'] === 'string') {
+      container.textContent = /** @type {Record<string,unknown>} */ (body)['text'] + '';
     } else if (typeof body === 'string') {
       container.textContent = body;
     }
@@ -416,22 +490,33 @@ export function render(props = {}) {
     sidenoteState = { kind: 'closed' };
   };
 
+  /**
+   * @param {unknown} note
+   * @returns {HTMLDivElement}
+   */
   const buildSidenoteBody = (note) => {
+    const noteObj = /** @type {Record<string, unknown>} */ (note);
     const body = document.createElement('div');
     body.className = 'dk-sn-body';
-    if (note.label) {
+    if (noteObj['label']) {
       const label = document.createElement('span');
       label.className = 'dk-sn-label';
-      label.textContent = note.label;
+      label.textContent = String(noteObj['label']);
       body.append(label);
     }
     const content = document.createElement('div');
     content.className = 'dk-sn-content';
-    appendNoteBody(content, note.body);
+    appendNoteBody(content, noteObj['body']);
     body.append(content);
     return body;
   };
 
+  /**
+   * @param {string} id
+   * @param {HTMLButtonElement} ref
+   * @param {unknown} note
+   * @returns {void}
+   */
   const openInline = (id, ref, note) => {
     const host = ref.closest('.dk-sentence') ?? ref.parentElement;
     if (!host) return;
@@ -443,7 +528,14 @@ export function render(props = {}) {
     sidenoteState = { kind: 'inline', id, ref, panel };
   };
 
+  /**
+   * @param {string} id
+   * @param {HTMLButtonElement} ref
+   * @param {unknown} note
+   * @returns {void}
+   */
   const openPopup = (id, ref, note) => {
+    const noteObj = /** @type {Record<string, unknown>} */ (note);
     const backdrop = document.createElement('div');
     backdrop.className = 'dk-sn-backdrop';
     backdrop.dataset.testid = 'sidenote-backdrop';
@@ -453,13 +545,13 @@ export function render(props = {}) {
     popup.className = 'dk-sn-popup';
     popup.dataset.testid = 'sidenote-popup';
     popup.setAttribute('role', 'dialog');
-    popup.setAttribute('aria-label', note.label || 'Sidenote');
+    popup.setAttribute('aria-label', String(noteObj['label'] || 'Sidenote'));
 
     const header = document.createElement('div');
     header.className = 'dk-sn-popup-header';
     const label = document.createElement('span');
     label.className = 'dk-sn-label';
-    label.textContent = note.label || 'Sidenote';
+    label.textContent = String(noteObj['label'] || 'Sidenote');
     header.append(label);
     const close = document.createElement('button');
     close.type = 'button';
@@ -474,7 +566,7 @@ export function render(props = {}) {
 
     const content = document.createElement('div');
     content.className = 'dk-sn-popup-body';
-    appendNoteBody(content, note.body);
+    appendNoteBody(content, noteObj['body']);
     popup.append(content);
 
     document.body.append(backdrop);
@@ -488,6 +580,10 @@ export function render(props = {}) {
     });
   };
 
+  /**
+   * @param {HTMLButtonElement} ref
+   * @returns {void}
+   */
   const toggleSidenote = (ref) => {
     const id = ref.dataset.snId;
     if (!id) return;
@@ -503,14 +599,23 @@ export function render(props = {}) {
     else openPopup(id, ref, note);
   };
 
+  /**
+   * @param {MouseEvent} e
+   * @returns {void}
+   */
   const onScrollHostClick = (e) => {
-    const ref = e.target.closest('.dk-sn-ref');
+    const target = /** @type {Element} */ (e.target);
+    const ref = /** @type {HTMLButtonElement | null} */ (target.closest('.dk-sn-ref'));
     if (!ref || !scrollHost.contains(ref)) return;
     e.preventDefault();
     e.stopPropagation();
     toggleSidenote(ref);
   };
 
+  /**
+   * @param {KeyboardEvent} e
+   * @returns {void}
+   */
   const onDocKeydown = (e) => {
     if (e.key === 'Escape' && sidenoteState.kind !== 'closed') {
       e.preventDefault();
@@ -565,6 +670,7 @@ export function render(props = {}) {
     table.append(thead);
 
     const tbody = document.createElement('tbody');
+    /** @type {RenderCtx} */
     const ctx = {
       tableId,
       sidenoteIndex: 0,
@@ -630,6 +736,7 @@ export function render(props = {}) {
 
   rebuild();
 
+  /** @type {ResizeObserver | null} */
   let observer = null;
   if (typeof ResizeObserver !== 'undefined') {
     observer = new ResizeObserver((entries) => {

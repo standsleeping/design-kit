@@ -1,8 +1,7 @@
 // Mount the canonical system sidebar (NavStack from nav-data.js) into a
 // page's left chrome slot. Provides a unified navigation surface across
 // every clickable page so the user is always grounded in where they are
-// and where they came from. See planning/design-kit/nav-model.md in
-// prinzfiles for the topology rationale and surface contract.
+// and where they came from.
 //
 // Usage (auto-mount):
 //   Page places <... data-system-nav data-current="<page-id>"> and includes
@@ -14,6 +13,16 @@
 
 import { LEVELS, TARGETS } from './nav-data.js';
 
+/**
+ * @typedef {{ kind: string, id: string, label?: string, selected?: boolean }} NavItem
+ * @typedef {{ id: string, title?: string, items: NavItem[] }} NavLevel
+ */
+
+/**
+ * @param {NavLevel[]} levels
+ * @param {string | undefined} currentId
+ * @returns {NavLevel[]}
+ */
 function applySelection(levels, currentId) {
   if (!currentId) return levels;
   return levels.map((level) => ({
@@ -24,8 +33,13 @@ function applySelection(levels, currentId) {
   }));
 }
 
+/**
+ * @param {CustomEvent<{ id: string }>} e
+ * @returns {void}
+ */
 function defaultSelectHandler(e) {
-  const target = TARGETS[e.detail.id];
+  const id = e.detail.id;
+  const target = TARGETS[/** @type {keyof typeof TARGETS} */ (id)];
   if (!target) return;
   if (target.startsWith('#')) {
     // Hash targets in TARGETS are anchors on the index page (token
@@ -47,6 +61,20 @@ function defaultSelectHandler(e) {
   }
 }
 
+/**
+ * @typedef {{
+ *   host?: Element | null,
+ *   current?: string,
+ *   levels?: NavLevel[],
+ *   initialPath?: string[],
+ *   onSelect?: (e: CustomEvent<{ id: string }>) => void,
+ * }} MountSystemSidebarOpts
+ */
+
+/**
+ * @param {MountSystemSidebarOpts} [opts]
+ * @returns {Promise<HTMLElement | null>}
+ */
 export async function mountSystemSidebar(opts = {}) {
   const host = opts.host ?? document.querySelector('[data-system-nav]');
   if (!host) return null;
@@ -59,7 +87,7 @@ export async function mountSystemSidebar(opts = {}) {
   host.append(navStack);
   navStack.addEventListener(
     'nav-stack:select',
-    opts.onSelect ?? defaultSelectHandler,
+    /** @type {EventListener} */ (opts.onSelect ?? defaultSelectHandler),
   );
 
   return navStack;
@@ -74,5 +102,6 @@ const slot = document.querySelector(
   '[data-system-nav]:not([data-system-nav-manual])',
 );
 if (slot) {
-  mountSystemSidebar({ current: slot.dataset.current });
+  const htmlSlot = /** @type {HTMLElement} */ (slot);
+  mountSystemSidebar({ current: htmlSlot.dataset.current });
 }

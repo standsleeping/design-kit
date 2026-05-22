@@ -90,6 +90,10 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {{ side?: 'left' | 'right', mode?: 'inline' | 'overlay', displayState?: 'expanded' | 'icon' | 'hidden', width?: number, minWidth?: number, maxWidth?: number, iconWidth?: number, resizable?: boolean }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const side = props.side ?? propTypes.side.default;
   const mode = props.mode ?? propTypes.mode.default;
@@ -131,7 +135,7 @@ export function render(props = {}) {
       const startWidth = root.offsetWidth;
       resizer.setPointerCapture(e.pointerId);
 
-      const onMove = (moveEvent) => {
+      const onMove = (/** @type {PointerEvent} */ moveEvent) => {
         const delta = side === 'left'
           ? moveEvent.clientX - startX
           : startX - moveEvent.clientX;
@@ -139,7 +143,7 @@ export function render(props = {}) {
         root.style.setProperty('--dk-sidebar-width', `${newWidth}px`);
       };
 
-      const onUp = (upEvent) => {
+      const onUp = (/** @type {PointerEvent} */ upEvent) => {
         resizer.releasePointerCapture(upEvent.pointerId);
         resizer.removeEventListener('pointermove', onMove);
         resizer.removeEventListener('pointerup', onUp);

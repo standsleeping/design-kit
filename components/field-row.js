@@ -62,6 +62,10 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {{ label?: string, compact?: boolean, disabled?: boolean }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const label = props.label ?? propTypes.label.default;
   const compact = props.compact ?? propTypes.compact.default;

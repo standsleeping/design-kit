@@ -39,6 +39,10 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {{ label?: string, meta?: string, trailing?: string, href?: string }} [props]
+ * @returns {HTMLAnchorElement}
+ */
 export function render(props = {}) {
   const label = props.label ?? propTypes.label.default;
   const meta = props.meta ?? propTypes.meta.default;

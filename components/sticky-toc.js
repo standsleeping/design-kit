@@ -94,13 +94,29 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ href?: string, label?: string, level?: number, tldr?: string }} TocItem
+ * @typedef {{ href: string, label?: string }} TocBack
+ */
+
+/**
+ * @param {{
+ *   items?: TocItem[],
+ *   label?: string,
+ *   expanded?: boolean,
+ *   responsive?: boolean,
+ *   title?: string,
+ *   back?: TocBack | null,
+ * }} [props]
+ * @returns {{ node: HTMLElement, cleanup: () => void }}
+ */
 export function render(props = {}) {
-  const items = props.items ?? propTypes.items.default;
+  const items = props.items ?? /** @type {TocItem[]} */ (propTypes.items.default);
   const label = props.label ?? propTypes.label.default;
   let expanded = props.expanded ?? propTypes.expanded.default;
   const responsive = props.responsive ?? propTypes.responsive.default;
   const title = props.title ?? propTypes.title.default;
-  const back = props.back ?? propTypes.back.default;
+  const back = props.back ?? /** @type {TocBack | null} */ (propTypes.back.default);
   const panelId = `dk-sticky-toc-panel-${++nextId}`;
 
   const root = document.createElement('nav');
@@ -170,10 +186,16 @@ export function render(props = {}) {
 
   root.append(panel);
 
+  /** @type {Map<string, HTMLLIElement>} */
   const itemEls = new Map();
+  /** @type {Map<string, string>} */
   const labelById = new Map();
   let activeId = '';
 
+  /**
+   * @param {string} id
+   * @returns {void}
+   */
   const setActive = (id) => {
     if (id === activeId) return;
     activeId = id;
@@ -213,12 +235,14 @@ export function render(props = {}) {
     root.dispatchEvent(new CustomEvent('sticky-toc:collapse', { bubbles: true }));
   };
 
+  /** @param {KeyboardEvent} e */
   const onKeydown = (e) => {
     if (e.key === 'Escape') collapse();
   };
 
+  /** @param {PointerEvent} e */
   const onDocumentPointerDown = (e) => {
-    if (!root.contains(e.target)) collapse();
+    if (!root.contains(/** @type {Node | null} */ (e.target))) collapse();
   };
 
   for (const item of items) {
@@ -281,6 +305,7 @@ export function render(props = {}) {
     collapse();
   });
 
+  /** @type {IntersectionObserver | null} */
   let observer = null;
   const ids = Array.from(itemEls.keys());
   if (ids.length > 0 && typeof IntersectionObserver !== 'undefined') {

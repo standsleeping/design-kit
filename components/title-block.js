@@ -38,6 +38,10 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {{ docTitle?: string, identifier?: string, revision?: string, date?: string, author?: string, status?: string }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const docTitle = props.docTitle ?? propTypes.docTitle.default;
   const identifier = props.identifier ?? propTypes.identifier.default;
@@ -69,13 +73,14 @@ export function render(props = {}) {
     block.append(titleField);
   }
 
+  /** @type {Array<{ label: string, value: string }>} */
   const metaFields = [
     identifier ? { label: 'ID', value: identifier } : null,
     revision ? { label: 'REV', value: revision } : null,
     date ? { label: 'DATE', value: date } : null,
     author ? { label: 'AUTHOR', value: author } : null,
     status ? { label: 'STATUS', value: status } : null,
-  ].filter(Boolean);
+  ].filter(/** @type {(x: { label: string, value: string } | null) => x is { label: string, value: string }} */ (x) => x !== null);
 
   if (metaFields.length > 0) {
     const meta = document.createElement('div');

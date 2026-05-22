@@ -17,6 +17,10 @@ export const variants = [
   { name: 'dark', description: 'Dark mode active', props: { value: 'dark' } },
 ];
 
+/**
+ * @param {string} value
+ * @returns {void}
+ */
 function applyLuminance(value) {
   if (value === 'auto') {
     document.documentElement.removeAttribute('data-luminance');
@@ -25,6 +29,10 @@ function applyLuminance(value) {
   }
 }
 
+/**
+ * @param {{ value?: 'light' | 'dark' | 'auto' }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   let value = props.value ?? propTypes.value.default;
 

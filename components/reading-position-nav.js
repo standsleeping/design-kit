@@ -31,24 +31,39 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {Element} el
+ * @returns {string}
+ */
 function formatSection(el) {
   const explicit = el.getAttribute('data-nav-label');
   if (explicit) return explicit;
   return (el.textContent || '').trim();
 }
 
+/**
+ * @param {Element} el
+ * @param {string} itemLabel
+ * @returns {string}
+ */
 function formatItem(el, itemLabel) {
   const explicit = el.getAttribute('data-nav-label');
   if (explicit) return explicit;
   if (itemLabel) {
-    const id = el.id || '';
+    const id = /** @type {HTMLElement} */ (el).id || '';
     const match = id.match(/(\d+)$/);
     if (match) return `${itemLabel} ${match[1]}`;
   }
   return (el.textContent || '').trim();
 }
 
+/**
+ * @param {Element[]} elements
+ * @param {number} threshold
+ * @returns {Element | null}
+ */
 function findCurrent(elements, threshold) {
+  /** @type {Element | null} */
   let current = null;
   for (const el of elements) {
     if (el.getBoundingClientRect().top <= threshold) {
@@ -58,6 +73,10 @@ function findCurrent(elements, threshold) {
   return current;
 }
 
+/**
+ * @param {{ sectionSelector?: string, itemSelector?: string, itemLabel?: string, threshold?: number, section?: string, item?: string }} [props]
+ * @returns {{ node: HTMLElement, cleanup: () => void }}
+ */
 export function render(props = {}) {
   const sectionSelector = props.sectionSelector ?? propTypes.sectionSelector.default;
   const itemSelector = props.itemSelector ?? propTypes.itemSelector.default;

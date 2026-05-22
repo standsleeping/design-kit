@@ -55,12 +55,26 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ key: string, label?: string, priority?: number, sortable?: boolean, minWidth?: number, hideBelow?: string }} Column
+ * @typedef {Record<string, unknown>} MetricItem
+ */
+
+/**
+ * @param {number} width
+ * @returns {'narrow' | 'medium' | 'wide'}
+ */
 function mode(width) {
   if (width < 360) return 'narrow';
   if (width < 520) return 'medium';
   return 'wide';
 }
 
+/**
+ * @param {Column[]} columns
+ * @param {number} width
+ * @returns {Column[]}
+ */
 function visibleColumns(columns, width) {
   const m = mode(width);
   return columns.filter((column) => {
@@ -76,6 +90,12 @@ function visibleColumns(columns, width) {
   });
 }
 
+/**
+ * @param {MetricItem[]} items
+ * @param {string} sortColumn
+ * @param {'asc' | 'desc'} sortDirection
+ * @returns {MetricItem[]}
+ */
 function sortedItems(items, sortColumn, sortDirection) {
   if (!sortColumn) return items;
   const direction = sortDirection === 'asc' ? 1 : -1;
@@ -90,27 +110,51 @@ function sortedItems(items, sortColumn, sortDirection) {
   });
 }
 
+/**
+ * @param {string} columnKey
+ * @param {string} sortColumn
+ * @param {'asc' | 'desc'} sortDirection
+ * @returns {'asc' | 'desc'}
+ */
 function nextSortDirection(columnKey, sortColumn, sortDirection) {
   if (sortColumn !== columnKey) return 'desc';
   return sortDirection === 'desc' ? 'asc' : 'desc';
 }
 
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
 function formatMetric(value) {
-  if (value === null || value === undefined || value === 0) return '\u2014';
+  if (value === null || value === undefined || value === 0) return '—';
   if (typeof value === 'number') return value.toLocaleString();
   return String(value);
 }
 
+/**
+ * @param {{
+ *   title?: string,
+ *   items?: MetricItem[],
+ *   columns?: Column[],
+ *   selectedId?: string,
+ *   sortColumn?: string,
+ *   sortDirection?: 'asc' | 'desc',
+ *   sortable?: boolean,
+ *   outlierThresholds?: Record<string, number> | null,
+ *   showSortReadout?: boolean,
+ * }} [props]
+ * @returns {{ node: HTMLElement, cleanup: () => void }}
+ */
 export function render(props = {}) {
   const title = props.title ?? propTypes.title.default;
-  const items = Array.isArray(props.items) ? props.items : propTypes.items.default;
+  const items = Array.isArray(props.items) ? props.items : /** @type {MetricItem[]} */ (propTypes.items.default);
   const rawColumns = Array.isArray(props.columns) && props.columns.length > 0 ? props.columns : DEFAULT_COLUMNS;
   const sortable = props.sortable ?? propTypes.sortable.default;
-  const outlierThresholds = props.outlierThresholds ?? propTypes.outlierThresholds.default;
+  const outlierThresholds = props.outlierThresholds ?? /** @type {Record<string, number> | null} */ (propTypes.outlierThresholds.default);
   const showSortReadout = props.showSortReadout ?? propTypes.showSortReadout.default;
 
   let sortColumn = props.sortColumn ?? propTypes.sortColumn.default;
-  let sortDirection = props.sortDirection ?? propTypes.sortDirection.default;
+  let sortDirection = /** @type {'asc' | 'desc'} */ (props.sortDirection ?? propTypes.sortDirection.default);
   let selectedId = props.selectedId ?? propTypes.selectedId.default;
   let width = 0;
 
@@ -144,7 +188,7 @@ export function render(props = {}) {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = `dk-aml-metric-header dk-aml-header-button${isSorted ? ' dk-aml-header-button-sorted' : ''}`;
-        btn.textContent = isSorted ? `${label}${sortDirection === 'asc' ? '\u2191' : '\u2193'}` : label;
+        btn.textContent = isSorted ? `${label}${sortDirection === 'asc' ? '↑' : '↓'}` : label;
         btn.setAttribute('aria-label', isSorted
           ? `Sort by ${label}. Currently ${sortDirection === 'asc' ? 'ascending' : 'descending'}. Press Enter or Space to toggle.`
           : `Sort by ${label}. Press Enter or Space to sort descending.`);
@@ -189,19 +233,19 @@ export function render(props = {}) {
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'dk-aml-row dk-aml-row-grid';
-        const rowId = item?.id ? String(item.id) : '';
+        const rowId = item?.['id'] ? String(item['id']) : '';
         if (rowId && rowId === selectedId) row.classList.add('dk-aml-row-selected');
 
         const name = document.createElement('span');
         name.className = 'dk-aml-name';
-        name.textContent = item?.name ?? '';
+        name.textContent = String(item?.['name'] ?? '');
         row.append(name);
 
         for (const column of visible) {
           const value = item?.[column.key];
           const text = formatMetric(value);
           const cell = document.createElement('span');
-          cell.className = `dk-aml-metric${text === '\u2014' ? ' dk-aml-metric-empty' : ''}`;
+          cell.className = `dk-aml-metric${text === '—' ? ' dk-aml-metric-empty' : ''}`;
           if (outlierThresholds
               && typeof outlierThresholds[column.key] === 'number'
               && typeof value === 'number'
@@ -230,6 +274,7 @@ export function render(props = {}) {
 
   rebuild();
 
+  /** @type {ResizeObserver | null} */
   let observer = null;
   if (typeof ResizeObserver !== 'undefined') {
     observer = new ResizeObserver((entries) => {

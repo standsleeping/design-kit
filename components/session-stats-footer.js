@@ -26,6 +26,10 @@ const FIELDS = [
   { key: 'clicks', label: 'clicks' },
 ];
 
+/**
+ * @param {number} ms
+ * @returns {string}
+ */
 function formatDuration(ms) {
   const totalSeconds = Math.floor(Math.max(0, ms) / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -33,6 +37,10 @@ function formatDuration(ms) {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
+/**
+ * @param {string} selector
+ * @returns {Window | Element}
+ */
 function resolveScrollTarget(selector) {
   if (!selector) return window;
   try {
@@ -42,6 +50,10 @@ function resolveScrollTarget(selector) {
   }
 }
 
+/**
+ * @param {Window | Element} target
+ * @returns {number}
+ */
 function readScrollPct(target) {
   let top, scrollH, clientH;
   if (target === window) {
@@ -49,21 +61,27 @@ function readScrollPct(target) {
     scrollH = document.documentElement.scrollHeight;
     clientH = window.innerHeight;
   } else {
-    top = target.scrollTop;
-    scrollH = target.scrollHeight;
-    clientH = target.clientHeight;
+    const el = /** @type {Element} */ (target);
+    top = el.scrollTop;
+    scrollH = el.scrollHeight;
+    clientH = el.clientHeight;
   }
   const range = scrollH - clientH;
   if (range <= 0) return 0;
   return Math.min(100, Math.max(0, (top / range) * 100));
 }
 
+/**
+ * @param {{ scrollTarget?: string }} [props]
+ * @returns {{ node: HTMLDivElement, cleanup: () => void }}
+ */
 export function render(props = {}) {
   const root = document.createElement('div');
   root.className = 'dk-ssf';
   root.setAttribute('role', 'status');
   root.setAttribute('aria-live', 'off');
 
+  /** @type {Record<string, HTMLSpanElement>} */
   const valueEls = {};
   FIELDS.forEach((field, i) => {
     const item = document.createElement('span');
@@ -135,7 +153,7 @@ export function render(props = {}) {
     }
   };
 
-  const onAwayChange = (countAsTabSwitch) => {
+  const onAwayChange = (/** @type {boolean} */ countAsTabSwitch) => {
     const nextAway = computeAway();
     if (nextAway === isAway) return;
     accumulate();

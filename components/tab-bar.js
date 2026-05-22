@@ -49,6 +49,11 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ id: string, label?: string }} Tab
+ * @param {{ tabs?: Tab[], active?: string }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const tabs = props.tabs ?? propTypes.tabs.default;
   let active = props.active ?? propTypes.active.default;
@@ -57,6 +62,7 @@ export function render(props = {}) {
   root.className = 'dk-tab-bar';
   root.setAttribute('role', 'tablist');
 
+  /** @type {HTMLButtonElement[]} */
   const buttons = [];
   tabs.forEach((tab, i) => {
     const btn = document.createElement('button');

@@ -50,6 +50,10 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {{ open?: boolean, title?: string, position?: 'center' | 'top-right' | 'bottom-right', width?: number }} [props]
+ * @returns {{ node: HTMLDivElement, cleanup: () => void }}
+ */
 export function render(props = {}) {
   const open = props.open ?? propTypes.open.default;
   const title = props.title ?? propTypes.title.default;
@@ -103,11 +107,11 @@ export function render(props = {}) {
     root.dispatchEvent(new CustomEvent('modal:close', { bubbles: true }));
   };
 
-  const onKeydown = (e) => {
+  const onKeydown = (/** @type {KeyboardEvent} */ e) => {
     if (e.key === 'Escape') close();
   };
 
-  const onPointerMove = (e) => {
+  const onPointerMove = (/** @type {PointerEvent} */ e) => {
     if (!dragging) return;
     root.style.left = `${e.clientX - offsetX}px`;
     root.style.top = `${e.clientY - offsetY}px`;
@@ -123,7 +127,8 @@ export function render(props = {}) {
   closeBtn.addEventListener('click', close);
 
   header.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.dk-modal-close')) return;
+    const target = /** @type {Element | null} */ (e.target);
+    if (target && target.closest('.dk-modal-close')) return;
     const rect = root.getBoundingClientRect();
     dragging = true;
     offsetX = e.clientX - rect.left;

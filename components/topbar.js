@@ -39,6 +39,10 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {{ side?: 'top' | 'bottom', title?: string, subtitle?: string, titleStyle?: 'default' | 'eyebrow' }} [props]
+ * @returns {HTMLElement}
+ */
 export function render(props = {}) {
   const side = props.side ?? propTypes.side.default;
   const title = props.title ?? propTypes.title.default;

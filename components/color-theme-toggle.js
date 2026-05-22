@@ -18,6 +18,10 @@ export const variants = [
   { name: 'solarized', description: 'Ethan Schoonover\'s solarized palette', props: { value: 'solarized' } },
 ];
 
+/**
+ * @param {string} value
+ * @returns {void}
+ */
 function applyColorTheme(value) {
   if (value === DEFAULT_THEME) {
     document.documentElement.removeAttribute('data-color-theme');
@@ -26,6 +30,10 @@ function applyColorTheme(value) {
   }
 }
 
+/**
+ * @param {{ value?: 'mono-purple' | 'monochrome' | 'solarized' }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   let value = props.value ?? propTypes.value.default;
 

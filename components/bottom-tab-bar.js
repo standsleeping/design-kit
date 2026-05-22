@@ -37,6 +37,11 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ id: string, label?: string }} BottomTab
+ * @param {{ tabs?: BottomTab[], active?: string }} [props]
+ * @returns {HTMLElement}
+ */
 export function render(props = {}) {
   const tabs = props.tabs ?? propTypes.tabs.default;
   let active = props.active ?? propTypes.active.default;

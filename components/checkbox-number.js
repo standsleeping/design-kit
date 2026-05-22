@@ -22,6 +22,10 @@ export const variants = [
   { name: 'disabled', description: 'Whole control disabled', props: { checked: true, value: 25, disabled: true } },
 ];
 
+/**
+ * @param {{ checked?: boolean, value?: number, min?: number, max?: number, step?: number, disabled?: boolean }} [props]
+ * @returns {HTMLSpanElement}
+ */
 export function render(props = {}) {
   let checked = props.checked ?? propTypes.checked.default;
   let value = Number.isFinite(props.value) ? props.value : propTypes.value.default;
@@ -37,7 +41,8 @@ export function render(props = {}) {
   const checkbox = renderCheckbox({ checked, disabled });
 
   checkbox.addEventListener('checkbox:change', (event) => {
-    checked = Boolean(event.detail?.checked);
+    const detail = /** @type {CustomEvent<{ checked: boolean }>} */ (event).detail;
+    checked = Boolean(detail?.checked);
     number.disabled = disabled || !checked;
     root.dispatchEvent(new CustomEvent('checkbox-number:change', {
       bubbles: true,
@@ -46,7 +51,8 @@ export function render(props = {}) {
   });
 
   number.addEventListener('number-input:input', (event) => {
-    const next = event.detail?.value;
+    const detail = /** @type {CustomEvent<{ value: number | null }>} */ (event).detail;
+    const next = detail?.value;
     if (next !== null) value = next;
     root.dispatchEvent(new CustomEvent('checkbox-number:input', {
       bubbles: true,
@@ -55,7 +61,8 @@ export function render(props = {}) {
   });
 
   number.addEventListener('number-input:change', (event) => {
-    const next = event.detail?.value;
+    const detail = /** @type {CustomEvent<{ value: number | null }>} */ (event).detail;
+    const next = detail?.value;
     if (next !== null) value = next;
     root.dispatchEvent(new CustomEvent('checkbox-number:change', {
       bubbles: true,

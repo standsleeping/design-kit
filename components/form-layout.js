@@ -79,6 +79,10 @@ export const variants = [
   },
 ];
 
+/**
+ * @param {{ columns?: number, label?: string }} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const columns = props.columns ?? propTypes.columns.default;
   const label = props.label ?? propTypes.label.default;

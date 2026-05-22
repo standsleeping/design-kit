@@ -20,6 +20,10 @@ export const variants = [
   { name: 'disabled', description: 'Disabled state', props: { value: 30, disabled: true } },
 ];
 
+/**
+ * @param {{ value?: number, min?: number, max?: number, step?: number, disabled?: boolean }} [props]
+ * @returns {HTMLSpanElement}
+ */
 export function render(props = {}) {
   const value = Number.isFinite(props.value) ? props.value : propTypes.value.default;
   const min = props.min ?? propTypes.min.default;
@@ -46,7 +50,8 @@ export function render(props = {}) {
   root.append(input, readout);
 
   input.addEventListener('input', (event) => {
-    const next = Number(event.target.value);
+    const target = /** @type {HTMLInputElement} */ (event.target);
+    const next = Number(target.value);
     readout.textContent = String(next);
     root.dispatchEvent(new CustomEvent('range:input', {
       bubbles: true,
@@ -55,7 +60,8 @@ export function render(props = {}) {
   });
 
   input.addEventListener('change', (event) => {
-    const next = Number(event.target.value);
+    const target = /** @type {HTMLInputElement} */ (event.target);
+    const next = Number(target.value);
     root.dispatchEvent(new CustomEvent('range:change', {
       bubbles: true,
       detail: { value: next },

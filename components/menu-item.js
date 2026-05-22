@@ -20,6 +20,10 @@ export const variants = [
   { name: 'with-icon', description: 'Menu item with leading Radix icon', props: { label: 'Dashboard', icon: 'file-text' } },
 ];
 
+/**
+ * @param {{ label?: string, icon?: string, selected?: boolean, disabled?: boolean }} [props]
+ * @returns {HTMLButtonElement}
+ */
 export function render(props = {}) {
   const label = props.label ?? propTypes.label.default;
   const icon = props.icon ?? propTypes.icon.default;

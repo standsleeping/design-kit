@@ -21,6 +21,10 @@ export const variants = [
   { name: 'unicode-fallback', description: 'Bare-string fallback when no Radix name matches', props: { icon: '◆', label: 'Mark', size: 'sm' } },
 ];
 
+/**
+ * @param {{ icon?: string, label?: string, size?: 'sm' | 'default' | 'touch', disabled?: boolean }} [props]
+ * @returns {HTMLButtonElement}
+ */
 export function render(props = {}) {
   const icon = props.icon ?? propTypes.icon.default;
   const label = props.label ?? propTypes.label.default;

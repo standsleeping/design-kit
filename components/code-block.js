@@ -49,6 +49,15 @@ export const variants = [
   },
 ];
 
+/**
+ * @typedef {{ id: string, label: string }} LangEntry
+ * @typedef {{ code?: string, sources?: Record<string, string>, languages?: Array<{ id: string, label?: string }>, activeLanguage?: string }} CodeBlockProps
+ */
+
+/**
+ * @param {CodeBlockProps} props
+ * @returns {LangEntry[]}
+ */
 function resolveLanguages(props) {
   if (props.languages && props.languages.length > 0) {
     return props.languages.map((l) => ({ id: l.id, label: l.label ?? l.id }));
@@ -59,6 +68,11 @@ function resolveLanguages(props) {
   return [];
 }
 
+/**
+ * @param {string} activeLanguage
+ * @param {CodeBlockProps} props
+ * @returns {string}
+ */
 function pickCode(activeLanguage, props) {
   if (props.sources && activeLanguage && props.sources[activeLanguage] != null) {
     return props.sources[activeLanguage];
@@ -66,6 +80,10 @@ function pickCode(activeLanguage, props) {
   return props.code ?? '';
 }
 
+/**
+ * @param {CodeBlockProps} [props]
+ * @returns {HTMLDivElement}
+ */
 export function render(props = {}) {
   const languages = resolveLanguages(props);
   let activeLanguage = props.activeLanguage ?? languages[0]?.id ?? '';
@@ -76,6 +94,7 @@ export function render(props = {}) {
   const header = document.createElement('div');
   header.className = 'dk-code-block-header';
 
+  /** @type {HTMLButtonElement[]} */
   let tabButtons = [];
   if (languages.length > 1) {
     const tabs = document.createElement('div');
