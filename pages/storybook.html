@@ -80,7 +80,17 @@
   }
 
   /* Width / height controls strip. Sits on a dk-topbar; inputs and labels are
-     children. The labels need a row layout (label text + range slider). */
+     children. The labels need a row layout (label text + range slider).
+     Like the axes strip below, it wraps (auto height, keeping the rail height as
+     a floor) so a narrow main column never forces the center container to scroll
+     horizontally — the controls flow onto extra rows instead. */
+  .storybook-controls-row {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
+    row-gap: var(--spacing-sm);
+  }
+
   .storybook-controls-row label {
     display: inline-flex;
     align-items: center;
@@ -103,14 +113,18 @@
     font-size: inherit;
   }
 
-  .storybook-component-name {
-    font-family: var(--typography-mono);
-    font-size: var(--font-size-xs);
+  /* The selected component name reads as a breadcrumb after "Storybook" in the
+     header title. It lives inside .dk-topbar-title, so it inherits the title's
+     uppercase, letter-spacing, and ellipsis — a long name truncates with the
+     title rather than crowding the WIDTH/HEIGHT controls it used to share a
+     strip with. The separator shows only when a component is selected. */
+  .storybook-breadcrumb {
     font-weight: var(--font-weight-semibold);
     color: var(--color-text);
-    text-transform: uppercase;
-    letter-spacing: var(--font-letter-spacing-wide);
-    --mono: 1;
+  }
+  .storybook-breadcrumb:not(:empty)::before {
+    content: " · ";
+    color: var(--color-text-muted);
   }
 
   .storybook-component-example {
@@ -486,7 +500,8 @@
 <div class="dk-app-shell">
 
   <header class="dk-app-shell-header dk-topbar">
-    <span class="storybook-header-title dk-topbar-title">Storybook</span>
+    <span class="storybook-header-title dk-topbar-title">Storybook<span class="storybook-breadcrumb" data-storybook-component-name></span></span>
+    <a class="storybook-component-example" data-storybook-component-example target="_blank" rel="noopener noreferrer" hidden></a>
     <span class="storybook-header-count" data-storybook-count></span>
     <span data-storybook-color-theme></span>
     <span data-storybook-luminance></span>
@@ -507,7 +522,7 @@
     <main class="dk-app-shell-main">
       <div class="storybook-main-wrap">
 
-        <header class="dk-topbar storybook-controls-row">
+        <header class="dk-topbar storybook-controls-row" data-wrap-ok>
           <label>Width
             <input type="range" min="120" max="800" value="280" data-storybook-width-slider>
           </label>
@@ -516,9 +531,6 @@
             <input type="range" min="0" max="800" value="0" data-storybook-height-slider>
           </label>
           <input type="number" min="0" max="800" value="0" data-storybook-height-number placeholder="auto">
-          <span class="dk-topbar-spacer"></span>
-          <span class="storybook-component-name" data-storybook-component-name></span>
-          <a class="storybook-component-example" data-storybook-component-example target="_blank" rel="noopener noreferrer" hidden></a>
         </header>
 
         <div class="storybook-axes-control" aria-label="Font axes">

@@ -61,6 +61,12 @@
 .dk-app-shell-main {
   flex: 1;
   min-width: 0;
-  overflow: auto;
+  /* Vertical scroll only. The center is a layout container, so per
+     SCROLL_CONTAINMENT it must never scroll horizontally — horizontal scroll
+     belongs to leaf elements inside it (wide tables, code blocks), at their own
+     edge. The old `overflow: auto` (both axes) silently turned any too-wide
+     child into a forbidden horizontal scrollbar on the column itself. */
+  overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-gutter: stable;
 }
