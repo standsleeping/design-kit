@@ -31,12 +31,15 @@ comment allowlists a single line for documented exceptions.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -82,11 +85,11 @@ class MarginLintResult:
     violations: list[MarginViolation]
 
     @classmethod
-    def passed(cls) -> "MarginLintResult":
+    def passed(cls) -> MarginLintResult:
         return cls(outcome=MarginLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(cls, violations: list[MarginViolation]) -> "MarginLintResult":
+    def failed(cls, violations: list[MarginViolation]) -> MarginLintResult:
         return cls(outcome=MarginLintOutcome.FAILED, violations=violations)
 
 
@@ -188,8 +191,7 @@ def run_margin_lint(
         paths.extend(sorted(components_dir.glob("*.css")))
     else:
         logger.warning(
-            f"Components directory not found: {components_dir}; "
-            "skipping that scope"
+            f"Components directory not found: {components_dir}; skipping that scope"
         )
     if pages_dir is not None:
         if pages_dir.is_dir():
@@ -202,9 +204,7 @@ def run_margin_lint(
         if extra.is_file():
             paths.append(extra)
         else:
-            logger.warning(
-                f"Extra file not found: {extra}; skipping that scope"
-            )
+            logger.warning(f"Extra file not found: {extra}; skipping that scope")
     all_violations: list[MarginViolation] = []
     for path in paths:
         all_violations.extend(_scan_file(path))

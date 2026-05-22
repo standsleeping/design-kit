@@ -11,7 +11,16 @@ from design_kit.token_css import GOOGLE_FONTS_LINK
 # Palette families shown in the preview, in display order. Excludes
 # white/black (rendered separately if at all) and solarized (theme-specific,
 # not part of the primary palette surface).
-PALETTE_FAMILIES = ("gray", "purple", "blue", "teal", "green", "yellow", "orange", "red")
+PALETTE_FAMILIES = (
+    "gray",
+    "purple",
+    "blue",
+    "teal",
+    "green",
+    "yellow",
+    "orange",
+    "red",
+)
 TOKENS_PATH = Path("tokens/design-tokens.json")
 
 
@@ -32,7 +41,10 @@ def _load_palette() -> list[tuple[str, list[tuple[str, str]]]]:
         if not isinstance(shades, dict):
             continue
         out.append(
-            (family.capitalize(), [(shade, hex_val) for shade, hex_val in shades.items()])
+            (
+                family.capitalize(),
+                [(shade, hex_val) for shade, hex_val in shades.items()],
+            )
         )
     return out
 
@@ -281,7 +293,7 @@ def _nav_script() -> str:
 
     The same script and the same nav data drive the sidebar on every page,
     so the navigation is cohesive across the system. See
-    components/system/system-sidebar.js and planning/design-kit/nav-model.md.
+    components/system/system-sidebar.js.
     """
     return '<script type="module" src="components/system/system-sidebar.js"></script>'
 

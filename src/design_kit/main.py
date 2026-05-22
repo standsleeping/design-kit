@@ -2,6 +2,7 @@ import logging
 import sys
 from pathlib import Path
 
+from design_kit.audit import audit
 from design_kit.build import build
 from design_kit.cli import parse_args
 from design_kit.export import export_tokens
@@ -23,6 +24,24 @@ def main(args: list[str] | None = None) -> int:
                 tokens_path=Path(parsed_args.tokens_path),
                 output_dir=Path(parsed_args.output_dir),
             )
+        elif parsed_args.command == "audit":
+            scope = Path(parsed_args.scope) if parsed_args.scope else None
+            return audit(
+                scope_dir=scope,
+                as_json=parsed_args.as_json,
+                headless=parsed_args.headless,
+                components_dir=(
+                    Path(parsed_args.components_dir)
+                    if parsed_args.components_dir
+                    else None
+                ),
+                pages_dir=Path(parsed_args.pages_dir)
+                if parsed_args.pages_dir
+                else None,
+                tokens_css=(
+                    Path(parsed_args.tokens_css) if parsed_args.tokens_css else None
+                ),
+            )
         elif parsed_args.command == "export-tokens":
             export_tokens(
                 source_dir=Path(parsed_args.source_dir),
@@ -33,6 +52,7 @@ def main(args: list[str] | None = None) -> int:
                 "usage: design-kit <command>\n\n"
                 "commands:\n"
                 "  build           Generate tokens.css, index.html, and components\n"
+                "  audit           Run the static audit set and print one report\n"
                 "  export-tokens   Copy tokens.css and manifest to a target directory"
             )
         return 0

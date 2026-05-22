@@ -27,12 +27,15 @@ declaration's line).
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -62,16 +65,12 @@ class PeerEdgeLintResult:
     violations: list[PeerEdgeViolation]
 
     @classmethod
-    def passed(cls) -> "PeerEdgeLintResult":
+    def passed(cls) -> PeerEdgeLintResult:
         return cls(outcome=PeerEdgeLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(
-        cls, violations: list[PeerEdgeViolation]
-    ) -> "PeerEdgeLintResult":
-        return cls(
-            outcome=PeerEdgeLintOutcome.FAILED, violations=violations
-        )
+    def failed(cls, violations: list[PeerEdgeViolation]) -> PeerEdgeLintResult:
+        return cls(outcome=PeerEdgeLintOutcome.FAILED, violations=violations)
 
 
 _COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
@@ -315,9 +314,7 @@ def _scan_file(path: Path) -> list[PeerEdgeViolation]:
             if decl.is_transparent:
                 continue
             decl_snippet = (
-                raw_lines[decl.line - 1]
-                if 1 <= decl.line <= len(raw_lines)
-                else ""
+                raw_lines[decl.line - 1] if 1 <= decl.line <= len(raw_lines) else ""
             )
             if rule_allowlisted or ALLOWLIST_MARKER in decl_snippet:
                 continue
@@ -350,8 +347,7 @@ def run_peer_edge_lint(components_dir: Path) -> PeerEdgeLintResult:
     """Scan every ``components/*.css`` for unreserved peer-edge accents."""
     if not components_dir.is_dir():
         logger.warning(
-            f"Components directory not found: {components_dir}; "
-            "skipping peer-edge lint"
+            f"Components directory not found: {components_dir}; skipping peer-edge lint"
         )
         return PeerEdgeLintResult.passed()
     all_violations: list[PeerEdgeViolation] = []

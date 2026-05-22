@@ -18,9 +18,12 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -48,11 +51,11 @@ class RadiusLintResult:
     violations: list[RadiusViolation]
 
     @classmethod
-    def passed(cls) -> "RadiusLintResult":
+    def passed(cls) -> RadiusLintResult:
         return cls(outcome=RadiusLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(cls, violations: list[RadiusViolation]) -> "RadiusLintResult":
+    def failed(cls, violations: list[RadiusViolation]) -> RadiusLintResult:
         return cls(outcome=RadiusLintOutcome.FAILED, violations=violations)
 
 
@@ -77,7 +80,9 @@ def _is_zero(value: str) -> bool:
 def _scan_file(path: Path) -> list[RadiusViolation]:
     """Walk the file line-by-line, flagging non-zero border-radius lines."""
     violations: list[RadiusViolation] = []
-    for line_num, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    for line_num, raw_line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
         # Strip line-level block comments so we don't match border-radius
         # mentions inside a comment.
         no_comments = re.sub(r"/\*.*?\*/", "", raw_line)
@@ -104,8 +109,7 @@ def run_radius_lint(components_dir: Path) -> RadiusLintResult:
     """Scan every ``components/*.css`` for non-zero border-radius declarations."""
     if not components_dir.is_dir():
         logger.warning(
-            f"Components directory not found: {components_dir}; "
-            "skipping radius lint"
+            f"Components directory not found: {components_dir}; skipping radius lint"
         )
         return RadiusLintResult.passed()
     all_violations: list[RadiusViolation] = []

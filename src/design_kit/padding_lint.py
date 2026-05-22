@@ -19,12 +19,15 @@ property that owns the concern.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Sequence
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -77,11 +80,11 @@ class PaddingLintResult:
     violations: list[PaddingViolation]
 
     @classmethod
-    def passed(cls) -> "PaddingLintResult":
+    def passed(cls) -> PaddingLintResult:
         return cls(outcome=PaddingLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(cls, violations: list[PaddingViolation]) -> "PaddingLintResult":
+    def failed(cls, violations: list[PaddingViolation]) -> PaddingLintResult:
         return cls(outcome=PaddingLintOutcome.FAILED, violations=violations)
 
 
@@ -297,9 +300,7 @@ def _analyze_block(
     if longhand_state:
         top = longhand_state["top"].value if "top" in longhand_state else "0"
         right = longhand_state["right"].value if "right" in longhand_state else "0"
-        bottom = (
-            longhand_state["bottom"].value if "bottom" in longhand_state else "0"
-        )
+        bottom = longhand_state["bottom"].value if "bottom" in longhand_state else "0"
         left = longhand_state["left"].value if "left" in longhand_state else "0"
         sides = Sides(top=top, right=right, bottom=bottom, left=left)
         kinds = sides.asymmetries()
@@ -346,8 +347,7 @@ def run_padding_lint(components_dir: Path) -> PaddingLintResult:
     """Scan every ``components/*.css`` for asymmetric padding declarations."""
     if not components_dir.is_dir():
         logger.warning(
-            f"Components directory not found: {components_dir}; "
-            "skipping padding lint"
+            f"Components directory not found: {components_dir}; skipping padding lint"
         )
         return PaddingLintResult.passed()
     all_violations: list[PaddingViolation] = []

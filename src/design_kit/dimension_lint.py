@@ -51,12 +51,15 @@ Scope notes:
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -99,9 +102,7 @@ DIMENSION_DECL_RE = re.compile(
 # A numeric literal with a length unit that is *not* viewport- or
 # container-relative and *not* a grid/line-height/percentage. ``\b`` at the
 # end keeps ``rem`` from matching inside ``rems`` etc.
-LENGTH_LITERAL_RE = re.compile(
-    r"\b(\d+(?:\.\d+)?)(px|em|rem|ch|ex|pt|pc|cm|mm|in)\b"
-)
+LENGTH_LITERAL_RE = re.compile(r"\b(\d+(?:\.\d+)?)(px|em|rem|ch|ex|pt|pc|cm|mm|in)\b")
 # Block comment stripper.
 COMMENT_RE = re.compile(r"/\*.*?\*/", flags=re.DOTALL)
 # HTML <style>...</style> block extractor (case-insensitive, multiline).
@@ -137,13 +138,11 @@ class DimensionLintResult:
     violations: list[DimensionViolation]
 
     @classmethod
-    def passed(cls) -> "DimensionLintResult":
+    def passed(cls) -> DimensionLintResult:
         return cls(outcome=DimensionLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(
-        cls, violations: list[DimensionViolation]
-    ) -> "DimensionLintResult":
+    def failed(cls, violations: list[DimensionViolation]) -> DimensionLintResult:
         return cls(outcome=DimensionLintOutcome.FAILED, violations=violations)
 
 
@@ -189,9 +188,7 @@ def _scan_file(path: Path) -> list[DimensionViolation]:
     violations: list[DimensionViolation] = []
     for line_num, raw_line in enumerate(scanned.splitlines(), start=1):
         original_line = (
-            original_lines[line_num - 1]
-            if line_num - 1 < len(original_lines)
-            else ""
+            original_lines[line_num - 1] if line_num - 1 < len(original_lines) else ""
         )
         if ALLOWLIST_MARKER in original_line:
             continue
@@ -226,8 +223,7 @@ def run_dimension_lint(
         paths.extend(sorted(components_dir.glob("*.css")))
     else:
         logger.warning(
-            f"Components directory not found: {components_dir}; "
-            "skipping that scope"
+            f"Components directory not found: {components_dir}; skipping that scope"
         )
     if pages_dir is not None:
         if pages_dir.is_dir():
@@ -240,9 +236,7 @@ def run_dimension_lint(
         if extra.is_file():
             paths.append(extra)
         else:
-            logger.warning(
-                f"Extra file not found: {extra}; skipping that scope"
-            )
+            logger.warning(f"Extra file not found: {extra}; skipping that scope")
     all_violations: list[DimensionViolation] = []
     for path in paths:
         all_violations.extend(_scan_file(path))

@@ -28,12 +28,15 @@ whose content height is provably fixed.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -60,16 +63,14 @@ class ScrollbarGutterLintResult:
     violations: list[ScrollbarGutterViolation]
 
     @classmethod
-    def passed(cls) -> "ScrollbarGutterLintResult":
+    def passed(cls) -> ScrollbarGutterLintResult:
         return cls(outcome=ScrollbarGutterLintOutcome.PASSED, violations=[])
 
     @classmethod
     def failed(
         cls, violations: list[ScrollbarGutterViolation]
-    ) -> "ScrollbarGutterLintResult":
-        return cls(
-            outcome=ScrollbarGutterLintOutcome.FAILED, violations=violations
-        )
+    ) -> ScrollbarGutterLintResult:
+        return cls(outcome=ScrollbarGutterLintOutcome.FAILED, violations=violations)
 
 
 _COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
@@ -202,9 +203,7 @@ def _parse_overflow_declarations(rule: _Rule) -> list[_OverflowDecl]:
         value = m.group(2).strip()
         leading = rule.body[: m.start()]
         decl_line = rule.body_line_offset + leading.count("\n")
-        results.append(
-            _OverflowDecl(property=prop, value=value, line=decl_line)
-        )
+        results.append(_OverflowDecl(property=prop, value=value, line=decl_line))
     return results
 
 
@@ -228,9 +227,7 @@ def _scan_file(path: Path) -> list[ScrollbarGutterViolation]:
     violations: list[ScrollbarGutterViolation] = []
     for rule in _iter_leaf_rules(text):
         overflow_decls = _parse_overflow_declarations(rule)
-        triggering = [
-            d for d in overflow_decls if _y_axis_is_auto(d.property, d.value)
-        ]
+        triggering = [d for d in overflow_decls if _y_axis_is_auto(d.property, d.value)]
         if not triggering:
             continue
         if _has_stable_gutter(rule.body):
@@ -244,9 +241,7 @@ def _scan_file(path: Path) -> list[ScrollbarGutterViolation]:
             continue
         for decl in triggering:
             decl_snippet = (
-                raw_lines[decl.line - 1]
-                if 1 <= decl.line <= len(raw_lines)
-                else ""
+                raw_lines[decl.line - 1] if 1 <= decl.line <= len(raw_lines) else ""
             )
             if ALLOWLIST_MARKER in decl_snippet:
                 continue

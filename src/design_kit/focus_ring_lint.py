@@ -1,6 +1,6 @@
 """Static scan of component CSS for outwardly offset focus rings.
 
-Static-analysis corollary of FOCUS_RING_INSIDE_CLIPPED_CONTAINER: focus rings
+Static-analysis corollary of INSET_FOCUS_RING: focus rings
 should be inset (negative ``outline-offset``) by default. An outwardly offset
 ring (``outline-offset: 2px``) is clipped by overflow-hidden ancestors and
 collides with adjacent siblings in tightly packed lists, tabs, breadcrumbs,
@@ -16,9 +16,12 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -48,13 +51,11 @@ class FocusRingLintResult:
     violations: list[FocusRingViolation]
 
     @classmethod
-    def passed(cls) -> "FocusRingLintResult":
+    def passed(cls) -> FocusRingLintResult:
         return cls(outcome=FocusRingLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(
-        cls, violations: list[FocusRingViolation]
-    ) -> "FocusRingLintResult":
+    def failed(cls, violations: list[FocusRingViolation]) -> FocusRingLintResult:
         return cls(outcome=FocusRingLintOutcome.FAILED, violations=violations)
 
 
@@ -104,9 +105,7 @@ def _scan_file(path: Path) -> list[FocusRingViolation]:
                 else:
                     # Outside any block: extend the pending selector.
                     if segment:
-                        pending_selector = (
-                            pending_selector + " " + segment
-                        ).strip()
+                        pending_selector = (pending_selector + " " + segment).strip()
                 break
             brace = stripped[j]
             if brace == "{":

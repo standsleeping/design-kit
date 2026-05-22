@@ -20,12 +20,15 @@ are covered by ``radius_lint.py``. The pattern matcher excludes the
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -68,13 +71,11 @@ class BorderWidthLintResult:
     violations: list[BorderWidthViolation]
 
     @classmethod
-    def passed(cls) -> "BorderWidthLintResult":
+    def passed(cls) -> BorderWidthLintResult:
         return cls(outcome=BorderWidthLintOutcome.PASSED, violations=[])
 
     @classmethod
-    def failed(
-        cls, violations: list[BorderWidthViolation]
-    ) -> "BorderWidthLintResult":
+    def failed(cls, violations: list[BorderWidthViolation]) -> BorderWidthLintResult:
         return cls(outcome=BorderWidthLintOutcome.FAILED, violations=violations)
 
 
@@ -149,9 +150,7 @@ def run_border_width_lint(
         if extra.is_file():
             paths.append(extra)
         else:
-            logger.warning(
-                f"Extra file not found: {extra}; skipping that scope"
-            )
+            logger.warning(f"Extra file not found: {extra}; skipping that scope")
     all_violations: list[BorderWidthViolation] = []
     for path in paths:
         all_violations.extend(_scan_file(path))

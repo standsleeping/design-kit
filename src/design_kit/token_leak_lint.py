@@ -21,12 +21,15 @@ warranted (e.g., a debug outline, a single-use scrim awaiting a new token).
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -66,11 +69,11 @@ class LeakLintResult:
     leaks: list[TokenLeak]
 
     @classmethod
-    def passed(cls) -> "LeakLintResult":
+    def passed(cls) -> LeakLintResult:
         return cls(outcome=LeakLintOutcome.PASSED, leaks=[])
 
     @classmethod
-    def failed(cls, leaks: list[TokenLeak]) -> "LeakLintResult":
+    def failed(cls, leaks: list[TokenLeak]) -> LeakLintResult:
         return cls(outcome=LeakLintOutcome.FAILED, leaks=leaks)
 
 
@@ -155,9 +158,7 @@ def run_token_leak_lint(
         if extra.is_file():
             paths.append(extra)
         else:
-            logger.warning(
-                f"Extra file not found: {extra}; skipping that scope"
-            )
+            logger.warning(f"Extra file not found: {extra}; skipping that scope")
     all_leaks: list[TokenLeak] = []
     for path in paths:
         all_leaks.extend(_scan_file(path))

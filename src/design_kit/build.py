@@ -4,46 +4,21 @@ import hashlib
 import json
 import shutil
 import time
-from datetime import datetime, timezone
-from importlib.metadata import PackageNotFoundError, version as pkg_version
+from datetime import UTC, datetime
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as pkg_version
 from pathlib import Path
 from typing import TypedDict
 
-from design_kit.border_width_lint import (
-    BorderWidthLintOutcome,
-    run_border_width_lint,
-)
+from design_kit.audit import AuditScope, raise_on_failure, run_audits
+from design_kit.audit.registry import REGISTRY
 from design_kit.breakpoints import load_breakpoints, substitute_breakpoints
 from design_kit.contrast_self_test import run as run_contrast_lint
-from design_kit.dimension_lint import (
-    DimensionLintOutcome,
-    run_dimension_lint,
-)
-from design_kit.focus_ring_lint import (
-    FocusRingLintOutcome,
-    run_focus_ring_lint,
-)
-from design_kit.interactive_state_lint import (
-    InteractiveStateLintOutcome,
-    run_interactive_state_lint,
-)
 from design_kit.icon_registry import generate_registry
 from design_kit.logging import get_logger
-from design_kit.margin_lint import MarginLintOutcome, run_margin_lint
-from design_kit.padding_lint import PaddingLintOutcome, run_padding_lint
 from design_kit.page_lint import PageLintOutcome, run_page_lint
-from design_kit.peer_edge_lint import (
-    PeerEdgeLintOutcome,
-    run_peer_edge_lint,
-)
 from design_kit.preview import generate_preview_html
-from design_kit.radius_lint import RadiusLintOutcome, run_radius_lint
-from design_kit.scrollbar_gutter_lint import (
-    ScrollbarGutterLintOutcome,
-    run_scrollbar_gutter_lint,
-)
 from design_kit.token_css import generate_token_css
-from design_kit.token_leak_lint import LeakLintOutcome, run_token_leak_lint
 
 logger = get_logger(__name__)
 
@@ -93,9 +68,7 @@ def _copy_components_with_substitution(
             dst.mkdir(parents=True, exist_ok=True)
         elif src.suffix == ".css":
             text = src.read_text(encoding="utf-8")
-            dst.write_text(
-                substitute_breakpoints(text, breakpoints), encoding="utf-8"
-            )
+            dst.write_text(substitute_breakpoints(text, breakpoints), encoding="utf-8")
         else:
             shutil.copy2(src, dst)
 
@@ -127,9 +100,7 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     lint_results, lint_report = run_contrast_lint(css_path)
     lint_failures = [r for r in lint_results if not r.passed]
     if lint_failures:
-        logger.error(
-            f"Token-pair contrast lint found {len(lint_failures)} failure(s)"
-        )
+        logger.error(f"Token-pair contrast lint found {len(lint_failures)} failure(s)")
         print(lint_report)
         for f in lint_failures:
             logger.error(
@@ -145,7 +116,7 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     tokens_manifest: TokenManifest = {
         "name": "design-kit-tokens",
         "version": version,
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "artifacts": {
             "tokens.css": {
                 "sha256": hashlib.sha256(encoded_css).hexdigest(),
@@ -178,9 +149,7 @@ def build(tokens_path: Path, output_dir: Path) -> None:
         dest_components = output_dir / "components"
         if dest_components.exists():
             shutil.rmtree(dest_components)
-        _copy_components_with_substitution(
-            COMPONENTS_DIR, dest_components, breakpoints
-        )
+        _copy_components_with_substitution(COMPONENTS_DIR, dest_components, breakpoints)
         logger.info(f"Copied components to {dest_components}")
 
         manifest = sorted(
@@ -196,204 +165,18 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     else:
         logger.warning(f"Components directory not found: {COMPONENTS_DIR}")
 
-    leak_result = run_token_leak_lint(
-        COMPONENTS_DIR,
-        pages_dir=PAGES_DIR,
-        extra_files=[Path("src/design_kit/preview.py")],
+    # The file-scanning lints run as one sweep over the audit registry, so the
+    # set of audits is defined once (in design_kit.audit.registry) and `build`
+    # and `design-kit audit` cannot drift. Contrast (run above, before the
+    # manifest is stamped) and the page contract (below, for its scanned-count
+    # and stale-allowlist signal) keep their inline blocks for build-only output.
+    audit_scope = AuditScope.for_repo(css_path)
+    sweep = run_audits(
+        audit_scope, [s for s in REGISTRY if s.slug not in {"contrast", "page"}]
     )
-    if leak_result.outcome == LeakLintOutcome.FAILED:
-        logger.error(
-            f"Token-leak lint found {len(leak_result.leaks)} raw-color literal(s)"
-        )
-        for leak in leak_result.leaks:
-            logger.error(f"  {leak.file}:{leak.line}: {leak.value} — {leak.snippet}")
-        raise RuntimeError(
-            f"Token-leak lint found {len(leak_result.leaks)} raw-color literal(s); "
-            f"see TOKEN_DRIVEN_DESIGN — every surface consumes colors via var(--color-*)"
-        )
-    logger.info("Token-leak lint passed")
-
-    focus_result = run_focus_ring_lint(COMPONENTS_DIR)
-    if focus_result.outcome == FocusRingLintOutcome.FAILED:
-        logger.error(
-            f"Focus-ring lint found {len(focus_result.violations)} outwardly "
-            f"offset focus ring(s) in component CSS"
-        )
-        for v in focus_result.violations:
-            logger.error(f"  {v.file}:{v.line}: {v.selector} — {v.snippet}")
-        raise RuntimeError(
-            f"Focus-ring lint found {len(focus_result.violations)} outwardly "
-            f"offset focus ring(s); see FOCUS_RING_INSIDE_CLIPPED_CONTAINER — "
-            f"use negative outline-offset, or mark genuinely standalone "
-            f"controls with /* focus-ring: standalone */"
-        )
-    logger.info("Focus-ring lint passed")
-
-    state_result = run_interactive_state_lint(COMPONENTS_DIR)
-    if state_result.outcome == InteractiveStateLintOutcome.FAILED:
-        logger.error(
-            f"Interactive-state lint found {len(state_result.violations)} "
-            f":hover/:active rule(s) on non-focusable selectors"
-        )
-        for v in state_result.violations:
-            logger.error(
-                f"  {v.file}:{v.line}: {v.selector} — {v.snippet}"
-            )
-        raise RuntimeError(
-            f"Interactive-state lint found {len(state_result.violations)} "
-            f":hover/:active rule(s) on non-focusable selectors; see "
-            f"STATE_BELONGS_TO_INTERACTIVE — pair the rule with a "
-            f":focus-visible declaration on the same base, target a natively "
-            f"focusable element, or mark drag-only handles with "
-            f"/* state-lint: ok */"
-        )
-    logger.info("Interactive-state lint passed")
-
-    peer_edge_result = run_peer_edge_lint(COMPONENTS_DIR)
-    if peer_edge_result.outcome == PeerEdgeLintOutcome.FAILED:
-        logger.error(
-            f"Peer-edge lint found {len(peer_edge_result.violations)} "
-            f"unreserved peer-edge accent(s) in component CSS"
-        )
-        for v in peer_edge_result.violations:
-            logger.error(
-                f"  {v.file}:{v.line}: {v.selector} → {v.declaration} — {v.snippet}"
-            )
-        raise RuntimeError(
-            f"Peer-edge lint found {len(peer_edge_result.violations)} "
-            f"unreserved peer-edge accent(s); see PEER_EDGE_RESERVATION — "
-            f"the rest state must declare the same border-(side) with "
-            f"solid transparent so the modifier state recolours a reserved "
-            f"channel instead of shifting the box. Mark documented "
-            f"exceptions with /* peer-edge: ok */"
-        )
-    logger.info("Peer-edge lint passed")
-
-    gutter_result = run_scrollbar_gutter_lint(COMPONENTS_DIR)
-    if gutter_result.outcome == ScrollbarGutterLintOutcome.FAILED:
-        logger.error(
-            f"Scrollbar-gutter lint found {len(gutter_result.violations)} "
-            f"intermittent scroll container(s) without stable gutter"
-        )
-        for v in gutter_result.violations:
-            logger.error(
-                f"  {v.file}:{v.line}: {v.selector} → {v.declaration} — {v.snippet}"
-            )
-        raise RuntimeError(
-            f"Scrollbar-gutter lint found {len(gutter_result.violations)} "
-            f"intermittent scroll container(s) without stable gutter; see "
-            f"STABLE_SCROLLBAR_GUTTER — pair every `overflow-y: auto` (or "
-            f"`overflow: auto`) with `scrollbar-gutter: stable` in the same "
-            f"rule, or hide the bar with `scrollbar-width: none`. Mark "
-            f"documented exceptions with /* scroll-gutter: ok */"
-        )
-    logger.info("Scrollbar-gutter lint passed")
-
-    padding_result = run_padding_lint(COMPONENTS_DIR)
-    if padding_result.outcome == PaddingLintOutcome.FAILED:
-        logger.error(
-            f"Padding lint found {len(padding_result.violations)} "
-            f"asymmetric padding declaration(s) in component CSS"
-        )
-        for v in padding_result.violations:
-            kinds = ", ".join(k.value for k in v.kinds)
-            logger.error(
-                f"  {v.file}:{v.line}: {v.selector} — {v.snippet}  [{kinds}]"
-            )
-        raise RuntimeError(
-            f"Padding lint found {len(padding_result.violations)} "
-            f"asymmetric padding declaration(s); see PADDING_IS_INSET_ONLY — "
-            f"padding is square; horizontal/vertical asymmetry lives in "
-            f"min-width/gap/margin. Mark documented exceptions with "
-            f"/* padding-lint: ok */"
-        )
-    logger.info("Padding lint passed")
-
-    radius_result = run_radius_lint(COMPONENTS_DIR)
-    if radius_result.outcome == RadiusLintOutcome.FAILED:
-        logger.error(
-            f"Radius lint found {len(radius_result.violations)} non-zero "
-            f"border-radius declaration(s) in component CSS"
-        )
-        for v in radius_result.violations:
-            logger.error(f"  {v.file}:{v.line}: {v.snippet}  [value: {v.value}]")
-        raise RuntimeError(
-            f"Radius lint found {len(radius_result.violations)} non-zero "
-            f"border-radius declaration(s); the visual language is "
-            f"square-cornered. Remove the declaration (zero is the default), "
-            f"or mark genuine circles with /* radius-lint: ok */"
-        )
-    logger.info("Radius lint passed")
-
-    margin_result = run_margin_lint(
-        COMPONENTS_DIR,
-        pages_dir=PAGES_DIR,
-        extra_files=[Path("src/design_kit/preview.py")],
-    )
-    if margin_result.outcome == MarginLintOutcome.FAILED:
-        logger.error(
-            f"Margin lint found {len(margin_result.violations)} margin "
-            f"declaration(s) carrying layout intent"
-        )
-        for v in margin_result.violations:
-            logger.error(
-                f"  {v.file}:{v.line}: {v.declaration}: {v.value} — {v.snippet}"
-            )
-        raise RuntimeError(
-            f"Margin lint found {len(margin_result.violations)} margin "
-            f"declaration(s) with layout intent; see NEVER_MARGIN — rhythm "
-            f"lives in the parent's gap, centering in grid alignment, full-bleed "
-            f"in restructured layout. Permitted forms: margin: 0 (UA reset) and "
-            f"margin-(side): auto (flex/grid alignment hook). Mark documented "
-            f"exceptions with /* margin-lint: ok */"
-        )
-    logger.info("Margin lint passed")
-
-    bw_result = run_border_width_lint(
-        COMPONENTS_DIR,
-        pages_dir=PAGES_DIR,
-        extra_files=[Path("src/design_kit/preview.py")],
-    )
-    if bw_result.outcome == BorderWidthLintOutcome.FAILED:
-        logger.error(
-            f"Border-width lint found {len(bw_result.violations)} raw "
-            f"border-width literal(s)"
-        )
-        for v in bw_result.violations:
-            logger.error(
-                f"  {v.file}:{v.line}: {v.declaration} → {v.literal} — {v.snippet}"
-            )
-        raise RuntimeError(
-            f"Border-width lint found {len(bw_result.violations)} raw "
-            f"border-width literal(s); see TOKEN_DRIVEN_DESIGN — borders bind "
-            f"to var(--border-width-thin|medium|thick). Mark documented "
-            f"exceptions with /* token-leak: ok */"
-        )
-    logger.info("Border-width lint passed")
-
-    dimension_result = run_dimension_lint(
-        COMPONENTS_DIR,
-        pages_dir=PAGES_DIR,
-        extra_files=[Path("src/design_kit/preview.py")],
-    )
-    if dimension_result.outcome == DimensionLintOutcome.FAILED:
-        logger.error(
-            f"Dimension lint found {len(dimension_result.violations)} raw "
-            f"layout-dimension literal(s)"
-        )
-        for v in dimension_result.violations:
-            logger.error(
-                f"  {v.file}:{v.line}: {v.declaration} → {v.literal} — {v.snippet}"
-            )
-        raise RuntimeError(
-            f"Dimension lint found {len(dimension_result.violations)} raw "
-            f"layout-dimension literal(s); see TOKEN_DRIVEN_DESIGN / "
-            f"JUSTIFY_EVERY_DIMENSION — widths, heights, gaps, font-sizes, "
-            f"and position offsets bind to design tokens. Permitted literals: "
-            f"0, auto, %, viewport/container-query units, lh, fr. Mark "
-            f"documented exceptions with /* dimension-lint: ok */"
-        )
-    logger.info("Dimension lint passed")
+    raise_on_failure(sweep, logger)
+    for outcome in sweep:
+        logger.info(f"{outcome.name} lint passed")
 
     page_result = run_page_lint(PAGES_DIR)
     if page_result.outcome == PageLintOutcome.FAILED:
@@ -418,4 +201,3 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             f"backlog: {', '.join(page_result.deferred)}"
         )
     logger.info(f"Page lint passed ({page_result.scanned} pages scanned)")
-

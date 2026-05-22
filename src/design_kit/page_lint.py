@@ -15,7 +15,10 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class PageLintOutcome(Enum):
@@ -143,12 +146,8 @@ def run_page_lint(pages_dir: Path) -> PageLintResult:
                 stale.append(page.name)
         else:
             for rule, problem in page_violations:
-                violations.append(
-                    PageViolation(page=page, rule=rule, message=problem)
-                )
-    outcome = (
-        PageLintOutcome.FAILED if violations else PageLintOutcome.PASSED
-    )
+                violations.append(PageViolation(page=page, rule=rule, message=problem))
+    outcome = PageLintOutcome.FAILED if violations else PageLintOutcome.PASSED
     return PageLintResult(
         outcome=outcome,
         violations=tuple(violations),

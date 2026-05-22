@@ -37,6 +37,51 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         help="Path to design tokens JSON file (default: tokens/design-tokens.json)",
     )
 
+    audit_parser = subparsers.add_parser(
+        "audit",
+        help="Run the static audit set and print one unified report",
+    )
+    audit_parser.add_argument(
+        "--scope",
+        default=None,
+        help=(
+            "Audit a consumer directory (reads DIR/components and DIR/pages) "
+            "instead of the design-kit repo root"
+        ),
+    )
+    audit_parser.add_argument(
+        "--components-dir",
+        default=None,
+        help=(
+            "Override the directory of component CSS to lint (globbed *.css, one level); "
+            "for a consumer whose CSS does not live under <root>/components"
+        ),
+    )
+    audit_parser.add_argument(
+        "--pages-dir",
+        default=None,
+        help="Override the directory of pages to lint (globbed *.html, one level)",
+    )
+    audit_parser.add_argument(
+        "--tokens-css",
+        default=None,
+        help="Override the built tokens.css the contrast audit reads",
+    )
+    audit_parser.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="Emit the report as JSON instead of text",
+    )
+    audit_parser.add_argument(
+        "--headless",
+        action="store_true",
+        help=(
+            "Also run the rendered-page audits in headless Chromium against the built "
+            "site (dist/, or DIR under --scope); skips cleanly without Playwright/Chromium"
+        ),
+    )
+
     export_parser = subparsers.add_parser(
         "export-tokens",
         help="Copy generated tokens.css and manifest to a target directory",

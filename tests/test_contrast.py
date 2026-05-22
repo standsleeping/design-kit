@@ -103,7 +103,7 @@ def test_audit_runs_declared_pairs_across_themes() -> None:
     """
     pairs = [Pair("color-bg", "color-text", 4.5, "body text")]
     results = audit(parse_tokens(css), pairs)
-    assert len(results) == 2  # one pair × 2 themes
+    assert len(results) == 2  # one pair x 2 themes
     assert {r.theme for r in results} == {"light", "dark"}
     assert all(r.passed for r in results)
 

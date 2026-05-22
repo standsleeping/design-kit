@@ -3,8 +3,9 @@ end-to-end run() on synthesized tokens.css fixtures.
 
 These tests guard the glue between design_kit.token_css (which emits the CSS
 shape this module parses) and design_kit.contrast (which only cares about a
-flat token map). If token_css ever changes its selector format, these tests
-should fail before the silent-green-audit regression can ship.
+flat token map). If token_css ever changes its selector format, the self-audit
+would parse no pairs and pass vacuously; these tests fail instead, so a false
+green never reaches the build.
 """
 
 from pathlib import Path
@@ -133,7 +134,7 @@ def test_run_flags_collision_theme(tmp_path: Path) -> None:
         and r.value_a == "#202020"
         and r.value_b == "#202020"
     ]
-    assert len(dark_collisions) >= 3  # bg × hover-bg, bg × selected-bg, bg × accent-bg
+    assert len(dark_collisions) >= 3  # bg x hover-bg, bg x selected-bg, bg x accent-bg
     assert all(r.ratio == pytest.approx(1.0, abs=0.001) for r in dark_collisions)
 
 

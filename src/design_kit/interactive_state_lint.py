@@ -22,12 +22,15 @@ Allowlist marker: ``/* state-lint: ok */`` for documented exceptions
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -66,16 +69,14 @@ class InteractiveStateLintResult:
     violations: list[InteractiveStateViolation]
 
     @classmethod
-    def passed(cls) -> "InteractiveStateLintResult":
+    def passed(cls) -> InteractiveStateLintResult:
         return cls(outcome=InteractiveStateLintOutcome.PASSED, violations=[])
 
     @classmethod
     def failed(
         cls, violations: list[InteractiveStateViolation]
-    ) -> "InteractiveStateLintResult":
-        return cls(
-            outcome=InteractiveStateLintOutcome.FAILED, violations=violations
-        )
+    ) -> InteractiveStateLintResult:
+        return cls(outcome=InteractiveStateLintOutcome.FAILED, violations=violations)
 
 
 _COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)

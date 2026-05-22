@@ -46,9 +46,7 @@ def test_build_emits_tokens_manifest(tmp_path: Path) -> None:
 
     tokens_artifact = manifest["artifacts"]["tokens.css"]
     assert len(tokens_artifact["sha256"]) == 64
-    assert tokens_artifact["bytes"] == len(
-        (tmp_path / "tokens.css").read_bytes()
-    )
+    assert tokens_artifact["bytes"] == len((tmp_path / "tokens.css").read_bytes())
 
 
 def test_build_copies_components(tmp_path: Path) -> None:
