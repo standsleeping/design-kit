@@ -19,7 +19,7 @@ Every conformant page satisfies all of the following.
 | 7 | Includes `app-shell.css` stylesheet link | `app-shell-css` |
 | 8 | Includes `sidebar.css` and `nav-stack.css` stylesheet links | `sidebar-css` |
 
-Page-local CSS targets `.dk-app-shell-main` descendants, never `body` descendants — body-level rules collide with the shell's own viewport-lock styles.
+Page-local CSS targets `.dk-app-shell-main` descendants, never `body` descendants. Body-level rules collide with the shell's own viewport-lock styles.
 
 ## Skeleton
 
@@ -83,7 +83,7 @@ The `data-current="page-id"` highlights the current page in the system sidebar. 
 
 ## Manual mount (augmented levels)
 
-The default flow auto-mounts the canonical `LEVELS` from `components/system/nav-data.js` into the `[data-system-nav]` slot. A page that needs to extend the structure — for example, splicing in a sub-level whose items come from runtime data — opts out of auto-mount and calls `mountSystemSidebar` itself.
+The default flow auto-mounts the canonical `LEVELS` from `components/system/nav-data.js` into the `[data-system-nav]` slot. A page that needs to extend the structure (for example, splicing in a sub-level whose items come from runtime data) opts out of auto-mount and calls `mountSystemSidebar` itself.
 
 To opt out, tag the slot with `data-system-nav-manual`. The page still satisfies the contract (the slot is present, the script is loaded), but the auto-mount selector skips it:
 
@@ -123,21 +123,20 @@ Rewriting an existing root item to `kind: 'branch'` with a matching `branchTo` m
 
 ## How the audit works
 
-`run_page_audit(pages_dir)` walks `pages/*.html` and runs each check against every page. Pages in `KNOWN_NON_CONFORMANT` are deferred (their violations don't fail the build but are logged as a backlog). Any failure outside the allowlist raises a `RuntimeError` in `design-kit build`. As of 2026-05-17 the allowlist is empty — every page in `pages/*.html` conforms — and the mechanism stands by for the next migration arc.
+`run_page_audit(pages_dir)` walks `pages/*.html` and runs each check against every page. Pages in `KNOWN_NON_CONFORMANT` are deferred (their violations don't fail the build but are logged as a backlog). Any failure outside the allowlist raises a `RuntimeError` in `design-kit build`. As of 2026-05-17 the allowlist is empty (every page in `pages/*.html` conforms), and the mechanism stands by for the next migration arc.
 
 If a page is in the allowlist but actually passes every check, the build logs a "stale allowlist" warning so the entry can be removed.
 
 ## Relationship to principles
 
-- `EDGE_ALWAYS_CHROME` — every page has chrome on every edge via the shell scaffold
-- `NO_PAGE_SCROLL` / `VIEWPORT_LOCKED` — the viewport-lock rule (Requirement 5)
-- `FLAT_CLASSED_FLEX_TREE` — the shell's flat, named-slot structure
-- `INSET_VS_FLUSH_LAYOUT` — every page picks a mode by composing content inside `dk-app-shell-main`
-- `LAYERED_UI_REVEAL` — the base / chrome / surface / item layer split is the shell's slot structure
+- `EDGE_ALWAYS_CHROME`: every page has chrome on every edge via the shell scaffold
+- `NO_PAGE_SCROLL` / `VIEWPORT_LOCKED`: the viewport-lock rule (Requirement 5)
+- `FLAT_CLASSED_FLEX_TREE`: the shell's flat, named-slot structure
+- `INSET_VS_FLUSH_LAYOUT`: every page picks a mode by composing content inside `dk-app-shell-main`
+- `LAYERED_UI_REVEAL`: the base / chrome / surface / item layer split is the shell's slot structure
 
 ## References
 
-- `~/Developer/design-kit/src/design_kit/page_audit.py` — the audit
-- `~/Developer/design-kit/components/system/system-sidebar.js` — the shared mounting module
-- `~/Developer/design-kit/components/system/nav-data.js` — canonical nav data
-- `~/prinzfiles/planning/design-kit/nav-model.md` — topology rationale
+- `~/Developer/design-kit/src/design_kit/page_audit.py`: the audit
+- `~/Developer/design-kit/components/system/system-sidebar.js`: the shared mounting module
+- `~/Developer/design-kit/components/system/nav-data.js`: canonical nav data

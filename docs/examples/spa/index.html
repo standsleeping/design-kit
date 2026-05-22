@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Caret — task list</title>
+  <link rel="stylesheet" href="./tokens.css">
+  <style>
+    .app {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xl);
+      max-width: var(--container-width-sm, 32rem);
+      padding: var(--spacing-3xl);
+    }
+    .app h1 { font-size: var(--font-size-xl); }
+
+    .new { display: flex; gap: var(--spacing-sm); }
+    .new input {
+      flex: 1;
+      padding: var(--spacing-sm);
+      font: inherit;
+      color: var(--color-text);
+      background: var(--color-bg);
+      border: var(--border-width-thin) solid var(--color-border);
+    }
+    .new button, .todo button {
+      padding: var(--spacing-sm);
+      font: inherit;
+      color: var(--color-text);
+      background: var(--color-bg);
+      border: var(--border-width-thin) solid var(--color-border);
+      cursor: pointer;
+    }
+    .new input:focus-visible, button:focus-visible {
+      outline: var(--border-width-thin) solid var(--color-focus-ring);
+      outline-offset: calc(-1 * var(--border-width-thin));
+    }
+
+    /* Filter tabs: mono text, dot separators, purple underline on active. */
+    .filters { display: flex; gap: var(--spacing-md); font-size: var(--font-size-sm); }
+    .filter {
+      padding: 0;
+      color: var(--color-text-muted);
+      background: none;
+      border: none;
+      border-bottom: var(--border-width-accent, 2px) solid transparent;
+      text-transform: uppercase;
+      letter-spacing: var(--font-letter-spacing-wide);
+      cursor: pointer;
+    }
+    .filter.is-active { color: var(--color-text); border-bottom-color: var(--color-accent); }
+
+    .list { display: flex; flex-direction: column; }
+    .todo {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      border-bottom: var(--border-width-thin) solid var(--color-border);
+    }
+    .todo-text { flex: 1; }
+    .todo.is-done .todo-text { color: var(--color-text-muted); text-decoration: line-through; }
+    .todo button { margin-left: auto; }
+
+    .footer { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    .empty { padding: var(--spacing-xl); font-size: var(--font-size-sm); color: var(--color-text-muted); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import {
+      createApp, bindText, bindClass, bindShow, each, effect, urlSyncEffect,
+    } from './app-runtime.js';
+
+    const FILTERS = ['all', 'active', 'done'];
+
+    // Seed the filter from the URL so a shared/bookmarked ?filter= link restores it.
+    function initialFilter() {
+      const f = new URL(location.href).searchParams.get('filter');
+      return FILTERS.includes(f) ? f : 'all';
+    }
+
+    const initialState = {
+      todos: [
+        { id: 1, text: 'Read the runtime reference', done: false },
+        { id: 2, text: 'Build the counter', done: true },
+      ],
+      filter: initialFilter(),
+      nextId: 3,
+    };
+
+    function reducer(state, action) {
+      switch (action.type) {
+        case 'add': {
+          const text = action.text.trim();
+          if (!text) return state;
+          return {
+            ...state,
+            todos: [...state.todos, { id: state.nextId, text, done: false }],
+            nextId: state.nextId + 1,
+          };
+        }
+        case 'toggle':
+          return {
+            ...state,
+            todos: state.todos.map((t) => (t.id === action.id ? { ...t, done: !t.done } : t)),
+          };
+        case 'remove':
+          return { ...state, todos: state.todos.filter((t) => t.id !== action.id) };
+        case 'setFilter':
+          return { ...state, filter: action.value };
+        default:
+          return state;
+      }
+    }
+
+    function visible(state) {
+      const f = state.filter();
+      return state.todos().filter((t) =>
+        f === 'all' ? true : f === 'active' ? !t.done : t.done);
+    }
+
+    function render({ state, dispatch }) {
+      const root = document.createElement('div');
+      root.className = 'app';
+
+      const heading = document.createElement('h1');
+      heading.textContent = 'Tasks';
+
+      // New-todo row (uncontrolled input: read .value on submit).
+      const form = document.createElement('div');
+      form.className = 'new';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'Add a task…';
+      const addBtn = document.createElement('button');
+      addBtn.textContent = 'Add';
+      const submit = () => { dispatch({ type: 'add', text: input.value }); input.value = ''; input.focus(); };
+      addBtn.addEventListener('click', submit);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+      form.append(input, addBtn);
+
+      // Filter tabs — each dispatches setFilter; urlSyncEffect mirrors it to the URL.
+      const filters = document.createElement('div');
+      filters.className = 'filters';
+      for (const value of FILTERS) {
+        const tab = document.createElement('button');
+        tab.className = 'filter';
+        tab.textContent = value;
+        bindClass(tab, 'is-active', () => state.filter() === value);
+        tab.addEventListener('click', () => dispatch({ type: 'setFilter', value }));
+        filters.append(tab);
+      }
+
+      // Keyed list — stable key by id; rows keep identity across filter/toggle/remove.
+      const list = document.createElement('div');
+      list.className = 'list';
+      each(
+        list,
+        () => visible(state),
+        (todo) => todo.id,
+        (todo, id) => {
+          const li = document.createElement('div');
+          li.className = 'todo';
+          bindClass(li, 'is-done', () => todo().done);
+
+          const box = document.createElement('input');
+          box.type = 'checkbox';
+          effect(() => { box.checked = todo().done; });   // row signal -> control
+          box.addEventListener('change', () => dispatch({ type: 'toggle', id }));
+
+          const text = document.createElement('span');
+          text.className = 'todo-text';
+          bindText(text, () => todo().text);              // updates in place on toggle
+
+          const del = document.createElement('button');
+          del.textContent = 'Delete';
+          del.addEventListener('click', () => dispatch({ type: 'remove', id }));
+
+          li.append(box, text, del);
+          return li;
+        },
+      );
+
+      // Empty state shown only when nothing matches the filter.
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      bindText(empty, () => `No ${state.filter() === 'all' ? '' : state.filter() + ' '}tasks.`);
+      bindShow(empty, () => visible(state).length === 0);
+
+      const footer = document.createElement('div');
+      footer.className = 'footer';
+      bindText(footer, () => `${state.todos().filter((t) => !t.done).length} active`);
+
+      root.append(heading, form, filters, list, empty, footer);
+      return root;
+    }
+
+    createApp({
+      initialState,
+      reducer,
+      // Mirror the filter into ?filter= (omitted when 'all'); restore on back/forward.
+      effects: [
+        urlSyncEffect('filter', (state) => (state.filter() === 'all' ? '' : state.filter()), {
+          onPop: (value, dispatch) =>
+            dispatch({ type: 'setFilter', value: FILTERS.includes(value) ? value : 'all' }),
+        }),
+      ],
+      render,
+      root: document.getElementById('app'),
+    });
+  </script>
+</body>
+</html>

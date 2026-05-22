@@ -2,6 +2,8 @@
 
 Design tokens, reusable components, and CSS generation for my web pages.
 
+New to the runtime? Start with [Getting started](docs/guides/getting-started.md), then the [runtime reference](docs/reference/runtime.md) and [CLI reference](docs/reference/cli.md).
+
 See the [design taxonomy](docs/reference/taxonomy.md) for the full lineage with visual examples, references, and prompt language. The [visual language reference](docs/reference/visual-language.md) documents the specific tokens and conventions. The [component contract](docs/reference/component-contract.md) is the canonical spec for the four-export module shape that the storybook consumes.
 
 ## What's here
@@ -75,27 +77,78 @@ uv run pytest
 
 The contract-tests page also runs in the browser at `/contract-tests.html` and asserts every registered component conforms to the four-export module shape. Unreachable pools are reported as warnings, not contract failures.
 
+The component sources are vanilla JS, type-checked statically with `tsc --noEmit` (no transpile, no emit; config in `tsconfig.json`, scope `components/**/*.js` + `pages/**/*.js`). TypeScript is the sole npm dev dependency — install it once with `npm install`, then:
+
+```bash
+npm run typecheck            # tsc --noEmit
+uv run pytest tests/test_tsc.py   # same check, inside the pytest suite
+```
+
+`tests/test_tsc.py` runs the check as part of the suite, skipping cleanly when `node` or the local TypeScript install is absent (mirrors `test_app_runtime_js.py`). Every hand-written component carries JSDoc annotations on its `render` (and helpers) and passes `tsc --noEmit` under `strict`. The generated `components/system/icons.js` keeps `// @ts-nocheck` (its generator emits the marker so regeneration preserves it); it is the only file exempt from the check.
+
 ## Build-time audits
 
-`design-kit build` runs seven automated audits before exiting:
+`design-kit build` runs thirteen static audits (Python, no browser) before exiting: twelve source-scanning lints plus the token-pair contrast check. Each fails the build with a locator report and names the principle it enforces; most carry a `/* <name>: ok */` allowlist comment for documented exceptions. The audit modules live under `src/design_kit/`; the set is defined once in the audit registry (`src/design_kit/audit/registry.py`), which both `design-kit build` and `design-kit audit` run, so the two cannot drift.
 
 | Audit | Implementation | Catches |
 |---|---|---|
-| Token-pair contrast | `src/design_kit/contrast_self_test.py` (Python, parses `tokens.css`) | Foreground/background pairs that fail WCAG ratios across themes |
-| Token leak | `src/design_kit/token_leak_audit.py` (Python, scans `components/*.css`) | Raw color literals (hex codes, `rgb()`, `hsl()`, etc.) in component CSS instead of `var(--color-*)` references — see `TOKEN_DRIVEN_DESIGN`. A trailing `/* token-leak: ok */` comment on the same line acts as an explicit allowlist for legitimate exceptions. |
-| Focus ring | `src/design_kit/focus_ring_audit.py` (Python, scans `components/*.css`) | Focus indicators that draw outside the focusable element — see `FOCUS_RING_INSIDE_CLIPPED_CONTAINER` |
-| Padding | `src/design_kit/padding_audit.py` (Python, scans `components/*.css`) | Asymmetric padding declarations — see `SQUARE_PADDING_DEFAULT` and `PADDING_IS_INSET_ONLY` |
-| Radius | `src/design_kit/radius_audit.py` (Python, scans `components/*.css`) | Non-zero `border-radius` declarations — corners are square by design |
-| Page contract | `src/design_kit/page_audit.py` (Python, scans `pages/*.html`) | Pages missing the shared shell scaffold, system sidebar slot, viewport lock, or required stylesheets — see `docs/reference/page-contract.md` |
-| Doubled parallel borders | `src/design_kit/border_audit.py` (headless Chromium via Playwright, runs `pages/border-audit.html`) | Two elements drawing the same edge — see `BOUNDARY_OWNERSHIP` in `system-principles` |
+| Token-pair contrast | `contrast_self_test.py` (parses `tokens.css`) | Foreground/background pairs that fail WCAG ratios across themes — `TOKEN_PAIR_CONTRAST` |
+| Token leak | `token_leak_lint.py` (`components/*.css`, `pages/*.html`) | Raw color literals instead of `var(--color-*)` — `TOKEN_DRIVEN_DESIGN`; `/* token-leak: ok */` |
+| Focus ring | `focus_ring_lint.py` (`components/*.css`) | Focus indicators drawn outside the focusable element — `FOCUS_RING_INSIDE_CLIPPED_CONTAINER`; `/* focus-ring: standalone */` |
+| Interactive state | `interactive_state_lint.py` (`components/*.css`) | `:hover`/`:active` on non-focusable selectors — `STATE_BELONGS_TO_INTERACTIVE`; `/* state-lint: ok */` |
+| Peer edge | `peer_edge_lint.py` (`components/*.css`) | Selection/edge accents not reserved on every peer — `PEER_EDGE_RESERVATION`; `/* peer-edge: ok */` |
+| Scrollbar gutter | `scrollbar_gutter_lint.py` (`components/*.css`) | Intermittent scroll containers missing `scrollbar-gutter: stable` — `STABLE_SCROLLBAR_GUTTER`; `/* scroll-gutter: ok */` |
+| Scroll axis | `scroll_axis_lint.py` (`components/*.css`) | Two-axis `overflow: auto`/`scroll` shorthand on a layout container — `SCROLL_CONTAINMENT`; `/* scroll-axis: ok */` |
+| Padding | `padding_lint.py` (`components/*.css`) | Asymmetric padding declarations — `SQUARE_PADDING_DEFAULT` / `PADDING_IS_INSET_ONLY`; `/* padding-lint: ok */` |
+| Radius | `radius_lint.py` (`components/*.css`) | Non-zero `border-radius` — corners are square by design; `/* radius-lint: ok */` |
+| Margin | `margin_lint.py` (`components/*.css`, `pages/*.html`) | Margins carrying layout intent — `NEVER_MARGIN`; `/* margin-lint: ok */` |
+| Border width | `border_width_lint.py` (`components/*.css`, `pages/*.html`) | Raw border-width literals instead of `var(--border-width-*)` — `TOKEN_DRIVEN_DESIGN`; `/* token-leak: ok */` |
+| Dimension | `dimension_lint.py` (`components/*.css`, `pages/*.html`) | Raw layout-dimension literals — `TOKEN_DRIVEN_DESIGN` / `JUSTIFY_EVERY_DIMENSION`; `/* dimension-lint: ok */` |
+| Page contract | `page_lint.py` (`pages/*.html`) | Pages missing the shell scaffold, system-sidebar slot, viewport lock, or required stylesheets — `docs/reference/page-contract.md` |
 
-The border audit requires Playwright with a Chromium binary. Both come with the project's dev dependencies (`uv sync`); the binary is fetched once via:
+## The audit command
+
+`design-kit audit` runs the same thirteen static audits on demand and prints one unified report; it exits non-zero if any audit fails. Run it for fast feedback without a full build. With `--headless` it also runs the rendered-page audits (below) and folds them into the same report.
 
 ```bash
-uv run playwright install chromium
+design-kit audit                 # static audits of the design-kit repo, text report
+design-kit audit --json          # machine-readable report (audits[] + summary)
+design-kit audit --scope ../app  # audit a consumer that mirrors DIR/components + DIR/pages
+design-kit audit --headless      # also run the rendered-page audits in Chromium
 ```
 
-If Playwright or the Chromium binary is unavailable, the audit is skipped with a warning and the build still completes — token-only builds in CI environments without browser tooling continue to work. A doubled-border finding fails the build (exit 1) with a locator report (page, axis, position, overlap length) so the violation is fixable from the log.
+`--scope DIR` points the audits at `DIR/components` and `DIR/pages` so a consuming project runs the identical checks against its own tree; a missing directory reports `SKIP` rather than a false pass. The contrast audit reads a built `tokens.css` (from `dist/`, or `DIR/dist/` under a scope) and reports `SKIP` when it is absent.
+
+Most consumers do not mirror DK's layout — one project might keep a single flat CSS file, another might nest its component CSS under a static directory. Three overrides retarget each input independently (an explicit value wins; otherwise it falls back to `--scope`, then to the repo default). Each directory is globbed one level deep (`*.css` / `*.html`).
+
+```bash
+# Lint a consumer's component CSS where it actually lives:
+design-kit audit \
+  --components-dir ../my-app/src/static/shared/components \
+  --tokens-css ../my-app/path/to/vendored/tokens.css
+```
+
+`--components-dir DIR`, `--pages-dir DIR`, and `--tokens-css PATH` each override one input; an absent target reports `SKIP`, so a consumer with no pages or no vendored tokens still gets a clean report over the inputs it does have. (The override flags retarget the static audits only; `--headless` always serves `--scope DIR` or `dist/`.)
+
+## Headless audits
+
+Layout invariants that can only be measured in a rendered page run in headless Chromium (Playwright). Each is a spec in `src/design_kit/audit/headless.py`, run two ways from that one source: `design-kit audit --headless` (serving the built `dist/`, or `DIR` under `--scope`) and pytest (`tests/test_overflow_audit.py`, `tests/test_responsive_table_behavior.py`, which build the current source into a temp dir, then run the same spec). The two cannot drift. Playwright comes with the dev dependencies (`uv sync`); the Chromium binary is fetched once via `uv run playwright install chromium`. When the served site, Playwright, or Chromium is unavailable, every headless audit reports `SKIP` (not a failure), so token-only CI still completes. A spec whose page is absent under `--scope` (e.g. the behavior page in a consumer tree) also `SKIP`s.
+
+| Audit | Slug | Catches |
+|---|---|---|
+| Horizontal overflow | `overflow` | Page-level, center-container, or any-element horizontal overflow at several widths — `SCROLL_CONTAINMENT`. Opt a genuine leaf scroller out with `data-allow-x-scroll`. Also flags a fixed chrome rail (`.dk-topbar`) that has wrapped to a second row — `ELASTIC_CONTENT_NEEDS_GIVE`; opt an intentional wrapping strip out with `data-wrap-ok`. |
+| ResponsiveTable behavior | `responsive-table` | The component's wide/narrow/medium modes, sidenote overlay, presence dots, and body contract |
+
+## Token distribution
+
+`design-kit export-tokens --to PATH` copies the built `tokens.css` and `tokens.manifest.json` into a consuming project's vendor directory (created if absent), so consumers vendor tokens rather than copy-paste and re-run to update. Run `design-kit build` first; the command fails with a pointer to `build` if the source files are missing.
+
+```bash
+design-kit build
+design-kit export-tokens --to ~/some-consumer/vendor/dk   # --source-dir defaults to dist
+```
+
+The manifest stamps each artifact with a `sha256` and byte count, and is written only after the contrast audit passes. Full flag reference: [CLI reference](docs/reference/cli.md).
 
 ## Credits
 

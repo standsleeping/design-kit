@@ -80,43 +80,43 @@ All interactive elements use the same gray palette as surrounding chrome. The on
 
 ### 11. Inset and flush at every level
 
-The structural mode of a region is its choice between **inset** and **flush**. Inset surfaces own their boundary and float in a gutter; flush surfaces share their boundary with siblings and stack edge-to-edge. The dichotomy operates at every nesting level — the layout shell, the regions inside the chrome, the surfaces inside those regions, the items inside those surfaces.
+The structural mode of a region is its choice between **inset** and **flush**. Inset surfaces own their boundary and float in a gutter; flush surfaces share their boundary with siblings and stack edge-to-edge. The dichotomy operates at every nesting level: the layout shell, the regions inside the chrome, the surfaces inside those regions, the items inside those surfaces.
 
 **Layout level: chrome is always flush; the content region carries the layout's identity.**
 
-The viewport-locked shell forces chrome (header, footer, sidebars) to occupy every edge of the window. Chrome is flush by structural necessity — it owns the boundary against the viewport. What varies is the mode of the *content region* the chrome surrounds.
+The viewport-locked shell forces chrome (header, footer, sidebars) to occupy every edge of the window. Chrome is flush by structural necessity. It owns the boundary against the viewport. What varies is the mode of the *content region* the chrome surrounds.
 
 | Layout mode | Content region | Surfaces inside |
 |---|---|---|
 | **Inset layout** | Recessed field with a gutter on all sides; background distinct from chrome | Surfaces float in the gutter; each owns four borders |
 | **Flush layout** | Edge-to-edge with chrome; shares the chrome's background or is marked by a rule | Surfaces stack flush; separated by full-bleed rules |
 
-In an inset layout, the field's recessed background is what makes the gutter visible against the chrome. In a flush layout, the chrome and the content region share a surface; the rule between items carries the structure. A single application can compose both — an inset layout in one pane, a flush layout in another — but the boundary between them must be the chrome itself; two modes meeting inside the same content region is the drift signal. See `INSET_VS_FLUSH_LAYOUT` in system-principles.
+In an inset layout, the field's recessed background is what makes the gutter visible against the chrome. In a flush layout, the chrome and the content region share a surface; the rule between items carries the structure. A single application can compose both (an inset layout in one pane, a flush layout in another), but the boundary between them must be the chrome itself; two modes meeting inside the same content region is the drift signal. See `INSET_VS_FLUSH_LAYOUT` in system-principles.
 
 **Surface / item level: the same dichotomy, one nesting down.**
 
-Within either layout mode, individual elements still divide into inset *surfaces* and flush *items*. The asymmetry is ownership: a surface owns its own boundary (four borders, square corners) and floats in its parent's gutter; an item doesn't own a boundary — the column it lives in does, via a sibling rule, the parent's border, or a boundary-rail scrollbar. Get the ownership right and every downstream choice (scrollbar mode, active indicator, padding role, background) follows.
+Within either layout mode, individual elements still divide into inset *surfaces* and flush *items*. The asymmetry is ownership: a surface owns its own boundary (four borders, square corners) and floats in its parent's gutter; an item doesn't own a boundary. The column it lives in does, via a sibling rule, the parent's border, or a boundary-rail scrollbar. Get the ownership right and every downstream choice (scrollbar mode, active indicator, padding role, background) follows.
 
 | Property | Surface (inset) | Item (flush) |
 |---|---|---|
 | Boundary | Self-owned: four borders, square corners | Column-owned: shared rule with siblings |
 | Background | May recess (e.g., `--color-code-bg`) so the card reads as a distinct surface against the page | Page bg by default; active state uses full-bleed `--color-selected-bg` |
 | Padding | Square (xl–3xl), owned by the surface | Square or zero on the item; horizontal inset and vertical rhythm both owned by the container (`padding` + `gap`) |
-| Sibling separation | Gutter (parent's flex/grid gap) | None — siblings touch; the rule between them does the separating |
+| Sibling separation | Gutter (parent's flex/grid gap) | None: siblings touch; the rule between them does the separating |
 | Active indicator | Border-color shift on the four-side border + `--color-selected-bg` fill | Single-side border (left for vertical lists, bottom for horizontal) at `--border-width-medium`, `--color-link` + full-bleed `--color-selected-bg` |
 | Scrollbar | Invisible-gutter, inside the surface | Boundary-rail at the column edge, against a visible rule |
 | Examples | Modals, code blocks, expandable cards, preview cards | Menu items, nav rows, scroll-list rows, sticky-toc entries, collapsible-section headers, table rows |
 
-The most common drift is treating an item as a surface — a row with four borders and a radius. Even when the radius token resolves to 0, the four drawn lines still leak card vocabulary into a row context. Ask whether the element's neighbors are siblings of the same kind (item) or distinct content blocks (surface). Mixing layout modes inside a single content region is the same drift one nesting up: a flush-mode list that draws four borders around each row leaks card vocabulary; an inset-mode card whose left edge touches the field's interior breaks the gutter that defines the mode.
+The most common drift is treating an item as a surface: a row with four borders and a radius. Even when the radius token resolves to 0, the four drawn lines still leak card vocabulary into a row context. Ask whether the element's neighbors are siblings of the same kind (item) or distinct content blocks (surface). Mixing layout modes inside a single content region is the same drift one nesting up: a flush-mode list that draws four borders around each row leaks card vocabulary; an inset-mode card whose left edge touches the field's interior breaks the gutter that defines the mode.
 
 See `pages/inset-vs-flush.html` for the canonical side-by-side rendering.
 
 ### 12. Chrome strip heights are quantized
 
-A chrome strip — a topbar in main, a NavStack header in a sidebar, a sticky-TOC summary at the top of a scroll body — is a peer-rail member: its top or bottom edge aligns horizontally with sibling strips across the columns at the same y. The shared height comes from a single base token plus a cascading multiplier.
+A chrome strip (a topbar in main, a NavStack header in a sidebar, a sticky-TOC summary at the top of a scroll body) is a peer-rail member: its top or bottom edge aligns horizontally with sibling strips across the columns at the same y. The shared height comes from a single base token plus a cascading multiplier.
 
-- **Base:** `--layout-chrome-bar-h` (defaults to `2.5rem`) — the height of one chrome row.
-- **Multiplier:** `--chrome-bar-rows` (defaults to `1`) — set on `.dk-app-shell-body`; cascades to every chrome strip inside the shell. A page that needs a two-row top rail (e.g., a filter strip above a results strip) declares it once:
+- **Base:** `--layout-chrome-bar-h` (defaults to `2.5rem`), the height of one chrome row.
+- **Multiplier:** `--chrome-bar-rows` (defaults to `1`), set on `.dk-app-shell-body`; cascades to every chrome strip inside the shell. A page that needs a two-row top rail (e.g., a filter strip above a results strip) declares it once:
 
   ```html
   <div class="dk-app-shell-body" data-chrome-rows="2">
@@ -124,7 +124,7 @@ A chrome strip — a topbar in main, a NavStack header in a sidebar, a sticky-TO
 
   Every chrome strip inside reads `height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1))` and grows together. No per-component opt-in; coordination is automatic.
 
-- **Local override:** a single strip with a genuinely different role can shadow the multiplier inline (`style="--chrome-bar-rows: 1"`) — visible in markup, not buried in CSS.
+- **Local override:** a single strip with a genuinely different role can shadow the multiplier inline (`style="--chrome-bar-rows: 1"`), visible in markup, not buried in CSS.
 
 Half-row offsets are structurally impossible: legal chrome heights are integer multiples of the base. The border audit's near-rail check (`pages/border-audit.html`) is the enforcement backstop for strips that escape the cascade. See `PEER_RAIL` in system-principles for the full principle text including the quantization sharpening.
 
@@ -152,17 +152,17 @@ Multi-step procedures use numbered lists where order matters. Each step is a sin
 
 ### Drill-down navigation (navigation stack)
 
-Hierarchical menus follow the iOS-style navigation stack pattern: a stack of menu levels, push by tapping a row marked with a chevron (`›`), pop via a `Back` row at the top. Levels are independent — each renders a flat list of items with its own section structure. State is the path through levels, not a tree expansion. This is the model used by `nav-stack`.
+Hierarchical menus follow the iOS-style navigation stack pattern: a stack of menu levels, push by tapping a row marked with a chevron (`›`), pop via a `Back` row at the top. Levels are independent. Each renders a flat list of items with its own section structure. State is the path through levels, not a tree expansion. This is the model used by `nav-stack`.
 
 The stack and the visible chrome are orthogonal. A user can drill into a sublevel and then collapse the sidebar; the stack is preserved so re-expanding restores the same level. Conversely, a viewport-driven auto-collapse doesn't pop the stack.
 
-**All rows share a horizontal channel.** Every row in a level — the back row, section headers, and items — shares the same left inset (same padding-left + same `border-left-medium-transparent` indicator slot). The back row is the *first item* of the level, not a separate header element with different padding rules. When the chrome strip wrapping a row needs a height (to feel like a chrome bar at root level when there's only a title), use `min-height`, not `height`; a fixed pixel height creates dead vertical space when the contained content is shorter.
+**All rows share a horizontal channel.** Every row in a level (the back row, section headers, and items) shares the same left inset (same padding-left + same `border-left-medium-transparent` indicator slot). The back row is the *first item* of the level, not a separate header element with different padding rules. When the chrome strip wrapping a row needs a height (to feel like a chrome bar at root level when there's only a title), use `min-height`, not `height`; a fixed pixel height creates dead vertical space when the contained content is shorter.
 
 ### Sidebar tri-state
 
 A collapsible sidebar has three display states, not two: `expanded` (full width with labels), `icon` (narrow strip with a single uppercase letter or glyph per row), and `hidden` (off-screen via transform in overlay mode, or zero width in inline mode). Inline mode supports `expanded` and `icon`; overlay mode supports `expanded` and `hidden`. The tri-state encoding (rather than a boolean `collapsed`) makes nonsensical combinations explicit and lets the same prop drive both inline and overlay behaviors.
 
-The state propagates to children via `[data-state]` attribute selectors. A sidebar with `data-state="icon"` causes nav-stack and similar children to render their icon-only treatment automatically — the consumer doesn't wire two props in lockstep.
+The state propagates to children via `[data-state]` attribute selectors. A sidebar with `data-state="icon"` causes nav-stack and similar children to render their icon-only treatment automatically. The consumer doesn't wire two props in lockstep.
 
 ### Selected-item indicators
 
@@ -178,7 +178,7 @@ Hover and focus reuse the same border channel with muted fills; purple is reserv
 
 In a sidebar's icon state the row centers around its icon, but the left-border indicator stays at the container's edge regardless.
 
-The active border, the focus ring, hover, and disabled all live on the same element — the focusable child (`<a>`, `<button>`), not on a structural wrapper (`<li>`). Putting the active indicator on the wrapper while the focus ring lives on the link puts the two at different x-coordinates and produces a visible gap between them when both fire. Promote level indents and any decorations into the focusable element so the wrapper stays a pure semantic shell. See `STATE_BELONGS_TO_INTERACTIVE` in system-principles.
+The active border, the focus ring, hover, and disabled all live on the same element: the focusable child (`<a>`, `<button>`), not on a structural wrapper (`<li>`). Putting the active indicator on the wrapper while the focus ring lives on the link puts the two at different x-coordinates and produces a visible gap between them when both fire. Promote level indents and any decorations into the focusable element so the wrapper stays a pure semantic shell. See `STATE_BELONGS_TO_INTERACTIVE` in system-principles.
 
 ### Auto-collapse on viewport shrink
 
@@ -190,7 +190,7 @@ A workspace shell with a sidebar typically auto-compresses on smaller viewports.
 | 640–1024px | inline + icon strip |
 | <640px | overlay + hidden (toggle slides it in over content) |
 
-User toggles act as a *latched override* — once the user manually picks a state, that choice wins until the viewport crosses a breakpoint, which resets the override. Selecting an item in overlay mode also auto-dismisses (phone-drawer convention).
+User toggles act as a *latched override*: once the user manually picks a state, that choice wins until the viewport crosses a breakpoint, which resets the override. Selecting an item in overlay mode also auto-dismisses (phone-drawer convention).
 
 ## Token Application Guide
 
@@ -255,7 +255,7 @@ Tight by default. Use the lower end of the spacing scale for internal padding (x
 
 ### Padding: always square, role determines scale
 
-**Padding is always one token on all four sides.** It represents a box's *inset* — the space from its border to its content — and a box has one inset. Asymmetric padding (`padding: sm md`, `padding: md 0`, `padding: lg md sm`) makes elements look over-indented and visually unbalanced; it also conflates inset with other concerns (horizontal breathing for inline text, vertical rhythm between flow children, top-heavy emphasis) that each belong in their own property.
+**Padding is always one token on all four sides.** It represents a box's *inset* (the space from its border to its content), and a box has one inset. Asymmetric padding (`padding: sm md`, `padding: md 0`, `padding: lg md sm`) makes elements look over-indented and visually unbalanced; it also conflates inset with other concerns (horizontal breathing for inline text, vertical rhythm between flow children, top-heavy emphasis) that each belong in their own property.
 
 Before writing any padding declaration, identify the element's role. The role picks the *token*, not the shape:
 
@@ -276,7 +276,7 @@ Asymmetric concerns migrate out of padding into the property whose name matches 
 
 ### Container owns inset, children own flow
 
-Both inset and rhythm belong to the container. `padding` owns the inset (square, all four sides). `gap` owns the rhythm between siblings. Children own neither — they have square or zero padding and contribute only their content.
+Both inset and rhythm belong to the container. `padding` owns the inset (square, all four sides). `gap` owns the rhythm between siblings. Children own neither. They have square or zero padding and contribute only their content.
 
 ```css
 /* Container owns both inset and rhythm */
@@ -302,7 +302,7 @@ Three scroll-container modes exist. Pick one per overflow region.
 | Mode | When to use | Treatment |
 |---|---|---|
 | Invisible-gutter (default) | Vertical scroll inside a content surface; bar may or may not appear depending on content height. The default for any scrollable region not covered by the other two modes. | `overflow-y: auto; scrollbar-gutter: stable;` Inherits the html-level transparent track and `border`-tinted thumb so the reserved gutter does not read as a visible stripe. |
-| Boundary-rail | Vertical scroll where the bar is also a structural column edge — sidebar against main, planning rail against documents. The rail belongs to the boundary, not to the content. **The bar IS the column edge only when there's a visible rule for it to butt against** (typically the parent's `border-right`); without one, the bar floats and reads as recessed. | `overflow-y: scroll;` plus `::-webkit-scrollbar { width: 8px }` with `track` tinted `--color-border` and `thumb` tinted `--color-hover-outline`. Always visible on Chromium/WebKit. Standard `scrollbar-color`/`scrollbar-width` are deliberately omitted: setting either disables `::-webkit-scrollbar` styling on Chromium 121+ and falls back to the platform default, which on macOS is an overlay bar with no resting-state track. Firefox lacks `::-webkit-scrollbar` and renders its native scrollbar without the tint — the documented degradation. Canonical implementation: `dk-scroll-list`. |
+| Boundary-rail | Vertical scroll where the bar is also a structural column edge: sidebar against main, planning rail against documents. The rail belongs to the boundary, not to the content. **The bar IS the column edge only when there's a visible rule for it to butt against** (typically the parent's `border-right`); without one, the bar floats and reads as recessed. | `overflow-y: scroll;` plus `::-webkit-scrollbar { width: 8px }` with `track` tinted `--color-border` and `thumb` tinted `--color-hover-outline`. Always visible on Chromium/WebKit. Standard `scrollbar-color`/`scrollbar-width` are deliberately omitted: setting either disables `::-webkit-scrollbar` styling on Chromium 121+ and falls back to the platform default, which on macOS is an overlay bar with no resting-state track. Firefox lacks `::-webkit-scrollbar` and renders its native scrollbar without the tint: the documented degradation. Canonical implementation: `dk-scroll-list`. |
 | Transient-thumb | Horizontal overflow inside a wide table or code block. The bar fades with the content; only the thumb is ever visible. | `overflow-x: auto; scrollbar-color: var(--color-gray-400) transparent; scrollbar-width: thin;` Canonical implementation: `dk-table-scroll`. |
 
 The invisible-gutter mode requires `scrollbar-gutter: stable` whenever the content height can change during user interaction (collapse/expand, filter, lazy-load, tab swap); without it, the bar appearing or disappearing changes the content-box width by the bar's width on every toggle. See `STABLE_SCROLLBAR_GUTTER`.
@@ -311,13 +311,13 @@ Skip overflow declarations entirely on regions guaranteed never to overflow.
 
 Hiding the scrollbar (`scrollbar-width: none`) is not a fourth mode. It removes a structural affordance and violates `BOUNDARY_OWNERSHIP`: the container's edge no longer reads as a scroll surface.
 
-**Nested boundary-rails need a dead zone.** Two boundary-rail scrollbars may coexist along the same scroll-line — an inner list inside a flush column whose own outer scrollbar is also boundary-rail — *only* when they are separated by a horizontal dead zone of at least `1rem` between their tracks. Without that gap, the two rails read as a single thickened bar (or a duplicate-edge mistake). Same gutter colors on both is correct: they're the same kind of edge at different levels. The dead zone, not the color, is what disambiguates them.
+**Nested boundary-rails need a dead zone.** Two boundary-rail scrollbars may coexist along the same scroll-line (an inner list inside a flush column whose own outer scrollbar is also boundary-rail) *only* when they are separated by a horizontal dead zone of at least `1rem` between their tracks. Without that gap, the two rails read as a single thickened bar (or a duplicate-edge mistake). Same gutter colors on both is correct: they're the same kind of edge at different levels. The dead zone, not the color, is what disambiguates them.
 
 When a scroll container holds both a sticky chrome bar (app bar, section header) at `top: 0` and sticky cell content (`<thead>` cells, sub-section headers) at `top: <chrome-height>`, give the chrome a higher stacking layer than the in-flow stickies. Same `z-index` plus DOM order means the later element (the table header) paints over the chrome in the overlap band, and content briefly appears to sit above the bar before disappearing under it. Use `--z-chrome` for the bar and `--z-sticky` for in-content stickies; both stay below `--z-overlay`.
 
 ### Bookend frame for flush dividers
 
-When a horizontal rule must function as a section divider with no padding gap above or below — typically wrapping a flush scrollable region between two sections — the rule cannot live as a child element's `border`. The child only spans its own width, so its border stops short of the column edge (and stops short of any reserved scrollbar gutter). Wrap the content in a *frame* element that owns the full column width and the divider role:
+When a horizontal rule must function as a section divider with no padding gap above or below (typically wrapping a flush scrollable region between two sections), the rule cannot live as a child element's `border`. The child only spans its own width, so its border stops short of the column edge (and stops short of any reserved scrollbar gutter). Wrap the content in a *frame* element that owns the full column width and the divider role:
 
 ```html
 <section class="section-frame-host">…blurb…</section>

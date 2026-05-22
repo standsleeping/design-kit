@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Caret — settings panel</title>
+  <link rel="stylesheet" href="./tokens.css">
+  <style>
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-2xl);
+      max-width: var(--container-width-sm, 28rem);
+      padding: var(--spacing-3xl);
+    }
+    .panel h1 { font-size: var(--font-size-xl); }
+    .fields {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+    .field label {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: var(--font-letter-spacing-wide);
+      color: var(--color-text-muted);
+    }
+    .field input[type="text"],
+    .field select {
+      padding: var(--spacing-sm);
+      font: inherit;
+      color: var(--color-text);
+      background: var(--color-bg);
+      border: var(--border-width-thin) solid var(--color-border);
+    }
+    .field-inline {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    .field input:focus-visible,
+    .field select:focus-visible {
+      outline: var(--border-width-thin) solid var(--color-focus-ring);
+      outline-offset: calc(-1 * var(--border-width-thin));
+    }
+
+    /* The preview reflects the live settings via bound class / attr / text. */
+    .preview {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      padding: var(--spacing-2xl);
+      border: var(--border-width-thin) solid var(--color-border);
+    }
+    .preview[data-theme="dark"] { color: var(--color-white); background: var(--color-black); }
+    .preview-greeting { font-size: var(--font-size-lg); }
+    .preview-meta { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    .preview.is-compact { gap: var(--spacing-xs); padding: var(--spacing-md); }
+    .preview.is-compact .preview-greeting { font-size: var(--font-size-base); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import {
+      createApp, bindText, bindClass, bindAttr, bindValue, effect, localStorageEffect,
+    } from './app-runtime.js';
+
+    const STORAGE_KEY = 'caret-settings';
+
+    // Rehydrate from localStorage so reloads keep the user's settings.
+    const defaults = { name: '', theme: 'auto', compact: false };
+    function loadSettings() {
+      try {
+        return { ...defaults, ...JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') };
+      } catch {
+        return { ...defaults };
+      }
+    }
+
+    function reducer(state, action) {
+      switch (action.type) {
+        case 'setName':    return { ...state, name: action.value };
+        case 'setTheme':   return { ...state, theme: action.value };
+        case 'setCompact': return { ...state, compact: action.value };
+        default:           return state;
+      }
+    }
+
+    function field(labelText, control, { inline = false } = {}) {
+      const wrap = document.createElement('div');
+      wrap.className = inline ? 'field field-inline' : 'field';
+      const label = document.createElement('label');
+      label.textContent = labelText;
+      if (inline) wrap.append(control, label);
+      else wrap.append(label, control);
+      return wrap;
+    }
+
+    function render({ state, dispatch }) {
+      const root = document.createElement('div');
+      root.className = 'panel';
+
+      const heading = document.createElement('h1');
+      heading.textContent = 'Settings';
+
+      // Text input — bindValue writes state -> field and guards IME composition.
+      const name = document.createElement('input');
+      name.type = 'text';
+      name.placeholder = 'Your name';
+      bindValue(name, () => state.name());
+      name.addEventListener('input', () => dispatch({ type: 'setName', value: name.value }));
+
+      // Select — no binding helper for <select>, so drive .value with a raw effect.
+      const theme = document.createElement('select');
+      for (const value of ['auto', 'light', 'dark']) {
+        theme.append(new Option(value, value));
+      }
+      effect(() => { theme.value = String(state.theme()); });
+      theme.addEventListener('change', () => dispatch({ type: 'setTheme', value: theme.value }));
+
+      // Checkbox — same pattern: reflect with an effect, dispatch on change.
+      const compact = document.createElement('input');
+      compact.type = 'checkbox';
+      effect(() => { compact.checked = Boolean(state.compact()); });
+      compact.addEventListener('change', () => dispatch({ type: 'setCompact', value: compact.checked }));
+
+      const fields = document.createElement('div');
+      fields.className = 'fields';
+      fields.append(
+        field('Display name', name),
+        field('Theme', theme),
+        field('Compact mode', compact, { inline: true }),
+      );
+
+      // Live preview — three bindings reading the same slices, each updating in place.
+      const preview = document.createElement('div');
+      preview.className = 'preview';
+      bindAttr(preview, 'data-theme', () => String(state.theme()));
+      bindClass(preview, 'is-compact', () => state.compact());
+
+      const greeting = document.createElement('div');
+      greeting.className = 'preview-greeting';
+      bindText(greeting, () => `Hello, ${state.name() || 'stranger'}`);
+
+      const meta = document.createElement('div');
+      meta.className = 'preview-meta';
+      bindText(meta, () => `theme: ${state.theme()} · compact: ${state.compact() ? 'on' : 'off'}`);
+
+      preview.append(greeting, meta);
+      root.append(heading, fields, preview);
+      return root;
+    }
+
+    createApp({
+      initialState: loadSettings(),
+      reducer,
+      // Persist the whole settings object whenever any slice changes.
+      effects: [
+        localStorageEffect(STORAGE_KEY, (state) => ({
+          name: state.name(),
+          theme: state.theme(),
+          compact: state.compact(),
+        })),
+      ],
+      render,
+      root: document.getElementById('app'),
+    });
+  </script>
+</body>
+</html>

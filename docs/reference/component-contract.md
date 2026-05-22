@@ -2,7 +2,7 @@
 
 The storybook renders any component module that conforms to this contract. A component module is a `.js` file with four named exports: `metadata`, `propTypes`, `variants`, `render`.
 
-This is a reference spec; it describes the shape, not the motivation. For the rationale behind choosing ES modules over Web Components, see `../../../../../prinzfiles/planning/design-kit/modules-vs-web-components.md`.
+This is a reference spec; it describes the shape, not the motivation.
 
 ---
 
@@ -46,7 +46,7 @@ Object keyed by prop name. Each entry is a prop descriptor.
 
 ### Validation scope
 
-`validatePropTypes` runs only at storybook scan time (`scanPool` in `storybook.js`) and at contract-test time (`pages/contract-tests.html`). Production render calls do not validate — `render(props)` accepts whatever is passed and trusts the caller. Callers are the boundary; pass valid props, or expect undefined behavior.
+`validatePropTypes` runs only at storybook scan time (`scanPool` in `storybook.js`) and at contract-test time (`pages/contract-tests.html`). Production render calls do not validate. `render(props)` accepts whatever is passed and trusts the caller. Callers are the boundary; pass valid props, or expect undefined behavior.
 
 ### Why `function` is not a type
 
@@ -231,7 +231,7 @@ Each project keeps its own file-naming convention. The storybook does not enforc
 | Project | Convention | Examples |
 |---|---|---|
 | design-kit | kebab-case | `menu-item.js`, `tab-bar.js`, `code-block.js` |
-| comphost  | camelCase (default), PascalCase when a class is the canonical export | `menuItem.js`, `searchInput.js`, `CollapsibleSection.js` |
+| a consumer | camelCase (default), PascalCase when a class is the canonical export | `menuItem.js`, `searchInput.js`, `CollapsibleSection.js` |
 
 The sibling-CSS loader replaces the trailing `.js` with `.css` on the full URL, so the CSS file must share the JS basename exactly (case-sensitive). `menuItem.js` → `menuItem.css`; `CollapsibleSection.js` → `CollapsibleSection.css`.
 
@@ -242,7 +242,7 @@ Components declare classes under a pool-namespaced prefix to avoid cross-pool co
 | Pool | Prefix | Example class |
 |---|---|---|
 | design-kit | `dk-` | `.dk-menu-item`, `.dk-tab-bar-active` |
-| comphost | `ch-` | `.ch-menu-item`, `.ch-entity-metrics-section` |
+| a consumer | `ch-` | `.ch-menu-item`, `.ch-entity-metrics-section` |
 
 Prefixing is strict: every selector a component owns starts with its pool prefix. Shared modifier classes (`resolved`, `disabled`, `expanded`, etc.) are acceptable as secondary classes when a component already carries its prefixed primary class.
 

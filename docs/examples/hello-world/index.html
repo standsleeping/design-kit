@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Caret — hello world</title>
+  <link rel="stylesheet" href="./tokens.css">
+  <style>
+    .app {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-3xl);
+    }
+    .app h1 { font-size: var(--font-size-xl); }
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+    .counter output {
+      min-width: var(--spacing-3xl);
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-accent);
+      text-align: center;
+    }
+    .counter button {
+      min-width: var(--spacing-2xl);
+      padding: var(--spacing-sm);
+      font-size: var(--font-size-lg);
+      color: var(--color-text);
+      background: var(--color-bg);
+      border: var(--border-width-thin) solid var(--color-border);
+      cursor: pointer;
+    }
+    .counter button:focus-visible {
+      outline: var(--border-width-thin) solid var(--color-focus-ring);
+      outline-offset: calc(-1 * var(--border-width-thin));
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { createApp, bindText } from './app-runtime.js';
+
+    // 1. State — a plain object. Each top-level key becomes its own signal.
+    const initialState = { count: 0 };
+
+    // 2. Reducer — (state, action) -> next state. The only place state changes.
+    function reducer(state, action) {
+      switch (action.type) {
+        case 'increment': return { ...state, count: state.count + 1 };
+        case 'decrement': return { ...state, count: state.count - 1 };
+        default:          return state;
+      }
+    }
+
+    // 3. View — build the DOM once; bindings keep it in sync with the state.
+    function render({ state, dispatch }) {
+      const root = document.createElement('div');
+      root.className = 'app';
+
+      const heading = document.createElement('h1');
+      heading.textContent = 'Caret counter';
+
+      const row = document.createElement('div');
+      row.className = 'counter';
+
+      const minus = document.createElement('button');
+      minus.type = 'button';
+      minus.textContent = '−';
+      minus.addEventListener('click', () => dispatch({ type: 'decrement' }));
+
+      const value = document.createElement('output');
+      // bindText re-runs only when the `count` slice changes, mutating this one
+      // node in place — focus, selection, and scroll elsewhere stay untouched.
+      bindText(value, () => String(state.count()));
+
+      const plus = document.createElement('button');
+      plus.type = 'button';
+      plus.textContent = '+';
+      plus.addEventListener('click', () => dispatch({ type: 'increment' }));
+
+      row.append(minus, value, plus);
+      root.append(heading, row);
+      return root;
+    }
+
+    // 4. Wire it together and mount under #app.
+    createApp({
+      initialState,
+      reducer,
+      render,
+      root: document.getElementById('app'),
+    });
+  </script>
+</body>
+</html>
