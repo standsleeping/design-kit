@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>App Runtime Tests · design-kit</title>
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+  }
+  .dk-app-shell-main {
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+  .dk-app-shell-main h1 {
+    font-size: var(--font-size-lg);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+  }
+  .intro {
+    font-family: var(--typography-body);
+    color: var(--color-text-muted);
+    max-width: var(--layout-reading-measure-md);
+  }
+  .summary-ok { color: var(--color-success); }
+  .summary-fail { color: var(--color-danger); }
+  .results table { width: 100%; border-collapse: collapse; }
+  .results th, .results td {
+    text-align: left;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-family: inherit;
+    font-size: inherit;
+    vertical-align: top;
+  }
+  .results th {
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+  }
+  .pass { color: var(--color-success); }
+  .fail { color: var(--color-danger); }
+  .failure-detail {
+    color: var(--color-danger);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .sandbox-label {
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+  }
+  /* The live sandbox is where tests build real DOM (focus, composition, click).
+     It is emptied as each test cleans up after itself. */
+  .sandbox { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+  .sandbox input { font-family: inherit; font-size: inherit; }
+</style>
+</head>
+<body>
+<div class="dk-app-shell">
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="app-runtime-tests"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <h1>App Runtime Tests</h1>
+      <p class="intro">
+        Live-DOM smoke tests for components/system/app-runtime.js. The node:test
+        suite covers the same surface against a stub DOM; this page confirms the
+        bindings, keyed <code>each</code>, and <code>createApp</code> behave the
+        same against a real browser — including the things a stub cannot prove,
+        such as focus surviving a keyed reorder.
+      </p>
+      <div class="summary" data-summary>Running…</div>
+      <div class="results">
+        <table>
+          <thead>
+            <tr><th>Test</th><th>Result</th><th>Detail</th></tr>
+          </thead>
+          <tbody data-results></tbody>
+        </table>
+      </div>
+      <div class="sandbox-label">Live sandbox</div>
+      <div class="sandbox" data-sandbox aria-hidden="true"></div>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
+
+<script type="module">
+const rt = await import('./components/system/app-runtime.js?{{CACHE_BUST}}');
+const {
+  signal, effect, derive, batch,
+  bindText, bindAttr, bindClass, bindShow, bindValue,
+  each, createApp, createRoot,
+} = rt;
+
+const sandbox = document.querySelector('[data-sandbox]');
+
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg || 'assertion failed');
+}
+function eq(actual, expected, msg) {
+  if (!Object.is(actual, expected)) {
+    throw new Error(`${msg || 'eq'}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+  }
+}
+const texts = (parent) => Array.from(parent.children).map((n) => n.textContent);
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'inc': return { ...state, count: state.count + 1 };
+    case 'rename': return { ...state, name: action.name };
+    default: return state;
+  }
+};
+
+const tests = [
+  ['signal/effect: re-runs only when a read dep changes', () => {
+    const a = signal(1), b = signal(2), useA = signal(true);
+    let runs = 0;
+    createRoot(() => effect(() => { runs++; useA() ? a() : b(); }));
+    eq(runs, 1, 'initial run');
+    b.set(99); eq(runs, 1, 'b not a dep');
+    a.set(5); eq(runs, 2, 'a is a dep');
+    useA.set(false); eq(runs, 3, 'switch deps');
+    a.set(6); eq(runs, 3, 'a dropped');
+    b.set(100); eq(runs, 4, 'b now a dep');
+  }],
+
+  ['derive + batch: computed updates once per batch', () => {
+    const a = signal(2), b = signal(3);
+    let runs = 0, sum = 0;
+    createRoot(() => {
+      const total = derive(() => a() + b());
+      assert(typeof total.set === 'undefined', 'derive exposes no .set');
+      effect(() => { runs++; sum = total(); });
+    });
+    eq(sum, 5, 'initial sum'); eq(runs, 1, 'one run');
+    batch(() => { a.set(10); b.set(20); });
+    eq(sum, 30, 'batched sum'); eq(runs, 2, 'single re-run for batch');
+  }],
+
+  ['bindText: writes and updates textContent', () => {
+    const node = document.createElement('span');
+    sandbox.append(node);
+    const s = signal('hi');
+    const [, dispose] = withRoot(() => bindText(node, () => s()));
+    eq(node.textContent, 'hi');
+    s.set('bye'); eq(node.textContent, 'bye');
+    dispose(); node.remove();
+  }],
+
+  ['bindAttr: null/false removes, true sets empty, value stringifies', () => {
+    const node = document.createElement('div');
+    sandbox.append(node);
+    const v = signal('a');
+    const [, dispose] = withRoot(() => bindAttr(node, 'data-x', () => v()));
+    eq(node.getAttribute('data-x'), 'a');
+    v.set(true); eq(node.getAttribute('data-x'), '');
+    v.set(false); eq(node.hasAttribute('data-x'), false);
+    v.set(7); eq(node.getAttribute('data-x'), '7');
+    dispose(); node.remove();
+  }],
+
+  ['bindClass + bindShow: class toggle, display toggle preserves original', () => {
+    const node = document.createElement('div');
+    node.style.display = 'flex';
+    sandbox.append(node);
+    const on = signal(false), shown = signal(true);
+    const [, dispose] = withRoot(() => {
+      bindClass(node, 'active', () => on());
+      bindShow(node, () => shown());
+    });
+    eq(node.classList.contains('active'), false);
+    on.set(true); eq(node.classList.contains('active'), true);
+    eq(node.style.display, 'flex');
+    shown.set(false); eq(node.style.display, 'none');
+    shown.set(true); eq(node.style.display, 'flex', 'restored, not clobbered');
+    dispose(); node.remove();
+  }],
+
+  ['bindValue: skips writes during a real IME composition', () => {
+    const input = document.createElement('input');
+    sandbox.append(input);
+    const s = signal('hello');
+    const [, dispose] = withRoot(() => bindValue(input, () => s()));
+    eq(input.value, 'hello');
+    s.set('world'); eq(input.value, 'world');
+    input.focus();
+    input.dispatchEvent(new CompositionEvent('compositionstart'));
+    s.set('IGNORED'); eq(input.value, 'world', 'write skipped mid-composition');
+    input.dispatchEvent(new CompositionEvent('compositionend'));
+    s.set('done'); eq(input.value, 'done');
+    dispose(); input.remove();
+  }],
+
+  ['each: renders, reorders, and preserves node identity', () => {
+    const parent = document.createElement('ul');
+    sandbox.append(parent);
+    const list = signal([{ id: 'a', v: 1 }, { id: 'b', v: 2 }, { id: 'c', v: 3 }]);
+    const [, dispose] = withRoot(() => {
+      each(parent, () => list(), (it) => it.id, (item, key) => {
+        const li = document.createElement('li');
+        effect(() => { li.textContent = `${key}:${item().v}`; });
+        return li;
+      });
+    });
+    eq(JSON.stringify(texts(parent)), JSON.stringify(['a:1', 'b:2', 'c:3']));
+    const [nA, nB, nC] = parent.children;
+    list.set([{ id: 'c', v: 3 }, { id: 'a', v: 1 }, { id: 'b', v: 2 }]);
+    eq(JSON.stringify(texts(parent)), JSON.stringify(['c:3', 'a:1', 'b:2']));
+    assert(parent.children[0] === nC && parent.children[1] === nA && parent.children[2] === nB, 'same nodes, repositioned');
+    dispose(); parent.remove();
+  }],
+
+  ['each: in-place update keeps node; remove detaches; append allocates one', () => {
+    const parent = document.createElement('ul');
+    sandbox.append(parent);
+    const list = signal([{ id: 'a', v: 1 }, { id: 'b', v: 2 }]);
+    const cleaned = [];
+    const [, dispose] = withRoot(() => {
+      each(parent, () => list(), (it) => it.id, (item, key) => {
+        const li = document.createElement('li');
+        effect(() => { li.textContent = `${key}:${item().v}`; });
+        rt.onCleanup(() => cleaned.push(key));
+        return li;
+      });
+    });
+    const nA = parent.children[0], nB = parent.children[1];
+    list.set([{ id: 'a', v: 42 }, { id: 'b', v: 2 }]);
+    assert(parent.children[0] === nA, 'node reused on update');
+    eq(nA.textContent, 'a:42');
+    list.set([{ id: 'a', v: 42 }]);
+    eq(nB.parentNode, null, 'removed node detached');
+    eq(JSON.stringify(cleaned), JSON.stringify(['b']), 'removed scope disposed');
+    list.set([{ id: 'a', v: 42 }, { id: 'd', v: 4 }]);
+    assert(parent.children[0] === nA, 'existing node untouched on append');
+    eq(JSON.stringify(texts(parent)), JSON.stringify(['a:42', 'd:4']));
+    dispose(); parent.remove();
+  }],
+
+  ['each: focus survives a keyed reorder (real DOM)', () => {
+    const parent = document.createElement('ul');
+    sandbox.append(parent);
+    const list = signal([{ id: 'a' }, { id: 'b' }, { id: 'c' }]);
+    const [, dispose] = withRoot(() => {
+      each(parent, () => list(), (it) => it.id, (item, key) => {
+        const li = document.createElement('li');
+        const input = document.createElement('input');
+        input.value = key;
+        li.append(input);
+        return li;
+      });
+    });
+    const bInput = parent.children[1].querySelector('input');
+    bInput.focus();
+    assert(document.activeElement === bInput, 'b input focused before reorder');
+    list.set([{ id: 'c' }, { id: 'a' }, { id: 'b' }]);
+    assert(parent.children[2].querySelector('input') === bInput, 'b node moved, not recreated');
+    assert(document.activeElement === bInput, 'focus survived the reorder');
+    dispose(); parent.remove();
+  }],
+
+  ['createApp: a real click dispatches and re-renders only its slice', () => {
+    const root = document.createElement('div');
+    sandbox.append(root);
+    let countRuns = 0, nameRuns = 0;
+    const app = createApp({
+      initialState: { count: 0, name: 'a' },
+      reducer,
+      root,
+      render: ({ state, dispatch }) => {
+        const wrap = document.createElement('div');
+        const btn = document.createElement('button');
+        const name = document.createElement('span');
+        effect(() => { countRuns++; btn.textContent = `count: ${state.count()}`; });
+        effect(() => { nameRuns++; name.textContent = state.name(); });
+        btn.addEventListener('click', () => dispatch({ type: 'inc' }));
+        wrap.append(btn, name);
+        return wrap;
+      },
+    });
+    eq(countRuns, 1); eq(nameRuns, 1);
+    root.querySelector('button').click();
+    eq(app.getState().count, 1, 'click dispatched');
+    assert(root.textContent.includes('count: 1'), 'DOM reflects new count');
+    eq(countRuns, 2); eq(nameRuns, 1, 'name slice did not re-run');
+    app.dispose();
+    eq(root.childNodes.length, 0, 'dispose clears root');
+    root.remove();
+  }],
+
+  ['createApp: app-level effect cleanup runs on dispose', () => {
+    const root = document.createElement('div');
+    sandbox.append(root);
+    const cleaned = [];
+    const app = createApp({
+      initialState: { count: 0 },
+      reducer,
+      root,
+      effects: [({ state }) => { effect(() => state.count()); return () => cleaned.push('done'); }],
+      render: () => document.createElement('div'),
+    });
+    app.dispose();
+    eq(JSON.stringify(cleaned), JSON.stringify(['done']));
+    root.remove();
+  }],
+];
+
+// Run fn under a root owner and hand back its dispose so DOM-binding tests can
+// tear effects down without the createRoot callback boilerplate.
+function withRoot(fn) {
+  let result, dispose;
+  createRoot((d) => { dispose = d; result = fn(); });
+  return [result, dispose];
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+function run() {
+  const summary = document.querySelector('[data-summary]');
+  const body = document.querySelector('[data-results]');
+  let passed = 0, failed = 0;
+  for (const [name, fn] of tests) {
+    const row = document.createElement('tr');
+    try {
+      fn();
+      passed++;
+      row.innerHTML = `<td>${escapeHTML(name)}</td><td class="pass">PASS</td><td></td>`;
+    } catch (err) {
+      failed++;
+      row.innerHTML = `<td>${escapeHTML(name)}</td><td class="fail">FAIL</td><td class="failure-detail">${escapeHTML(err && err.stack || err)}</td>`;
+    }
+    body.append(row);
+  }
+  if (failed === 0) {
+    summary.textContent = `All ${passed} runtime tests pass.`;
+    summary.classList.add('summary-ok');
+  } else {
+    summary.textContent = `${failed} of ${passed + failed} runtime tests failed.`;
+    summary.classList.add('summary-fail');
+  }
+  document.body.dataset.testStatus = failed === 0 ? 'pass' : 'fail';
+  document.body.dataset.testTotal = String(passed + failed);
+  document.body.dataset.testFailures = String(failed);
+}
+
+run();
+</script>
+</body>
+</html>

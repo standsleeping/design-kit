@@ -1,13 +1,11 @@
 // Single source of truth for design-kit's site nav structure.
 //
 // Consumed by the index page's NavStack (mounted by src/design_kit/preview.py)
-// and importable by any future per-page nav widget. See nav-model.md in
-// prinzfiles' planning/design-kit/ folder for topology rationale, surface
-// contract, and open questions.
+// and importable by any future per-page nav widget.
 //
 // LEVELS holds a single root level: every Token anchor and every external
 // page is reachable in one click from the index sidebar. Multi-level drilling
-// is reserved for inside leaf pages (a future surface — see nav-model.md).
+// is reserved for inside leaf pages (a future surface).
 //
 // TARGETS maps each item.id to its URL or in-page hash.
 
@@ -38,6 +36,7 @@ export const LEVELS = [
       { kind: 'section-header', id: 'audits-header',          label: 'Audits' },
       { kind: 'section-item',   id: 'border-audit',           label: 'Border Audit' },
       { kind: 'section-item',   id: 'contract-tests',         label: 'Contract Tests' },
+      { kind: 'section-item',   id: 'app-runtime-tests',      label: 'App Runtime Tests' },
       { kind: 'section-item',   id: 'responsive-table-tests', label: 'Responsive Table Tests' },
     ],
   },
@@ -62,5 +61,6 @@ export const TARGETS = {
   'line-height-units':       'line-height-units.html',
   'border-audit':            'border-audit.html',
   'contract-tests':          'contract-tests.html',
+  'app-runtime-tests':       'app-runtime-tests.html',
   'responsive-table-tests':  'responsive-table-tests.html',
 };
