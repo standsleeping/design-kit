@@ -24,7 +24,10 @@ from __future__ import annotations
 
 import json
 import re
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _BP_REF_RE = re.compile(r"\$bp-([a-z0-9-]+)")
 
@@ -36,8 +39,7 @@ def load_breakpoints(tokens_path: Path) -> dict[str, str]:
     breakpoints = primitive.get("breakpoint", {})
     if not isinstance(breakpoints, dict):
         raise ValueError(
-            "tokens.json: primitive.breakpoint must be a flat object of "
-            "name → value"
+            "tokens.json: primitive.breakpoint must be a flat object of name → value"
         )
     return {k: str(v) for k, v in breakpoints.items()}
 

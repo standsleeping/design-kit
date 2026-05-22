@@ -11,7 +11,9 @@ from design_kit.export import (
 )
 
 
-def _seed_source(source: Path, *, tokens: str = "/* test */", manifest: str = "{}") -> None:
+def _seed_source(
+    source: Path, *, tokens: str = "/* test */", manifest: str = "{}"
+) -> None:
     source.mkdir(parents=True, exist_ok=True)
     (source / TOKENS_FILENAME).write_text(tokens, encoding="utf-8")
     (source / MANIFEST_FILENAME).write_text(manifest, encoding="utf-8")

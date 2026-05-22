@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from design_kit.breakpoints import load_breakpoints, substitute_breakpoints
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _validate_tokens_shape(data: dict[str, object]) -> None:

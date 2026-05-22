@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from design_kit.token_css import generate_token_css
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from pathlib import Path
 
 
 def _write_tokens(tmp_path: Path, data: Mapping[str, object]) -> Path:
@@ -90,7 +93,7 @@ def test_validation_rejects_theme_missing_luminance(tmp_path: Path) -> None:
             "themes": {"alpha": {}},
         },
     }
-    with pytest.raises(ValueError, match="theme 'alpha'.*luminance"):
+    with pytest.raises(ValueError, match=r"theme 'alpha'.*luminance"):
         generate_token_css(_write_tokens(tmp_path, tokens))
 
 
