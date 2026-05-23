@@ -1,5 +1,6 @@
 .dk-luminance-toggle {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: var(--spacing-xs);
   align-items: center;
 }
