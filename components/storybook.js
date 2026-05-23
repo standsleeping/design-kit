@@ -27,6 +27,7 @@ import {
 } from './system/runtime.js';
 import { mountSystemSidebar } from './system/system-sidebar.js';
 import { installResponsiveRails } from './app-shell.js';
+import { setSelected } from './nav-stack.js';
 import { LEVELS, TARGETS } from './system/nav-data.js';
 
 const CONFIG_URL = 'components/storybook.config.json';
@@ -521,9 +522,13 @@ async function main() {
     );
     if (entry) select(entry);
   };
-  const renderNav = async () => {
+  // Build the NavStack once: its structure (registry, pool headers, levels)
+  // is fixed for the session. Per-click selection is a separate source of
+  // change, handled in place by NavStack (internal click) and setSelected
+  // (hashchange). So a selection never rebuilds the nav and the list keeps
+  // its scroll and focus (STRUCTURE_REFLECTS_CHANGE, BOUNDARY_OWNERSHIP).
+  const buildNav = async () => {
     if (!sidebars) return;
-    if (currentNav) currentNav.remove();
     const componentItems = buildNavStackItems(
       registry, active, poolNames.length > 1,
     );
@@ -549,8 +554,11 @@ async function main() {
     }));
   };
 
+  const syncNavSelection = () => {
+    if (currentNav) setSelected(currentNav, `${active.pool}/${active.mod.metadata.name}`);
+  };
+
   const paint = () => {
-    renderNav();
     if (el.name) el.name.textContent = active.mod.metadata.name;
     if (el.example) {
       const examplePage = active.mod.metadata.examplePage;
@@ -780,10 +788,12 @@ async function main() {
     if (next && next !== active) {
       active = next;
       eventLog.clear();
+      syncNavSelection();
       paint();
     }
   });
 
+  await buildNav();
   paint();
 }
 

@@ -56,9 +56,13 @@ export const variants = [
  */
 
 // Per-instance state lives in a WeakMap keyed by the returned root node.
-// This keeps internal state out of the public DOM (no mangled __properties)
-// while preserving the no-callbacks contract: state is mutated in place by
-// internal handlers, the storybook re-renders by calling render() afresh.
+// This keeps internal state out of the public DOM (no mangled __properties).
+// The two navigation states the component owns (the drill `path` and each
+// item's `selected` flag) are mutated in place by internal handlers (and,
+// for selection, by the exported setSelected), never by an external rebuild.
+// Levels carry the selected flag per item, so independent levels keep their
+// own highlight; isolating that per-click change from the (fixed) structure
+// is why a selection no longer tears down the tree (STRUCTURE_REFLECTS_CHANGE).
 /** @type {WeakMap<HTMLElement, NavState>} */
 const STATE = new WeakMap();
 
@@ -82,6 +86,57 @@ function emit(root, name, detail) {
  */
 function findLevel(levels, id) {
   return levels.find((l) => l.id === id);
+}
+
+// Pure selection transform: return `levels` with `id` selected inside whichever
+// level contains it, that level's other items cleared. A level without `id` is
+// returned by reference, so a sibling level's selection survives (the system-
+// root section marker is not wiped when a component is selected). If no level
+// contains `id`, the input is returned unchanged. Keeping the selection rules
+// here, separate from the DOM toggle in setSelected, makes them unit-testable
+// without a DOM (FUNCTIONAL_TESTING) and pins the per-level isolation invariant.
+/**
+ * @param {NavLevel[]} levels
+ * @param {string} id
+ * @returns {NavLevel[]}
+ */
+export function selectInLevels(levels, id) {
+  let changed = false;
+  const next = levels.map((level) => {
+    if (!(level.items ?? []).some((it) => it.id === id)) return level;
+    changed = true;
+    return {
+      ...level,
+      items: level.items.map((it) => ({ ...it, selected: it.id === id })),
+    };
+  });
+  return changed ? next : levels;
+}
+
+// Move the selection in place. The per-item `selected` flag is the source of
+// truth (see selectInLevels); CSS maps `.dk-nav-stack-item-selected` to the
+// highlight. Updating it without a re-render lets the rendered list keep its
+// scroll offset and focus across a selection change. The DOM is reconciled
+// only when `id` is in the rendered level; in any other level the data update
+// is enough: renderBody applies it on drill. An unknown `id` is a no-op: the
+// data is unchanged and the early return leaves the current highlight intact.
+/**
+ * @param {HTMLElement} root
+ * @param {string} id
+ * @returns {void}
+ */
+export function setSelected(root, id) {
+  const s = STATE.get(root);
+  if (!s) return;
+  s.levels = selectInLevels(s.levels, id);
+  const target = root.querySelector(
+    `.dk-nav-stack-item[data-item-id="${CSS.escape(id)}"]`,
+  );
+  if (!target) return;
+  for (const prev of Array.from(root.querySelectorAll('.dk-nav-stack-item-selected'))) {
+    prev.classList.remove('dk-nav-stack-item-selected');
+  }
+  target.classList.add('dk-nav-stack-item-selected');
 }
 
 /**
@@ -190,6 +245,7 @@ function renderItem(root, item) {
       renderBody(root);
       emit(root, 'branch', { from: item.id, toLevel: item.branchTo, path: [...s.path] });
     } else {
+      setSelected(root, item.id);
       emit(root, 'select', { id: item.id, label: item.label, kind: item.kind });
     }
   });
