@@ -35,3 +35,12 @@ a.dk-breadcrumb-crumb:focus-visible {
   color: var(--color-text-muted);
   user-select: none;
 }
+
+.dk-breadcrumb-ellipsis {
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  user-select: none;
+}

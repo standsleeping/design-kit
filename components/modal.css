@@ -5,6 +5,7 @@
   position: absolute;
   z-index: var(--z-overlay, 1000);
   max-height: 80vh;
+  max-width: calc(100% - 2 * var(--spacing-2xl));
   background: var(--color-bg);
   border: var(--border-width-medium) solid var(--color-gray-400);
   display: flex;

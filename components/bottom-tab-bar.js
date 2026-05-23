@@ -35,6 +35,20 @@ export const variants = [
       ],
     },
   },
+  {
+    name: 'narrow-box-long-labels',
+    description: 'Five tabs with long labels in a narrow box — ellipsis degrades gracefully',
+    props: {
+      active: 'notifications',
+      tabs: [
+        { id: 'home', label: 'Home Feed' },
+        { id: 'notifications', label: 'Notifications' },
+        { id: 'messages', label: 'Messages' },
+        { id: 'bookmarks', label: 'Bookmarks' },
+        { id: 'settings', label: 'Settings' },
+      ],
+    },
+  },
 ];
 
 /**
@@ -57,7 +71,10 @@ export function render(props = {}) {
     btn.dataset.tab = tab.id;
     btn.setAttribute('role', 'tab');
     btn.setAttribute('aria-selected', String(tab.id === active));
-    btn.textContent = tab.label ?? tab.id;
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'dk-bottom-tab-bar-label';
+    labelSpan.textContent = tab.label ?? tab.id;
+    btn.append(labelSpan);
     btn.addEventListener('click', () => {
       if (tab.id === active) return;
       active = tab.id;

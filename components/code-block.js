@@ -47,6 +47,27 @@ export const variants = [
       },
     },
   },
+  {
+    name: 'narrow-box',
+    description: 'Many tabs and copy button at narrow width — tabs strip scrolls horizontally, copy button stays intact',
+    props: {
+      activeLanguage: 'bash',
+      languages: [
+        { id: 'bash', label: 'Bash' },
+        { id: 'zsh', label: 'Zsh' },
+        { id: 'fish', label: 'Fish' },
+        { id: 'powershell', label: 'PowerShell' },
+        { id: 'cmd', label: 'CMD' },
+      ],
+      sources: {
+        bash: 'echo "Hello from Bash"',
+        zsh: 'echo "Hello from Zsh"',
+        fish: 'echo "Hello from Fish"',
+        powershell: 'Write-Output "Hello from PowerShell"',
+        cmd: 'echo Hello from CMD',
+      },
+    },
+  },
 ];
 
 /**

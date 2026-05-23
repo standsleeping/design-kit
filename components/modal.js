@@ -48,6 +48,19 @@ export const variants = [
       content: { component: 'MenuItem', props: { label: 'Not visible' } },
     },
   },
+  {
+    name: 'narrow-box',
+    description: 'Long title + wide content-width prop in a narrow ancestor; max-width cap prevents horizontal overflow',
+    props: {
+      open: true,
+      title: 'This is a very long modal title that would overflow a narrow container without the width cap',
+      position: 'center',
+      width: 600,
+    },
+    slots: {
+      content: { component: 'MenuItem', props: { label: 'Content that wraps inside the capped width' } },
+    },
+  },
 ];
 
 /**

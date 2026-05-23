@@ -33,6 +33,21 @@ export const variants = [
       active: 'list',
     },
   },
+  {
+    name: 'narrow-box',
+    description: 'Many long options in a narrow host — scrolls horizontally as a boundary scroller',
+    props: {
+      options: [
+        { id: 'yesterday', label: 'Yesterday' },
+        { id: 'last-7-days', label: 'Last 7 Days' },
+        { id: 'last-30-days', label: 'Last 30 Days' },
+        { id: 'last-quarter', label: 'Last Quarter' },
+        { id: 'year-to-date', label: 'Year to Date' },
+        { id: 'all-time', label: 'All Time' },
+      ],
+      active: 'last-30-days',
+    },
+  },
 ];
 
 /**

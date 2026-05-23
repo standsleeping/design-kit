@@ -5,7 +5,6 @@ export const metadata = {
 };
 
 export const propTypes = {
-  columns: { type: 'number', default: 2 },
   label: { type: 'string', default: '' },
 };
 
@@ -13,7 +12,7 @@ export const variants = [
   {
     name: 'two-column',
     description: 'Two-column form',
-    props: { columns: 2 },
+    props: {},
     slots: {
       rows: [
         {
@@ -47,7 +46,7 @@ export const variants = [
   {
     name: 'with-label',
     description: 'Labeled form section',
-    props: { columns: 2, label: 'Profile' },
+    props: { label: 'Profile' },
     slots: {
       rows: [
         {
@@ -66,7 +65,7 @@ export const variants = [
   {
     name: 'single-column',
     description: 'Single-column form',
-    props: { columns: 1 },
+    props: {},
     slots: {
       rows: [
         {
@@ -77,19 +76,36 @@ export const variants = [
       ],
     },
   },
+  {
+    name: 'narrow-box',
+    description: 'Narrow container — columns collapse to one via auto-fit (drag the width control narrow)',
+    props: {},
+    slots: {
+      rows: [
+        {
+          component: 'FieldRow',
+          props: { label: 'Name' },
+          slots: { control: { component: 'TextInput', props: { value: 'Alice' } } },
+        },
+        {
+          component: 'FieldRow',
+          props: { label: 'Email' },
+          slots: { control: { component: 'TextInput', props: { type: 'email', value: 'alice@example.com' } } },
+        },
+      ],
+    },
+  },
 ];
 
 /**
- * @param {{ columns?: number, label?: string }} [props]
+ * @param {{ label?: string }} [props]
  * @returns {HTMLDivElement}
  */
 export function render(props = {}) {
-  const columns = props.columns ?? propTypes.columns.default;
   const label = props.label ?? propTypes.label.default;
 
   const root = document.createElement('div');
   root.className = 'dk-form-layout';
-  root.style.setProperty('--dk-form-columns', String(columns));
 
   if (label) {
     const labelEl = document.createElement('div');
