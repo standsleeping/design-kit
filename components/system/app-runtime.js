@@ -1,4 +1,4 @@
-// Application runtime — the in-house reactive engine that turns a reducer into
+// Application runtime: the in-house reactive engine that turns a reducer into
 // DOM. It implements the render-update contract (mutate in place, never
 // replace), DOM-identity preservation, an owner-disposed effect lifecycle,
 // and named-slot composition.
@@ -23,7 +23,7 @@
 // ---------------------------------------------------------------------------
 
 /**
- * A reactive node — an effect, derivation, or scope within the ownership tree.
+ * A reactive node: an effect, derivation, or scope within the ownership tree.
  * @typedef {{
  *   fn: (() => unknown) | null,
  *   parent: ReactiveNode | null,
@@ -43,7 +43,7 @@
 
 /**
  * A read-only accessor: callable, with a .peek() escape hatch, but no setter.
- * Derived values use this — they update from their dependencies, never directly.
+ * Derived values use this. They update from their dependencies, never directly.
  * @template T
  * @typedef {((() => T) & { peek: () => T })} ReadAccessor
  */
@@ -92,7 +92,7 @@
 // An observer (an effect or a derivation) tracks the signals it reads while it
 // runs; re-running it drops the previous run's subscriptions, so its dependency
 // set is always exactly what the last run touched. An owner is a node in the
-// disposal tree — app root -> component scopes -> effects (§6 ownership tiers).
+// disposal tree: app root -> component scopes -> effects (§6 ownership tiers).
 // Disposing an owner runs cleanups and disposes its children transitively.
 
 /** @type {ReactiveNode | null} */
@@ -301,7 +301,7 @@ export function createRoot(fn) {
  * Run fn under a fresh child owner; return [result, dispose]. One scope per
  * component instance (§6 tier 2): disposing it tears down that instance's
  * effects transitively. A scope does not subscribe to reads, so signals read at
- * the top of a render body do not make the whole instance reactive — only
+ * the top of a render body do not make the whole instance reactive. Only
  * bindings do.
  *
  * @template T
@@ -613,8 +613,8 @@ export function createApp({ initialState, reducer, effects = [], render, root })
 
 /**
  * Wire a DOM event to a dispatch. `toAction(event)` returns an action (or a
- * falsy value to ignore the event). Returns a cleanup that removes the listener
- * — the canonical §6 example.
+ * falsy value to ignore the event). Returns a cleanup that removes the listener.
+ * The canonical §6 example.
  *
  * @param {EventTarget} target
  * @param {string} type
@@ -650,7 +650,7 @@ export function localStorageEffect(key, select, { serialize = JSON.stringify } =
       try {
         localStorage.setItem(key, serialize(value));
       } catch {
-        /* storage full or disabled — drop the write */
+        /* storage full or disabled: drop the write */
       }
     });
   };

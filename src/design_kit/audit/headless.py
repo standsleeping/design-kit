@@ -36,7 +36,7 @@ class HeadlessContext:
 
     ``base_url`` serves the built site; ``page_names`` are the ``*.html`` files found in it
     (a spec needing a page that is absent reports SKIPPED); ``browser`` is a live Playwright
-    ``Browser`` (typed loosely — Playwright is an optional, undeclared dependency).
+    ``Browser`` (typed loosely: Playwright is an optional, undeclared dependency).
     """
 
     base_url: str
@@ -236,7 +236,7 @@ _OVERFLOW_JS = """
 """
 
 _OVERFLOW_REMEDIATION = (
-    "see SCROLL_CONTAINMENT / NO_PAGE_SCROLL — no page or layout container scrolls "
+    "see SCROLL_CONTAINMENT / NO_PAGE_SCROLL: no page or layout container scrolls "
     "horizontally. Opt a genuine leaf scroller out with data-allow-x-scroll; opt an "
     "intentional wrapping rail out with data-wrap-ok."
 )

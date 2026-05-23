@@ -11,11 +11,11 @@ the same rule.
 
 Exemptions auto-detected (no marker required):
 
-- ``overflow-y: scroll`` / ``overflow: scroll`` — bar is always rendered;
+- ``overflow-y: scroll`` / ``overflow: scroll``: bar is always rendered;
   gutter is moot.
-- ``overflow-x: auto`` — horizontal scrollbars do not affect inline-axis
+- ``overflow-x: auto``: horizontal scrollbars do not affect inline-axis
   content width.
-- ``scrollbar-width: none`` declared in the same rule — bar is invisible;
+- ``scrollbar-width: none`` declared in the same rule: bar is invisible;
   no gutter to reserve.
 
 Scope: ``components/*.css`` only.

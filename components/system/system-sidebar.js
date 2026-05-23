@@ -43,7 +43,7 @@ function defaultSelectHandler(e) {
   if (!target) return;
   if (target.startsWith('#')) {
     // Hash targets in TARGETS are anchors on the index page (token
-    // sections — Colors, Typography, ...). On the index itself we can
+    // sections: Colors, Typography, ...). On the index itself we can
     // hash-mutate for a no-reload smooth scroll; on every other page we
     // have to navigate to the index, because setting the current page's
     // hash wouldn't take the user anywhere useful and would silently

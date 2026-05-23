@@ -7,10 +7,10 @@ centering lives in ``place-items`` or grid alignment.
 
 The lint permits two narrow forms that do not express layout intent:
 
-* **Zero resets** — ``margin: 0`` and ``margin-(side): 0`` neutralize UA
+* **Zero resets**: ``margin: 0`` and ``margin-(side): 0`` neutralize UA
   defaults so the rest of the system can rely on no implicit gaps. This is
   the corollary that *enables* NEVER_MARGIN, not a use of margin for layout.
-* **Auto alignment hooks** — ``margin: auto`` and ``margin-(side): auto``
+* **Auto alignment hooks**: ``margin: auto`` and ``margin-(side): auto``
   are the CSS-spec-defined flex/grid alignment mechanism for absorbing
   available space on one or more sides. They carry no spacing value; they
   delegate placement to the layout algorithm of the parent.
@@ -58,7 +58,7 @@ STYLE_BLOCK_RE = re.compile(
     r"<style[^>]*>(.*?)</style>", flags=re.DOTALL | re.IGNORECASE
 )
 ALLOWLIST_MARKER = "margin-lint: ok"
-# A value token whose presence is benign — zero (any unit) or auto. Anything
+# A value token whose presence is benign: zero (any unit) or auto. Anything
 # else (a positive length, a var() reference, a calc(), a percentage) means
 # the declaration carries layout intent.
 _ZERO_TOKEN_RE = re.compile(r"^0(?:px|em|rem|lh|rlh|ch|vw|vh|%)?$", re.IGNORECASE)

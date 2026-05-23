@@ -315,7 +315,7 @@
   position: fixed;
   inset: 0;
   z-index: 99;
-  background: var(--color-overlay, rgba(0, 0, 0, 0.35)); /* token-leak: ok — fallback awaiting --color-overlay token */
+  background: var(--color-overlay, rgba(0, 0, 0, 0.35)); /* token-leak: ok, fallback awaiting --color-overlay token */
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -401,8 +401,8 @@
 }
 
 .dk-presence-dot {
-  width: 0.6em; /* dimension-lint: ok — em-relative dot scales with row text */
-  height: 0.6em; /* dimension-lint: ok — em-relative dot scales with row text */
+  width: 0.6em; /* dimension-lint: ok, em-relative dot scales with row text */
+  height: 0.6em; /* dimension-lint: ok, em-relative dot scales with row text */
   border-radius: 50%; /* radius-lint: ok */
   border: var(--border-width-thin) solid var(--color-hover-outline);
   background: transparent;

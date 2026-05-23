@@ -43,7 +43,7 @@
 
 .dk-expandable-card-icon {
   color: var(--color-text-muted);
-  width: 1.2em; /* dimension-lint: ok — em-relative icon scales with row font-size */
+  width: 1.2em; /* dimension-lint: ok, em-relative icon scales with row font-size */
   text-align: center;
 }
 
@@ -62,7 +62,7 @@
   color: var(--color-text-muted);
   border: var(--border-width-thin) solid var(--color-border);
   padding: 0 var(--spacing-sm); /* padding-lint: ok */
-  min-width: 1.8em; /* dimension-lint: ok — em-relative floor sized for 2-3 digit counts */
+  min-width: 1.8em; /* dimension-lint: ok, em-relative floor sized for 2-3 digit counts */
   text-align: center;
 }
 

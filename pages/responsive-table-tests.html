@@ -51,9 +51,9 @@
   .pass { color: var(--color-success); }
   .fail { color: var(--color-danger); }
   .failure-detail { color: var(--color-danger); white-space: pre-wrap; word-break: break-word; }
-  .mounts { position: fixed; left: -99999px; top: 0; } /* dimension-lint: ok — off-screen test mount */
-  .mount-wide { width: 800px; } /* dimension-lint: ok — WIDTH_CONTROLLED_TESTING fixture */
-  .mount-narrow { width: 240px; } /* dimension-lint: ok — WIDTH_CONTROLLED_TESTING fixture */
+  .mounts { position: fixed; left: -99999px; top: 0; } /* dimension-lint: ok, off-screen test mount */
+  .mount-wide { width: 800px; } /* dimension-lint: ok, WIDTH_CONTROLLED_TESTING fixture */
+  .mount-narrow { width: 240px; } /* dimension-lint: ok, WIDTH_CONTROLLED_TESTING fixture */
 </style>
 </head>
 <body>
@@ -267,7 +267,7 @@ async function main() {
     const popup = document.querySelector('[data-testid="sidenote-popup"]');
     const backdrop = document.querySelector('[data-testid="sidenote-backdrop"]');
     // Note: the dk-sn-visible class is applied in a requestAnimationFrame
-    // callback, which is throttled in hidden tabs — check DOM attachment only.
+    // callback, which is throttled in hidden tabs. Check DOM attachment only.
     record(
       'medium: clicking ref opens popup + backdrop',
       !!popup && !!backdrop && refs[0].getAttribute('aria-expanded') === 'true',

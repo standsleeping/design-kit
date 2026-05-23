@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Caret — settings panel</title>
+  <title>Caret: settings panel</title>
   <link rel="stylesheet" href="./tokens.css">
   <style>
     .panel {
@@ -111,14 +111,14 @@
       const heading = document.createElement('h1');
       heading.textContent = 'Settings';
 
-      // Text input — bindValue writes state -> field and guards IME composition.
+      // Text input: bindValue writes state -> field and guards IME composition.
       const name = document.createElement('input');
       name.type = 'text';
       name.placeholder = 'Your name';
       bindValue(name, () => state.name());
       name.addEventListener('input', () => dispatch({ type: 'setName', value: name.value }));
 
-      // Select — no binding helper for <select>, so drive .value with a raw effect.
+      // Select: no binding helper for <select>, so drive .value with a raw effect.
       const theme = document.createElement('select');
       for (const value of ['auto', 'light', 'dark']) {
         theme.append(new Option(value, value));
@@ -126,7 +126,7 @@
       effect(() => { theme.value = String(state.theme()); });
       theme.addEventListener('change', () => dispatch({ type: 'setTheme', value: theme.value }));
 
-      // Checkbox — same pattern: reflect with an effect, dispatch on change.
+      // Checkbox. Same pattern: reflect with an effect, dispatch on change.
       const compact = document.createElement('input');
       compact.type = 'checkbox';
       effect(() => { compact.checked = Boolean(state.compact()); });
@@ -140,7 +140,7 @@
         field('Compact mode', compact, { inline: true }),
       );
 
-      // Live preview — three bindings reading the same slices, each updating in place.
+      // Live preview: three bindings reading the same slices, each updating in place.
       const preview = document.createElement('div');
       preview.className = 'preview';
       bindAttr(preview, 'data-theme', () => String(state.theme()));

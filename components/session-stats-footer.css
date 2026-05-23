@@ -2,7 +2,7 @@
    (AppShell footer, status bar, sidebar footer slot) that owns the
    height, padding, border, and background. The strip just lays out
    its label/value pairs horizontally.
-   See BOUNDARY_OWNERSHIP — exactly one element should own each edge. */
+   See BOUNDARY_OWNERSHIP: exactly one element should own each edge. */
 .dk-ssf {
   display: flex;
   align-items: center;

@@ -54,7 +54,7 @@
   .pass { color: var(--color-success); }
   .fail { color: var(--color-danger); }
   .finding-detail { color: var(--color-text-muted); white-space: pre-wrap; word-break: break-word; }
-  .frame-host { position: fixed; left: -99999px; top: 0; width: 1280px; height: 900px; } /* dimension-lint: ok — off-screen test mount for headless audit at fixed viewport */
+  .frame-host { position: fixed; left: -99999px; top: 0; width: 1280px; height: 900px; } /* dimension-lint: ok, off-screen test mount for headless audit at fixed viewport */
 </style>
 </head>
 <body>
@@ -86,7 +86,6 @@
 const TARGETS = [
   'index.html',
   'storybook.html',
-  'sidebar-nav-stack.html',
   'line-height-units.html',
   'sticky-toc.html',
   'dashboard-shell.html',
@@ -101,7 +100,7 @@ const OVERLAP_MIN = 4;
 // an intended peer rail but don't actually align. The lower bound matches
 // POS_TOL so doubled-border findings aren't re-reported here. The upper bound
 // is the maximum y-gap that still reads as "supposed to be one rail" rather
-// than two distinct chrome strips. Sharpening of PEER_RAIL — see
+// than two distinct chrome strips. Sharpening of PEER_RAIL: see
 // system-principles/content/peer_rail.md § "Sharpening: quantization".
 const NEAR_MIN_DY = POS_TOL;
 const NEAR_MAX_DY = 12;
@@ -178,7 +177,7 @@ function findDoubledBorders(lines) {
 //   is structural, not a rail miss).
 // - One element's x-range fully contains the other's. This filters out
 //   "internal content of one strip happens to near-align with the edge of
-//   a stacked-in-column strip" — the eye doesn't expect those to align.
+//   a stacked-in-column strip". The eye doesn't expect those to align.
 //   Real peer-rail misses are sibling columns: each strip spans roughly its
 //   own column, with comparable x-extents, not nested.
 function findNearAlignedBorders(lines) {
@@ -273,7 +272,7 @@ async function main() {
     summary.textContent = `${totalFindings} doubled-border finding(s) across ${TARGETS.length} page(s).`;
     summary.className = 'summary summary-fail';
   }
-  // Headless harness contract — same shape as responsive-table-tests.html.
+  // Headless harness contract: same shape as responsive-table-tests.html.
   document.body.dataset.testStatus = totalFindings === 0 ? 'pass' : 'fail';
   document.body.dataset.testTotal = String(TARGETS.length);
   document.body.dataset.testFailures = String(totalFindings);

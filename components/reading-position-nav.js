@@ -26,7 +26,7 @@ export const variants = [
   },
   {
     name: 'live-scroll',
-    description: 'Tracks h2 + [id] elements on the host page (empty in storybook — nothing to observe)',
+    description: 'Tracks h2 + [id] elements on the host page (empty in storybook: nothing to observe)',
     props: {},
   },
 ];

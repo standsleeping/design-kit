@@ -5,16 +5,16 @@ that ships CSS consumes design tokens via ``var(--color-*)`` rather than
 hardcoding hex codes or color functions. Raw colors defeat theming
 (multi-theme, light-dark()) and break the contrast lint's coverage.
 
-The lint is a pure file scan — no browser, no Playwright. Three input kinds:
+The lint is a pure file scan. No browser, no Playwright. Three input kinds:
 
-- ``components/*.css`` — every component's stylesheet
-- ``pages/*.html`` — only the ``<style>`` block content is scanned; HTML
+- ``components/*.css``: every component's stylesheet
+- ``pages/*.html``: only the ``<style>`` block content is scanned; HTML
   body text is blanked so a hex code mentioned in prose doesn't false-positive
-- ``src/design_kit/preview.py`` (and any other ``extra_files``) — scanned as
+- ``src/design_kit/preview.py`` (and any other ``extra_files``): scanned as
   plain text so CSS embedded in f-strings is covered
 
 A trailing ``/* token-leak: ok */`` comment on the same line as the literal
-escapes the lint for that line — use it for cases where tokenizing isn't yet
+escapes the lint for that line. Use it for cases where tokenizing isn't yet
 warranted (e.g., a debug outline, a single-use scrim awaiting a new token).
 """
 

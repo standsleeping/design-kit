@@ -1,6 +1,6 @@
 export const metadata = {
   name: 'Topbar',
-  description: 'Chrome strip — fixed-height bar with optional title, used as the top or bottom rail of any content region (AppShell main, Sidebar slot, page-local main-wrap, icon rail). All strips that share --layout-chrome-bar-h on the same y-axis form a peer rail.',
+  description: 'Chrome strip: fixed-height bar with optional title, used as the top or bottom rail of any content region (AppShell main, Sidebar slot, page-local main-wrap, icon rail). All strips that share --layout-chrome-bar-h on the same y-axis form a peer rail.',
   category: 'layout',
 };
 
@@ -24,17 +24,17 @@ export const variants = [
   },
   {
     name: 'eyebrow',
-    description: '2xs uppercase muted title — for "this strip names a region" use',
+    description: '2xs uppercase muted title: for "this strip names a region" use',
     props: { title: 'Lorem ipsum', titleStyle: 'eyebrow' },
   },
   {
     name: 'empty',
-    description: 'Empty placeholder strip — e.g. the icon-rail header above its destinations',
+    description: 'Empty placeholder strip: e.g. the icon-rail header above its destinations',
     props: {},
   },
   {
     name: 'bottom',
-    description: 'Bottom rail variant — border swaps from bottom to top so it separates the strip from content above',
+    description: 'Bottom rail variant: border swaps from bottom to top so it separates the strip from content above',
     props: { side: 'bottom' },
   },
 ];

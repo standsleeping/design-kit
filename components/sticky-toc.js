@@ -261,7 +261,7 @@ export function render(props = {}) {
           e.preventDefault();
           // Snap the panel closed before measuring + scrolling. If we let the
           // collapse animate, the document shrinks above the target while the
-          // smooth scroll runs, and the scroll undershoots — landing on the
+          // smooth scroll runs, and the scroll undershoots, landing on the
           // section above the intended one.
           const prevTransition = panel.style.transition;
           panel.style.transition = 'none';

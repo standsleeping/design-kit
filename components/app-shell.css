@@ -7,7 +7,7 @@
   overflow: hidden;
 }
 
-/* Header and footer slots are positional only — their chrome treatment
+/* Header and footer slots are positional only. Their chrome treatment
    (height, padding, border, flex layout) comes from `dk-topbar` /
    `dk-topbar-bottom` which AppShell.render() composes onto the slot divs.
    Static-HTML consumers add the same class manually. */
@@ -25,7 +25,7 @@
 }
 
 /* position: relative so overlay-mode Sidebar children (position: absolute)
-   anchor to the body region, not to the viewport — keeps an overlay sidebar
+   anchor to the body region, not to the viewport. Keeps an overlay sidebar
    below the AppShell header rail and above the footer rail.
 
    --chrome-bar-rows is the PEER_RAIL multiplier. Every chrome strip on the
@@ -34,7 +34,7 @@
    grows uniformly when a page declares a taller chrome. Default is one row;
    pages that need a two-row rail mark the shell body with
    data-chrome-rows="2" (or "3", etc.). A single strip that intentionally
-   exits the rail overrides --chrome-bar-rows locally — visible in markup,
+   exits the rail overrides --chrome-bar-rows locally. Visible in markup,
    not buried in component CSS. */
 .dk-app-shell-body {
   position: relative;
@@ -62,7 +62,7 @@
   flex: 1;
   min-width: 0;
   /* Vertical scroll only. The center is a layout container, so per
-     SCROLL_CONTAINMENT it must never scroll horizontally — horizontal scroll
+     SCROLL_CONTAINMENT it must never scroll horizontally. Horizontal scroll
      belongs to leaf elements inside it (wide tables, code blocks), at their own
      edge. The old `overflow: auto` (both axes) silently turned any too-wide
      child into a forbidden horizontal scrollbar on the column itself. */

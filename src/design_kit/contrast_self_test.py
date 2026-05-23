@@ -36,7 +36,7 @@ STANDARD_PAIRS: tuple[Pair, ...] = (
     Pair(
         "color-bg", "color-focus-ring-light", 1.05, "selection tint distinct from page"
     ),
-    # Hover state composition — the regression vector TOKEN_PAIR_CONTRAST names
+    # Hover state composition: the regression vector TOKEN_PAIR_CONTRAST names
     Pair(
         "color-hover-bg",
         "color-hover-outline",
@@ -48,7 +48,7 @@ STANDARD_PAIRS: tuple[Pair, ...] = (
     Pair(
         "color-hover-bg", "color-border", 1.3, "row separator visible under hover fill"
     ),
-    # Selected state composition — same contract, different surface
+    # Selected state composition: same contract, different surface
     Pair(
         "color-selected-bg",
         "color-hover-outline",
@@ -67,7 +67,7 @@ STANDARD_PAIRS: tuple[Pair, ...] = (
 
 # Code-block adjacencies. Split from STANDARD_PAIRS because consumers that
 # don't render code shouldn't need to define --color-code-bg or
-# --color-syntax-* — `audit()` errors on unknown tokens, so the split lets
+# --color-syntax-*: `audit()` errors on unknown tokens, so the split lets
 # them opt in.
 CODE_PAIRS: tuple[Pair, ...] = (
     Pair("color-code-bg", "color-text", 4.5, "code text readable"),

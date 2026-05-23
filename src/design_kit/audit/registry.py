@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class LintSpec:
-    """One static audit — a source lint or the contrast check — runnable against any :class:`AuditScope`."""
+    """One static audit (a source lint or the contrast check) runnable against any :class:`AuditScope`."""
 
     slug: str
     name: str
@@ -100,7 +100,7 @@ def _static_spec(
 # --- contrast: the one spec that reads generated tokens.css, not a source dir ---
 
 _CONTRAST_REMEDIATION = (
-    "see TOKEN_PAIR_CONTRAST — a foreground/background pair must clear its WCAG floor "
+    "see TOKEN_PAIR_CONTRAST: a foreground/background pair must clear its WCAG floor "
     "in every theme; a failure is two tokens collapsing to one primitive or the wrong "
     "token chosen for an adjacency."
 )
@@ -121,7 +121,7 @@ def _run_contrast(scope: AuditScope) -> AuditOutcome:
     findings = tuple(
         Finding(
             locator=f"--{r.pair.a} x --{r.pair.b} ({r.theme})",
-            detail=f"{r.ratio:.2f} < {r.pair.min_ratio} — {r.pair.reason}",
+            detail=f"{r.ratio:.2f} < {r.pair.min_ratio}: {r.pair.reason}",
         )
         for r in results
         if not r.passed
@@ -160,11 +160,11 @@ REGISTRY: tuple[LintSpec, ...] = (
             s.components_dir, pages_dir=s.pages_dir, extra_files=list(s.extra_files)
         ),
         to_findings=lambda r: (
-            Finding(f"{lk.file}:{lk.line}", f"{lk.value} — {lk.snippet}")
+            Finding(f"{lk.file}:{lk.line}", f"{lk.value}: {lk.snippet}")
             for lk in r.leaks
         ),
         remediation=(
-            "see TOKEN_DRIVEN_DESIGN — every surface consumes colors via var(--color-*). "
+            "see TOKEN_DRIVEN_DESIGN: every surface consumes colors via var(--color-*). "
             "Mark documented exceptions with /* token-leak: ok */"
         ),
     ),
@@ -175,11 +175,11 @@ REGISTRY: tuple[LintSpec, ...] = (
         primary=lambda s: s.components_dir,
         runner=lambda s: run_focus_ring_lint(s.components_dir),
         to_findings=lambda r: (
-            Finding(f"{v.file}:{v.line}", f"{v.selector} — {v.snippet}")
+            Finding(f"{v.file}:{v.line}", f"{v.selector}: {v.snippet}")
             for v in r.violations
         ),
         remediation=(
-            "see INSET_FOCUS_RING — use negative outline-offset, or "
+            "see INSET_FOCUS_RING: use negative outline-offset, or "
             "mark genuinely standalone controls with /* focus-ring: standalone */"
         ),
     ),
@@ -190,11 +190,11 @@ REGISTRY: tuple[LintSpec, ...] = (
         primary=lambda s: s.components_dir,
         runner=lambda s: run_interactive_state_lint(s.components_dir),
         to_findings=lambda r: (
-            Finding(f"{v.file}:{v.line}", f"{v.selector} — {v.snippet}")
+            Finding(f"{v.file}:{v.line}", f"{v.selector}: {v.snippet}")
             for v in r.violations
         ),
         remediation=(
-            "see STATE_BELONGS_TO_INTERACTIVE — pair the rule with a :focus-visible "
+            "see STATE_BELONGS_TO_INTERACTIVE: pair the rule with a :focus-visible "
             "declaration on the same base, target a natively focusable element, or mark "
             "drag-only handles with /* state-lint: ok */"
         ),
@@ -207,12 +207,12 @@ REGISTRY: tuple[LintSpec, ...] = (
         runner=lambda s: run_peer_edge_lint(s.components_dir),
         to_findings=lambda r: (
             Finding(
-                f"{v.file}:{v.line}", f"{v.selector} → {v.declaration} — {v.snippet}"
+                f"{v.file}:{v.line}", f"{v.selector} → {v.declaration}: {v.snippet}"
             )
             for v in r.violations
         ),
         remediation=(
-            "see PEER_EDGE_RESERVATION — the rest state must declare the same "
+            "see PEER_EDGE_RESERVATION: the rest state must declare the same "
             "border-(side) with solid transparent so the modifier recolours a reserved "
             "channel. Mark documented exceptions with /* peer-edge: ok */"
         ),
@@ -225,12 +225,12 @@ REGISTRY: tuple[LintSpec, ...] = (
         runner=lambda s: run_scrollbar_gutter_lint(s.components_dir),
         to_findings=lambda r: (
             Finding(
-                f"{v.file}:{v.line}", f"{v.selector} → {v.declaration} — {v.snippet}"
+                f"{v.file}:{v.line}", f"{v.selector} → {v.declaration}: {v.snippet}"
             )
             for v in r.violations
         ),
         remediation=(
-            "see STABLE_SCROLLBAR_GUTTER — pair every overflow-y: auto with "
+            "see STABLE_SCROLLBAR_GUTTER: pair every overflow-y: auto with "
             "scrollbar-gutter: stable in the same rule, or hide the bar with "
             "scrollbar-width: none. Mark documented exceptions with /* scroll-gutter: ok */"
         ),
@@ -244,12 +244,12 @@ REGISTRY: tuple[LintSpec, ...] = (
         to_findings=lambda r: (
             Finding(
                 f"{v.file}:{v.line}",
-                f"{v.selector} → overflow: {v.value} — {v.snippet}",
+                f"{v.selector} → overflow: {v.value}: {v.snippet}",
             )
             for v in r.violations
         ),
         remediation=(
-            "see SCROLL_CONTAINMENT — a scroll container scrolls exactly one axis, "
+            "see SCROLL_CONTAINMENT: a scroll container scrolls exactly one axis, "
             "declared explicitly (overflow-y: auto). Mark a genuine two-axis scroller "
             "with /* scroll-axis: ok */"
         ),
@@ -263,12 +263,12 @@ REGISTRY: tuple[LintSpec, ...] = (
         to_findings=lambda r: (
             Finding(
                 f"{v.file}:{v.line}",
-                f"{v.selector} — {v.snippet}  [{', '.join(k.value for k in v.kinds)}]",
+                f"{v.selector}: {v.snippet}  [{', '.join(k.value for k in v.kinds)}]",
             )
             for v in r.violations
         ),
         remediation=(
-            "see PADDING_IS_INSET_ONLY — padding is square; horizontal/vertical asymmetry "
+            "see PADDING_IS_INSET_ONLY: padding is square; horizontal/vertical asymmetry "
             "lives in min-width/gap. Mark documented exceptions with /* padding-lint: ok */"
         ),
     ),
@@ -296,11 +296,11 @@ REGISTRY: tuple[LintSpec, ...] = (
             s.components_dir, pages_dir=s.pages_dir, extra_files=list(s.extra_files)
         ),
         to_findings=lambda r: (
-            Finding(f"{v.file}:{v.line}", f"{v.declaration}: {v.value} — {v.snippet}")
+            Finding(f"{v.file}:{v.line}", f"{v.declaration}: {v.value}: {v.snippet}")
             for v in r.violations
         ),
         remediation=(
-            "see NEVER_MARGIN — rhythm lives in the parent's gap. Permitted: margin: 0 "
+            "see NEVER_MARGIN: rhythm lives in the parent's gap. Permitted: margin: 0 "
             "and margin-(side): auto. Mark documented exceptions with /* margin-lint: ok */"
         ),
     ),
@@ -314,12 +314,12 @@ REGISTRY: tuple[LintSpec, ...] = (
         ),
         to_findings=lambda r: (
             Finding(
-                f"{v.file}:{v.line}", f"{v.declaration} → {v.literal} — {v.snippet}"
+                f"{v.file}:{v.line}", f"{v.declaration} → {v.literal}: {v.snippet}"
             )
             for v in r.violations
         ),
         remediation=(
-            "see TOKEN_DRIVEN_DESIGN — borders bind to var(--border-width-*). Mark "
+            "see TOKEN_DRIVEN_DESIGN: borders bind to var(--border-width-*). Mark "
             "documented exceptions with /* token-leak: ok */"
         ),
     ),
@@ -333,12 +333,12 @@ REGISTRY: tuple[LintSpec, ...] = (
         ),
         to_findings=lambda r: (
             Finding(
-                f"{v.file}:{v.line}", f"{v.declaration} → {v.literal} — {v.snippet}"
+                f"{v.file}:{v.line}", f"{v.declaration} → {v.literal}: {v.snippet}"
             )
             for v in r.violations
         ),
         remediation=(
-            "see TOKEN_DRIVEN_DESIGN / JUSTIFY_EVERY_DIMENSION — widths, heights, gaps, "
+            "see TOKEN_DRIVEN_DESIGN / JUSTIFY_EVERY_DIMENSION: widths, heights, gaps, "
             "and offsets bind to tokens. Permitted: 0, auto, %, viewport/container units, "
             "lh, fr. Mark documented exceptions with /* dimension-lint: ok */"
         ),
@@ -350,7 +350,7 @@ REGISTRY: tuple[LintSpec, ...] = (
         primary=lambda s: s.pages_dir,
         runner=lambda s: run_page_lint(s.pages_dir),
         to_findings=lambda r: (
-            Finding(f"page {v.page}", f"{v.rule} — {v.message}") for v in r.violations
+            Finding(f"page {v.page}", f"{v.rule}: {v.message}") for v in r.violations
         ),
         remediation="see docs/reference/page-contract.md",
     ),

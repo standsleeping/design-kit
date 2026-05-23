@@ -2,7 +2,7 @@
 
 Enforces TOKEN_PAIR_CONTRAST: every pair of semantic tokens that will appear
 adjacent in the rendered UI must remain visually distinguishable in every
-theme. Failures are token-level bugs — two tokens collapsing to the same
+theme. Failures are token-level bugs. Two tokens collapsing to the same
 primitive in one theme, or the wrong token chosen for an adjacency.
 
 Consumers declare their own `Pair` list (the adjacencies they actually
@@ -108,9 +108,9 @@ def contrast_ratio(a: str, b: str) -> float:
 #
 #   4.5   WCAG AA for normal text (14-17px). Readability requirement.
 #   3.0   WCAG AA for large text and non-text UI boundaries (1.4.11).
-#   2.0   Major structural divider (section border, heavy rule) — clearly visible.
-#   1.5   Clear boundary between two surfaces — distinguishable at a glance.
-#   1.3   Minor separator (table row divider) — subtle but readable.
+#   2.0   Major structural divider (section border, heavy rule). Clearly visible.
+#   1.5   Clear boundary between two surfaces. Distinguishable at a glance.
+#   1.3   Minor separator (table row divider). Subtle but readable.
 #   1.05  Intentionally subtle tint (hover fill, code-bg). Catches the
 #         collapse-to-identical case (ratio 1.0) without demanding prominence.
 @dataclass(frozen=True, slots=True)
@@ -143,8 +143,8 @@ def audit(
 
     `tokens` must be the *effective* token map for one palette: a flat mapping
     from token name to raw value (literal hex, `var(...)`, or `light-dark(...)`).
-    Use `parse_tokens` on a single-palette stylesheet — or on a slice of a
-    multi-palette stylesheet — to produce it. Audit does not parse CSS; that
+    Use `parse_tokens` on a single-palette stylesheet (or on a slice of a
+    multi-palette stylesheet) to produce it. Audit does not parse CSS; that
     boundary belongs to the caller, who is responsible for choosing the right
     scope. Mixing definitions from multiple palettes into one map will
     silently audit a fictional palette.

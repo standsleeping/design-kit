@@ -177,7 +177,7 @@ export const variants = [
   },
   {
     name: 'clamped',
-    description: 'Two-line clamp on every cell — preserves uniform row height with long values',
+    description: 'Two-line clamp on every cell: preserves uniform row height with long values',
     props: {
       clampLines: 2,
       columns: DEFAULT_COLUMNS,
@@ -429,7 +429,7 @@ export function render(props = {}) {
 
   /** @type {Map<string, unknown>} */
   const sidenoteStore = new Map();
-  // Sidenote overlay state — tagged variant. Only one of these shapes is ever live:
+  // Sidenote overlay state: tagged variant. Only one of these shapes is ever live:
   //   { kind: 'closed' }
   //   { kind: 'inline', id, ref, panel }
   //   { kind: 'popup',  id, ref, popup, backdrop }
@@ -453,7 +453,7 @@ export function render(props = {}) {
   };
 
   // Body contract: Node (trusted by construction), { html: string } (trusted markup,
-  // explicit opt-in), { text: string } or bare string (treated as plain text — safe default).
+  // explicit opt-in), { text: string } or bare string (treated as plain text: safe default).
   /**
    * @param {HTMLElement} container
    * @param {unknown} body

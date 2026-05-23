@@ -233,7 +233,7 @@ async function main() {
         mod = await import(url);
       } catch (err) {
         if (poolFirstImport) {
-          // Pool's very first import failed — treat whole pool as unreachable, not broken.
+          // Pool's very first import failed. Treat whole pool as unreachable, not broken.
           poolUnreachable = true;
           unreachablePools.push({ name: pool.name, path: pool.path, reason: err.message });
           break;
@@ -263,7 +263,7 @@ async function main() {
 
   for (const p of unreachablePools) {
     const row = document.createElement('tr');
-    row.innerHTML = `<td>pool: ${p.name}</td><td class="skip">UNREACHABLE</td><td class="failure-detail">${escapeHTML(p.path)} — ${escapeHTML(p.reason)}</td>`;
+    row.innerHTML = `<td>pool: ${p.name}</td><td class="skip">UNREACHABLE</td><td class="failure-detail">${escapeHTML(p.path)}: ${escapeHTML(p.reason)}</td>`;
     resultsBody.append(row);
   }
 

@@ -1,4 +1,4 @@
-// Storybook chrome — sits on top of `runtime.js`. The runtime owns pool scan,
+// Storybook chrome: sits on top of `runtime.js`. The runtime owns pool scan,
 // contract validation, sibling-CSS loading, slot resolution, the luminance +
 // color-theme toggles, and the event-log capture. This module owns the
 // storybook-specific UI: the component nav list with pool tabs, resizable
@@ -54,7 +54,7 @@ async function loadConfig() {
 
 // Build NavStack items from the component registry. Section-headers separate
 // pools when more than one is loaded; section-items render each component.
-// The id is `<pool>/<componentName>` — same shape as the URL hash that
+// The id is `<pool>/<componentName>`: same shape as the URL hash that
 // storybook routes on. Matches the canonical sidebar pattern in
 // components/system/nav-data.js (used on the index page).
 /**
@@ -349,7 +349,7 @@ function saveLayout(layout) {
   try {
     localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout));
   } catch {
-    /* quota or disabled — ignore */
+    /* quota or disabled: ignore */
   }
 }
 

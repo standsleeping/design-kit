@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Caret — task list</title>
+  <title>Caret: task list</title>
   <link rel="stylesheet" href="./tokens.css">
   <style>
     .app {
@@ -143,7 +143,7 @@
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
       form.append(input, addBtn);
 
-      // Filter tabs — each dispatches setFilter; urlSyncEffect mirrors it to the URL.
+      // Filter tabs: each dispatches setFilter; urlSyncEffect mirrors it to the URL.
       const filters = document.createElement('div');
       filters.className = 'filters';
       for (const value of FILTERS) {
@@ -155,7 +155,7 @@
         filters.append(tab);
       }
 
-      // Keyed list — stable key by id; rows keep identity across filter/toggle/remove.
+      // Keyed list: stable key by id; rows keep identity across filter/toggle/remove.
       const list = document.createElement('div');
       list.className = 'list';
       each(

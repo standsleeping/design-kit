@@ -4,7 +4,7 @@ Serve design-kit's dist/ directory locally without browser caching.
 `python3 -m http.server` emits no `Cache-Control` header, so browsers cache
 imported ES modules and CSS aggressively. Module imports in particular are
 hard to bust because each `?v=<hash>` change only helps when the importer
-reloads — transitive imports can stay stale. Sending `Cache-Control: no-cache`
+reloads. Transitive imports can stay stale. Sending `Cache-Control: no-cache`
 on every response forces a revalidation on each request, which keeps the dev
 loop honest.
 

@@ -3,11 +3,11 @@
 Static-analysis corollary of the visual language's "all corners square"
 convention: ``border-radius`` defaults to ``0``, and any explicit non-zero
 value is a smell. A few genuine circles (status dots, presence indicators)
-need ``border-radius: 50%`` — those are allowed via the
+need ``border-radius: 50%``: those are allowed via the
 ``/* radius-lint: ok */`` marker.
 
 The lint walks ``components/*.css`` and flags any ``border-radius``
-declaration whose value is not literally ``0`` (after token-var lookup —
+declaration whose value is not literally ``0`` (after token-var lookup:
 even ``var(--radius-md)`` is flagged, because the var resolves to 0 today
 and the source should be explicit about that fact rather than implying a
 rounded corner is intended).

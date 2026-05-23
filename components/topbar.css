@@ -1,4 +1,4 @@
-/* Chrome strip — a fixed-height bar with optional title and start/end
+/* Chrome strip: a fixed-height bar with optional title and start/end
    content. Used at the top or bottom of any content region (AppShell main,
    Sidebar header/footer slot, page-local main wrap, icon rail). All chrome
    strips on the same y-axis form one peer rail (PEER_RAIL): they share
@@ -36,7 +36,7 @@
   white-space: nowrap;
 }
 
-/* Eyebrow variant: 2xs uppercase muted — for "section / breadcrumb" style
+/* Eyebrow variant: 2xs uppercase muted. For "section / breadcrumb" style
    titles where the strip names a region rather than the page. */
 .dk-topbar-title-eyebrow {
   font-size: var(--font-size-2xs);
@@ -54,7 +54,7 @@
 }
 
 /* For strips without a title where start + end content still need to be
-   pushed apart — append a spacer span. */
+   pushed apart. Append a spacer span. */
 .dk-topbar-spacer {
   flex: 1;
   min-width: 0;

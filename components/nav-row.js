@@ -29,7 +29,7 @@ export const variants = [
   },
   {
     name: 'all-three',
-    description: 'Label plus inline meta plus trailing meta — the full pattern',
+    description: 'Label plus inline meta plus trailing meta: the full pattern',
     props: { label: 'agents', meta: '(9)', trailing: '5 · 12' },
   },
   {

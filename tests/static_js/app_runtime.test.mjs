@@ -1,5 +1,5 @@
 // Node-runnable tests for the application runtime (app-runtime.js). The
-// reactive core is pure data — no DOM — so it tests cleanly in node:test; the
+// reactive core is pure data (no DOM) so it tests cleanly in node:test; the
 // bindings, `each`, and createApp run against mini-dom.mjs, a faithful minimal
 // DOM. The wrapper pytest at tests/test_app_runtime_js.py invokes this file via
 // `node --test`.
@@ -69,7 +69,7 @@ test('effect: unchanged set (Object.is) does not re-run', () => {
   assert.equal(runs, 1);
 });
 
-test('effect: dependencies are dynamic — only the deps read on the last run', () => {
+test('effect: dependencies are dynamic. Only the deps read on the last run', () => {
   const a = signal(1);
   const b = signal(2);
   const useA = signal(true);
@@ -185,8 +185,8 @@ test('createScope: disposing one scope leaves siblings alive', () => {
     assert.equal(aRuns, 1);
     assert.equal(bRuns, 1);
     disposeA();
-    a.set(1); // scope A disposed — no re-run
-    b.set(1); // scope B alive — re-runs
+    a.set(1); // scope A disposed: no re-run
+    b.set(1); // scope B alive: re-runs
     assert.equal(aRuns, 1);
     assert.equal(bRuns, 2);
   });

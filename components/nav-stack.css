@@ -24,7 +24,7 @@
   /* Peer-rail member: height tracks --layout-chrome-bar-h × --chrome-bar-rows
      so the NavStack title row aligns with sibling chrome strips (dk-topbar,
      dk-sticky-toc-summary, ...). The :has(.back) variant collapses because a
-     drilled level uses the back-button row as its chrome — already sized via
+     drilled level uses the back-button row as its chrome. Already sized via
      its own dk-nav-stack-back rules. */
   min-height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
 }
@@ -43,7 +43,7 @@
   white-space: nowrap;
 }
 
-/* Back is the first row of the level — same padding and transparent
+/* Back is the first row of the level. Same padding and transparent
    left-border channel as items so the icon aligns vertically with item content. */
 .dk-nav-stack-back {
   display: flex;
@@ -73,7 +73,7 @@
 
 .dk-nav-stack-back-icon {
   flex-shrink: 0;
-  width: 1.25rem; /* dimension-lint: ok — fixed icon column, independent of local font-size */
+  width: 1.25rem; /* dimension-lint: ok, fixed icon column, independent of local font-size */
   text-align: center;
   font-size: var(--font-size-base);
   color: var(--color-text-muted);
@@ -135,20 +135,20 @@
   background: var(--color-selected-bg);
 }
 
-/* Expanded state: no icon column — nav reads as a flush-left list of labels.
+/* Expanded state: no icon column. Nav reads as a flush-left list of labels.
    The icon slot only materializes in icon state, where it carries a single
    uppercase letter (auto-derived from the label, or an explicit override). */
 .dk-nav-stack-icon {
   display: none;
 }
 
-/* Icon state — triggered either by nav-stack's own data-state="icon" or by an
+/* Icon state: triggered either by nav-stack's own data-state="icon" or by an
    ancestor sidebar in icon state. Both wirings share rules. */
 .dk-nav-stack[data-state="icon"] .dk-nav-stack-icon,
 .dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-icon {
   display: inline-block;
   flex-shrink: 0;
-  width: 1.25rem; /* dimension-lint: ok — fixed icon column, independent of local font-size */
+  width: 1.25rem; /* dimension-lint: ok, fixed icon column, independent of local font-size */
   text-align: center;
   font-weight: var(--font-weight-semibold);
   letter-spacing: var(--font-letter-spacing-normal);
@@ -234,7 +234,7 @@
 .dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-item {
   justify-content: center;
   padding: var(--spacing-sm);
-  /* Active-indicator (border-left) stays — flush at the container edge per DK convention. */
+  /* Active-indicator (border-left) stays. Flush at the container edge per DK convention. */
 }
 
 /* Icon state: section-header collapses to a 1px divider rule. The rhythm

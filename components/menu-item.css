@@ -42,7 +42,7 @@
 
 .dk-menu-item-icon {
   color: var(--color-text-muted);
-  width: 1.25em; /* dimension-lint: ok — em-relative icon scales with row font-size */
+  width: 1.25em; /* dimension-lint: ok, em-relative icon scales with row font-size */
   text-align: center;
   flex-shrink: 0;
 }

@@ -20,14 +20,14 @@ export const variants = [
   },
   {
     name: 'only-next',
-    description: 'First page in a series — next only',
+    description: 'First page in a series: next only',
     props: {
       next: { label: 'Getting started', href: '#next', subtitle: 'Chapter 1' },
     },
   },
   {
     name: 'only-prev',
-    description: 'Last page in a series — previous only',
+    description: 'Last page in a series: previous only',
     props: {
       prev: { label: 'Summary', href: '#prev', subtitle: 'Chapter 8' },
     },

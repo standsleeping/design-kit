@@ -314,7 +314,7 @@ export function runCleanups(cleanups) {
 
 // Capture CustomEvents that bubble out of `previewRoot` and feed them into
 // `logEl`. Monkey-patches `EventTarget.prototype.dispatchEvent` so the log
-// entry is recorded *before* handlers run — handlers that dispatch follow-ups
+// entry is recorded *before* handlers run. Handlers that dispatch follow-ups
 // then nest chronologically after the outer event.
 /**
  * @param {Node} previewRoot

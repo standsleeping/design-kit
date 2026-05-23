@@ -28,7 +28,7 @@ def _load_palette() -> list[tuple[str, list[tuple[str, str]]]]:
     """Load the primitive color palette from design-tokens.json.
 
     Reading the palette at build time (rather than hardcoding the hex values
-    in this file) keeps preview.py from being a silent drift surface — the
+    in this file) keeps preview.py from being a silent drift surface. The
     swatches always reflect what tokens.json actually defines. Also lets the
     token-leak audit run cleanly over this file: no raw hex literals here,
     only data loaded from the single source of truth.
@@ -195,7 +195,7 @@ def generate_preview_html() -> str:
       font-family: var(--typography-mono);
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
-      min-width: 60px; /* dimension-lint: ok — preview-only readout column width */
+      min-width: 60px; /* dimension-lint: ok, preview-only readout column width */
     }}
     .heading-demo {{
       /* row in .subsection flex column; rhythm via parent's gap */
@@ -251,7 +251,7 @@ def generate_preview_html() -> str:
       text-align: center;
     }}
     .icon-table td.icon-name {{
-      width: 12em; /* dimension-lint: ok — em-relative column for icon names */
+      width: 12em; /* dimension-lint: ok, em-relative column for icon names */
       color: var(--color-text);
     }}
     .icon-table td.icon-guidance {{
@@ -514,7 +514,7 @@ def _section_spacing() -> str:
         rows += f"""\
       <div class="spacing-row">
         <span class="spacing-label">{name} ({value})</span>
-        <div class="spacing-block" style="width: var(--spacing-{name}); min-width: 2px;"></div> <!-- dimension-lint: ok — 2px floor keeps the smallest spacing token visually present -->
+        <div class="spacing-block" style="width: var(--spacing-{name}); min-width: 2px;"></div> <!-- dimension-lint: ok, 2px floor keeps the smallest spacing token visually present -->
       </div>
 """
 

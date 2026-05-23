@@ -1,4 +1,4 @@
-/* .dk-modal is position: absolute — requires a positioned ancestor.
+/* .dk-modal is position: absolute. Requires a positioned ancestor.
    For viewport-covering use, wrap in an AppShell or a full-viewport container
    with position: relative. */
 .dk-modal {
@@ -47,7 +47,7 @@
   flex-shrink: 0;
 }
 
-.dk-modal-header:active, /* state-lint: ok — drag-only handle; cursor flips grab→grabbing */
+.dk-modal-header:active, /* state-lint: ok, drag-only handle; cursor flips grab→grabbing */
 .dk-modal-dragging .dk-modal-header {
   cursor: grabbing;
 }

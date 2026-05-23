@@ -47,7 +47,7 @@ Create `index.html`. A Caret app is four things (`initialState`, a `reducer`, a 
 <head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="./tokens.css">
-  <title>Caret — hello world</title>
+  <title>Caret: hello world</title>
 </head>
 <body>
   <div id="app"></div>
@@ -55,10 +55,10 @@ Create `index.html`. A Caret app is four things (`initialState`, a `reducer`, a 
   <script type="module">
     import { createApp, bindText } from './app-runtime.js';
 
-    // State — a plain object. Each top-level key becomes its own signal.
+    // State: a plain object. Each top-level key becomes its own signal.
     const initialState = { count: 0 };
 
-    // Reducer — (state, action) -> next state. The only place state changes.
+    // Reducer: (state, action) -> next state. The only place state changes.
     function reducer(state, action) {
       switch (action.type) {
         case 'increment': return { ...state, count: state.count + 1 };
@@ -67,7 +67,7 @@ Create `index.html`. A Caret app is four things (`initialState`, a `reducer`, a 
       }
     }
 
-    // View — build the DOM once; bindings keep it in sync with the state.
+    // View: build the DOM once; bindings keep it in sync with the state.
     function render({ state, dispatch }) {
       const root = document.createElement('div');
 

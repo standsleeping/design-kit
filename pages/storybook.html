@@ -14,7 +14,7 @@
   /* Storybook is a dog-food rebuild of the design-kit framework on itself:
      dk-app-shell + two Sidebars + dk-topbar strips. Page-local CSS scope is
      storybook-specific content (component nav links, pool tabs, variant cards,
-     axes inputs, event log, props form) — never layout chrome. */
+     axes inputs, event log, props form). Never layout chrome. */
 
   html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
@@ -96,7 +96,7 @@
      children. The labels need a row layout (label text + range slider).
      Like the axes strip below, it wraps (auto height, keeping the rail height as
      a floor) so a narrow main column never forces the center container to scroll
-     horizontally — the controls flow onto extra rows instead. */
+     horizontally. The controls flow onto extra rows instead. */
   .storybook-controls-row {
     flex-wrap: wrap;
     height: auto;
@@ -117,7 +117,7 @@
   }
 
   .storybook-controls-row input[type="number"] {
-    width: 5ch; /* dimension-lint: ok — character-relative width for compact numeric input */
+    width: 5ch; /* dimension-lint: ok, character-relative width for compact numeric input */
     padding: var(--spacing-2xs) var(--spacing-xs);
     border: var(--border-width-thin) solid var(--color-border);
     background: var(--color-bg);
@@ -128,7 +128,7 @@
 
   /* The selected component name reads as a breadcrumb after "Storybook" in the
      header title. It lives inside .dk-topbar-title, so it inherits the title's
-     uppercase, letter-spacing, and ellipsis — a long name truncates with the
+     uppercase, letter-spacing, and ellipsis. A long name truncates with the
      title rather than crowding the WIDTH/HEIGHT controls it used to share a
      strip with. The separator shows only when a component is selected. */
   .storybook-breadcrumb {
@@ -184,11 +184,11 @@
     gap: var(--spacing-xs);
   }
 
-  .storybook-axes-control input[type="range"] { width: 80px; } /* dimension-lint: ok — compact range input for axes panel chrome */
+  .storybook-axes-control input[type="range"] { width: 80px; } /* dimension-lint: ok, compact range input for axes panel chrome */
 
   .storybook-axes-readout {
     color: var(--color-text);
-    min-width: 3ch; /* dimension-lint: ok — character-relative width for axis readout */
+    min-width: 3ch; /* dimension-lint: ok, character-relative width for axis readout */
     text-align: right;
   }
 
@@ -317,7 +317,7 @@
     justify-content: center;
     padding: var(--spacing-xl);
     position: relative;
-    min-height: 200px; /* dimension-lint: ok — storybook variant cell floor */
+    min-height: 200px; /* dimension-lint: ok, storybook variant cell floor */
   }
 
   /* Inspector content (lives in right Sidebar's main slot) */

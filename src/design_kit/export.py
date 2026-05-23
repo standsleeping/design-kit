@@ -22,7 +22,7 @@ MANIFEST_FILENAME = "tokens.manifest.json"
 def export_tokens(source_dir: Path, target_dir: Path) -> None:
     """Copy tokens.css and the token manifest from source_dir to target_dir.
 
-    Raises FileNotFoundError if tokens.css or the manifest is missing — those
+    Raises FileNotFoundError if tokens.css or the manifest is missing. Those
     are produced by `design-kit build`, which must be run first.
     """
     src_tokens = source_dir / TOKENS_FILENAME
@@ -30,11 +30,11 @@ def export_tokens(source_dir: Path, target_dir: Path) -> None:
 
     if not src_tokens.exists():
         raise FileNotFoundError(
-            f"{src_tokens} not found — run `design-kit build` first"
+            f"{src_tokens} not found. Run `design-kit build` first"
         )
     if not src_manifest.exists():
         raise FileNotFoundError(
-            f"{src_manifest} not found — run `design-kit build` first"
+            f"{src_manifest} not found. Run `design-kit build` first"
         )
 
     target_dir.mkdir(parents=True, exist_ok=True)

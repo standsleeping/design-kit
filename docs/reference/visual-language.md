@@ -283,7 +283,7 @@ Both inset and rhythm belong to the container. `padding` owns the inset (square,
 .block {
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-md);   /* inset — square */
+  padding: var(--spacing-md);   /* inset: square */
   gap: var(--spacing-sm);       /* rhythm between children */
 }
 

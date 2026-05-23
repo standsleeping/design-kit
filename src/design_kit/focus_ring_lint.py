@@ -92,7 +92,7 @@ def _scan_file(path: Path) -> list[FocusRingViolation]:
                 j += 1
             segment = stripped[i:j].strip()
             if j == len(stripped):
-                # Trailing segment — no brace closes it.
+                # Trailing segment. No brace closes it.
                 if selector_stack:
                     # Inside a block: this is a declaration line.
                     _check_declaration(

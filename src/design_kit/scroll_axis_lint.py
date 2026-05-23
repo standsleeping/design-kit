@@ -5,22 +5,22 @@ exactly one axis, declared explicitly. The single-value shorthands
 ``overflow: auto`` and ``overflow: scroll`` arm *both* axes, which silently
 converts a too-wide child into a forbidden horizontal scrollbar on a layout
 container (the failure that hit ``.dk-app-shell-main``). The fix is to declare
-the intended axis explicitly — ``overflow-y: auto`` for a vertical scroller —
+the intended axis explicitly (``overflow-y: auto`` for a vertical scroller)
 and let the cross axis clip.
 
 The lint flags single-value ``overflow: auto`` / ``overflow: scroll``. It does
 not flag:
 
-- ``overflow-x`` / ``overflow-y`` — already an explicit single axis.
-- ``overflow: hidden`` / ``overflow: visible`` / ``overflow: clip`` — these
+- ``overflow-x`` / ``overflow-y``: already an explicit single axis.
+- ``overflow: hidden`` / ``overflow: visible`` / ``overflow: clip``: these
   clip both axes; nothing scrolls.
-- Two-value forms (``overflow: hidden auto``) — the axes are stated explicitly.
+- Two-value forms (``overflow: hidden auto``): the axes are stated explicitly.
 
 A genuinely two-axis-scrollable surface (a pannable canvas, a large diagram
 viewer) opts out with ``/* scroll-axis: ok */`` on the selector line or the
 ``overflow`` declaration's line.
 
-Scope: ``components/*.css`` only — shared chrome is where a two-axis scroller
+Scope: ``components/*.css`` only. Shared chrome is where a two-axis scroller
 becomes a reusable footgun. Page-rendered overflow is caught at runtime by the
 overflow audit (tests/test_overflow_audit.py).
 """
@@ -72,7 +72,7 @@ class ScrollAxisLintResult:
 
 
 _COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
-# `overflow: <value>;` — the shorthand only (overflow-x / overflow-y excluded by
+# `overflow: <value>;`: the shorthand only (overflow-x / overflow-y excluded by
 # the negative lookbehind on `-`).
 _OVERFLOW_RE = re.compile(r"(?<![-\w])overflow\s*:\s*([^;}]+)[;}]")
 

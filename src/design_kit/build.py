@@ -185,7 +185,7 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             f"violation(s) in pages/"
         )
         for v in page_result.violations:
-            logger.error(f"  {v.page}: {v.rule} — {v.message}")
+            logger.error(f"  {v.page}: {v.rule}: {v.message}")
         raise RuntimeError(
             f"Page lint found {len(page_result.violations)} violation(s); "
             f"see docs/reference/page-contract.md"

@@ -1,8 +1,8 @@
 """The unified audit set: registry, runner, report, and the `audit` command.
 
-These cover the Phase 2 plumbing — that the registry is the single source of the audit
+These cover the Phase 2 plumbing: that the registry is the single source of the audit
 set, that a scope runs every audit into one uniform result, and that the command returns
-the right exit code — not the lint logic itself (each lint has its own test module).
+the right exit code, not the lint logic itself (each lint has its own test module).
 """
 
 from __future__ import annotations

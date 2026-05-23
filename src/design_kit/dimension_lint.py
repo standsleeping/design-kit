@@ -4,7 +4,7 @@ Static-analysis corollary of TOKEN_DRIVEN_DESIGN / JUSTIFY_EVERY_DIMENSION
 applied to layout dimensions: heights, widths, gaps, font sizes, flex bases,
 and position offsets must reference ``var(--*)`` tokens rather than raw
 ``px``/``em``/``rem``/``ch`` literals. Hardcoded dimensions are silent drift
-surface — change the token, the literal sites stay frozen.
+surface. Change the token, the literal sites stay frozen.
 
 Properties scanned: ``width`` / ``min-width`` / ``max-width``,
 ``height`` / ``min-height`` / ``max-height``, ``gap`` / ``row-gap`` /
@@ -16,16 +16,16 @@ color) are out of scope and handled by their respective lints.
 
 Permitted literal values (do not flag):
 
-* ``0`` with or without a unit — zero is zero.
-* ``auto`` — layout-algorithm hook.
-* Percentages — layout fractions, not magic numbers.
+* ``0`` with or without a unit: zero is zero.
+* ``auto``: layout-algorithm hook.
+* Percentages: layout fractions, not magic numbers.
 * Container-query units (``cqw``/``cqi``/``cqh``/``cqb``/``cqmin``/``cqmax``)
   and viewport units (``vw``/``vh``/``vi``/``vb``/``vmin``/``vmax`` and the
-  small/large/dynamic variants) — relative to the viewport or container,
+  small/large/dynamic variants): relative to the viewport or container,
   by definition not a token-design decision.
-* ``lh`` / ``rlh`` — line-height-relative, the natural unit for
+* ``lh`` / ``rlh``: line-height-relative, the natural unit for
   typographic rhythm inside a known type scale.
-* ``fr`` — grid fractional unit.
+* ``fr``: grid fractional unit.
 * ``var(--*)``, ``env(*)``, ``calc(...)``, ``min(...)``, ``max(...)``,
   ``clamp(...)`` as wrappers; the lint looks at the literal numbers
   *inside* those expressions independently.
@@ -38,7 +38,7 @@ trailing ``/* dimension-lint: ok */`` comment allowlists a single line.
 Scope notes:
 
 * CSS custom property assignments (``--dk-sidebar-width: 220px``) are not
-  flagged — the leading hyphen fails the property regex's negative
+  flagged: the leading hyphen fails the property regex's negative
   lookbehind. Token consumers parameterizing a component are out of scope;
   the lint targets value-side magic numbers.
 * ``@media (max-width: 600px)`` and ``@container (max-width: 200px)``

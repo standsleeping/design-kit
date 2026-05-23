@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Caret — hello world</title>
+  <title>Caret: hello world</title>
   <link rel="stylesheet" href="./tokens.css">
   <style>
     .app {
@@ -46,10 +46,10 @@
   <script type="module">
     import { createApp, bindText } from './app-runtime.js';
 
-    // 1. State — a plain object. Each top-level key becomes its own signal.
+    // 1. State: a plain object. Each top-level key becomes its own signal.
     const initialState = { count: 0 };
 
-    // 2. Reducer — (state, action) -> next state. The only place state changes.
+    // 2. Reducer: (state, action) -> next state. The only place state changes.
     function reducer(state, action) {
       switch (action.type) {
         case 'increment': return { ...state, count: state.count + 1 };
@@ -58,7 +58,7 @@
       }
     }
 
-    // 3. View — build the DOM once; bindings keep it in sync with the state.
+    // 3. View: build the DOM once; bindings keep it in sync with the state.
     function render({ state, dispatch }) {
       const root = document.createElement('div');
       root.className = 'app';
@@ -76,7 +76,7 @@
 
       const value = document.createElement('output');
       // bindText re-runs only when the `count` slice changes, mutating this one
-      // node in place — focus, selection, and scroll elsewhere stay untouched.
+      // node in place. Focus, selection, and scroll elsewhere stay untouched.
       bindText(value, () => String(state.count()));
 
       const plus = document.createElement('button');

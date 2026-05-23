@@ -4,7 +4,7 @@ Static-analysis corollary of TOKEN_DRIVEN_DESIGN applied to border widths:
 ``border``, ``border-(top|right|bottom|left)``, ``border-width``, and the
 side-width longhands must reference ``var(--border-width-*)`` (thin = 1px,
 medium = 2px, thick = 3px) rather than hardcoding the pixel value. Hardcoded
-border widths are silent drift surface — change the token, the literal sites
+border widths are silent drift surface. Change the token, the literal sites
 stay frozen.
 
 Inputs mirror token-leak-lint: ``components/*.css`` always; ``pages/*.html``
@@ -12,7 +12,7 @@ Inputs mirror token-leak-lint: ``components/*.css`` always; ``pages/*.html``
 (typically ``preview.py``) scanned as plain text. The same trailing
 ``/* token-leak: ok */`` comment allowlists a line.
 
-Scope note: this lint does NOT flag ``border-radius`` declarations — those
+Scope note: this lint does NOT flag ``border-radius`` declarations. Those
 are covered by ``radius_lint.py``. The pattern matcher excludes the
 ``border-radius`` longhand and any ``border-*-radius`` variants.
 """

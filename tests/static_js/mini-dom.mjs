@@ -1,7 +1,7 @@
 // Minimal, correct DOM for exercising app-runtime.js bindings and `each` under
 // node:test, without pulling in jsdom (design-kit ships no node dependencies).
 // It implements only the surface the runtime touches, but implements it
-// faithfully — in particular insertBefore move semantics and nextSibling, which
+// faithfully: in particular insertBefore move semantics and nextSibling, which
 // the keyed `each` reconciliation depends on.
 //
 // install() returns { document, window, teardown } and assigns globalThis

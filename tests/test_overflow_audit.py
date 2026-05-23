@@ -30,7 +30,7 @@ TOKENS_PATH = Path(__file__).parent.parent / "tokens" / "design-tokens.json"
 
 
 def test_no_page_scrolls_horizontally(tmp_path: Path) -> None:
-    """No built page scrolls horizontally — page-level or in the center container."""
+    """No built page scrolls horizontally: page-level or in the center container."""
     build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
     (outcome,) = run_headless_audits(tmp_path, [OVERFLOW_SPEC])
 
@@ -39,7 +39,7 @@ def test_no_page_scrolls_horizontally(tmp_path: Path) -> None:
     if outcome.status is AuditStatus.FAILED:
         detail = "\n".join(f"  {f.locator}: {f.detail}" for f in outcome.findings)
         pytest.fail(
-            "Horizontal overflow detected — pages must not scroll horizontally "
+            "Horizontal overflow detected. Pages must not scroll horizontally "
             "(NO_PAGE_SCROLL; the center container must not grow an internal "
             "horizontal scrollbar):\n" + detail
         )
