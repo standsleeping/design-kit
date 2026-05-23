@@ -4,7 +4,7 @@ Design tokens, reusable components, and CSS generation for my web pages.
 
 New to the runtime? Start with [Getting started](docs/guides/getting-started.md), then the [runtime reference](docs/reference/runtime.md) and [CLI reference](docs/reference/cli.md).
 
-See the [design taxonomy](docs/reference/taxonomy.md) for the full lineage with visual examples, references, and prompt language. The [visual language reference](docs/reference/visual-language.md) documents the specific tokens and conventions. The [component contract](docs/reference/component-contract.md) is the canonical spec for the four-export module shape that the storybook consumes.
+See the [design taxonomy](docs/reference/taxonomy.md) for the full lineage with visual examples, references, and prompt language. The [visual language reference](docs/reference/visual-language.md) documents the specific tokens and conventions. The [component contract](docs/reference/component-contract.md) is the canonical spec for the four-export module shape that the storybook consumes. The [responsive audit](docs/reference/responsive-audit.md) tracks each component's responsive status over time.
 
 ## What's here
 

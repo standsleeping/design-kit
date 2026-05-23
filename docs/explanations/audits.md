@@ -27,5 +27,6 @@ An audit carries its inputs in a scope rather than hard-coding design-kit's own 
 ## Further reading
 
 - [CLI reference](../reference/cli.md): `audit` flags and scope precedence.
+- [Responsive audit](../reference/responsive-audit.md): the manual per-component status tracker that complements the headless `overflow` check.
 - README "Build-time audits", "The audit command", "Headless audits": the full lint and rendered-audit tables.
 - `AUTO_VERIFICATION`, `TEST_INTEGRATION` in system-principles: the enforce-don't-review premise.
