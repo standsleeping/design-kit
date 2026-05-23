@@ -94,6 +94,25 @@
   display: none;
 }
 
+/* A collapsible sidebar keeps its resizer grabbable while collapsed, so the
+   icon rail can be dragged back out to the expanded width. */
+.dk-sidebar-collapsible[data-state="icon"] .dk-sidebar-resizer {
+  display: block;
+}
+
+/* Drop the width transition for collapsible sidebars. Their width changes two
+   ways at runtime: drag-resize (the --dk-sidebar-width value) and collapse
+   (the expanded → icon rule swap). Chrome can't interpolate `width` across a
+   cascade-source swap whose value is a var() — it freezes at the from-value
+   (the same quirk the @property block above documents, but unfixable here
+   because the *source rule* changes, not just the var). Without the
+   transition the rail snaps cleanly on collapse and the drag tracks the cursor
+   1:1. Specificity must beat .dk-sidebar-mode-inline[data-state="icon"]. */
+.dk-sidebar-collapsible.dk-sidebar-mode-inline,
+.dk-sidebar-collapsible.dk-sidebar-mode-inline[data-state="icon"] {
+  transition: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dk-sidebar { transition: none; }
 }
@@ -132,6 +151,6 @@
   left: calc(var(--scrollbar-width-thin) / -2);
 }
 
-.dk-sidebar-resizer:hover { /* state-lint: ok — drag-only handle; mouse-driven resize */
+.dk-sidebar-resizer:hover { /* state-lint: ok, drag-only handle; mouse-driven resize */
   background: var(--color-focus-ring-light, var(--color-focus-ring));
 }
