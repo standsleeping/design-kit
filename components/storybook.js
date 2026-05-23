@@ -26,6 +26,7 @@ import {
   installEventLog,
 } from './system/runtime.js';
 import { mountSystemSidebar } from './system/system-sidebar.js';
+import { installResponsiveRails } from './app-shell.js';
 import { LEVELS, TARGETS } from './system/nav-data.js';
 
 const CONFIG_URL = 'components/storybook.config.json';
@@ -385,6 +386,18 @@ async function mountSidebars() {
   if (inspectorMainSlot) inspectorMainSlot.append(inspectorHost);
   navMount.append(navSb);
   inspectorMount.append(inspectorSb);
+
+  // Auto-collapse rails on narrow viewports so the controls + variants area
+  // keeps usable width. The nav is a NavStack (has an icon mode) so it
+  // shrinks to the icon rail below bp-tablet-max; the inspector is a panel
+  // with no icon mode, so it hides below bp-wide. ($bp tokens aren't
+  // substituted in JS, hence the literals.)
+  /** @type {HTMLElement} */ (navMount).dataset.collapseBelow = '900';
+  /** @type {HTMLElement} */ (navMount).dataset.collapseTo = 'icon';
+  /** @type {HTMLElement} */ (inspectorMount).dataset.collapseBelow = '1100';
+  /** @type {HTMLElement} */ (inspectorMount).dataset.collapseTo = 'hidden';
+  const shell = document.querySelector('.dk-app-shell');
+  if (shell) installResponsiveRails(shell);
 
   navSb.addEventListener('sidebar:resize', (e) => {
     const ce = /** @type {CustomEvent<{ width: number }>} */ (e);

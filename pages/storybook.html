@@ -45,14 +45,27 @@
     line-height: var(--font-line-height-relaxed);
   }
 
-  @media (max-width: $bp-tablet-max) {
-    .dk-app-shell { display: none; }
+  /* The shell auto-collapses its rails down to tablet (see installResponsiveRails
+     in storybook.js); below that there isn't room even rail-collapsed, so fall
+     back to the notice. `body >` raises specificity above the plain
+     `.dk-app-shell { display: flex }` that the storybook injects when it renders
+     the AppShell component card — that injected sheet loads after this <style>,
+     so an equal-specificity rule here would lose the cascade. */
+  @media (max-width: $bp-tablet) {
+    body > .dk-app-shell { display: none; }
     .storybook-mobile-notice { display: flex; }
   }
 
   /* AppShell-header content: count + theme/luminance controls, all monospace
      to match the rail. The dk-topbar provides height, padding, border. */
   .storybook-header-count { color: var(--color-text-muted); }
+
+  /* Below tablet-max the header rail gets tight; drop the lowest-priority
+     item (the registered count) so the theme/luminance toggles keep room
+     rather than overflowing the fixed-height rail. */
+  @media (max-width: $bp-tablet-max) {
+    .storybook-header-count { display: none; }
+  }
   .storybook-header-count,
   .storybook-header-title {
     font-family: var(--typography-mono);
@@ -594,7 +607,7 @@
 <div class="storybook-mobile-notice">
   <div class="storybook-mobile-notice-title">Desktop only</div>
   <div class="storybook-mobile-notice-body">
-    The component storybook is designed for viewports wider than 900px.
+    The component storybook is designed for viewports wider than 600px.
     Please revisit on a larger screen to browse variants, tune width and height,
     and inspect component events.
   </div>
