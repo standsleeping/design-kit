@@ -37,6 +37,8 @@ export const LEVELS = [
       { kind: 'section-item',   id: 'contract-tests',         label: 'Contract Tests' },
       { kind: 'section-item',   id: 'app-runtime-tests',      label: 'App Runtime Tests' },
       { kind: 'section-item',   id: 'responsive-table-tests', label: 'Responsive Table Tests' },
+      { kind: 'section-item',   id: 'responsive-adaptive-tests', label: 'Adaptive Behavior Tests' },
+      { kind: 'section-item',   id: 'responsive-fit-tests', label: 'Fit Tests' },
     ],
   },
 ];
@@ -61,4 +63,6 @@ export const TARGETS = {
   'contract-tests':          'contract-tests.html',
   'app-runtime-tests':       'app-runtime-tests.html',
   'responsive-table-tests':  'responsive-table-tests.html',
+  'responsive-adaptive-tests': 'responsive-adaptive-tests.html',
+  'responsive-fit-tests': 'responsive-fit-tests.html',
 };

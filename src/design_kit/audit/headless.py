@@ -349,7 +349,153 @@ RESPONSIVE_TABLE_SPEC = HeadlessSpec(
 )
 
 
-HEADLESS_REGISTRY: tuple[HeadlessSpec, ...] = (OVERFLOW_SPEC, RESPONSIVE_TABLE_SPEC)
+# --- spec: adaptive components behavior page ---
+
+_ADAPT_PAGE = "responsive-adaptive-tests.html"
+_ADAPT_MIN_CHECKS = 10
+_ADAPT_VERDICT_READY = (
+    "document.body.dataset.testStatus === 'pass' "
+    "|| document.body.dataset.testStatus === 'fail'"
+)
+_ADAPT_FAIL_ROWS_JS = (
+    "[...document.querySelectorAll('[data-results] tr')]"
+    ".filter(r => r.children[1].textContent.trim() === 'FAIL')"
+    ".map(r => `${r.children[0].textContent}: ${r.children[2].textContent}`)"
+)
+_ADAPT_REMEDIATION = (
+    "open pages/responsive-adaptive-tests.html; a failing row names the broken "
+    "behavior (SessionStatsFooter priority-drop, Breadcrumb middle-collapse, or "
+    "AdaptiveMetricsList column-hide). A whole component failing at mount usually "
+    "means its ResizeObserver enhancer is not adapting after attach."
+)
+
+
+def _run_adaptive_behavior(ctx: HeadlessContext) -> AuditOutcome:
+    """Run the adaptive-components behavior page and read its self-reported verdict."""
+    if _ADAPT_PAGE not in ctx.page_names:
+        return AuditOutcome(
+            slug="adaptive-behavior",
+            name="Adaptive components behavior",
+            principle="RESPONSIVE_COMPONENTS",
+            kind=AuditKind.HEADLESS,
+            status=AuditStatus.SKIPPED,
+            note=f"{_ADAPT_PAGE} not in served site",
+        )
+    page = ctx.browser.new_page()
+    try:
+        page.goto(f"{ctx.base_url}/{_ADAPT_PAGE}")
+        page.wait_for_function(_ADAPT_VERDICT_READY, timeout=15_000)
+        status = str(page.evaluate("document.body.dataset.testStatus"))
+        total = int(page.evaluate("document.body.dataset.testTotal"))
+        fail_rows = list(page.evaluate(_ADAPT_FAIL_ROWS_JS))
+    finally:
+        page.close()
+
+    findings = [Finding(locator=_ADAPT_PAGE, detail=str(row)) for row in fail_rows]
+    if total < _ADAPT_MIN_CHECKS:
+        findings.append(
+            Finding(
+                locator=_ADAPT_PAGE,
+                detail=f"only {total} checks ran; expected at least {_ADAPT_MIN_CHECKS}",
+            )
+        )
+    failed = status != "pass" or total < _ADAPT_MIN_CHECKS
+    return AuditOutcome(
+        slug="adaptive-behavior",
+        name="Adaptive components behavior",
+        principle="RESPONSIVE_COMPONENTS",
+        kind=AuditKind.HEADLESS,
+        status=AuditStatus.FAILED if failed else AuditStatus.PASSED,
+        findings=tuple(findings),
+        remediation=_ADAPT_REMEDIATION,
+    )
+
+
+ADAPTIVE_BEHAVIOR_SPEC = HeadlessSpec(
+    slug="adaptive-behavior",
+    name="Adaptive components behavior",
+    principle="RESPONSIVE_COMPONENTS",
+    run=_run_adaptive_behavior,
+)
+
+
+# --- spec: every component fits its own box ---
+
+_FIT_PAGE = "responsive-fit-tests.html"
+_FIT_MIN_CHECKS = 50
+_FIT_VERDICT_READY = (
+    "document.body.dataset.testStatus === 'pass' "
+    "|| document.body.dataset.testStatus === 'fail'"
+)
+_FIT_FAIL_ROWS_JS = (
+    "[...document.querySelectorAll('[data-results] tr')]"
+    ".filter(r => r.children[1].textContent.trim() === 'FAIL')"
+    ".map(r => `${r.children[0].textContent}: ${r.children[2].textContent}`)"
+)
+_FIT_REMEDIATION = (
+    "open pages/responsive-fit-tests.html; a failing row names the component, "
+    "variant, and width where it overflows its own box. The fix is on the "
+    "component (cap with max-width:100%, relax a min-width floor to min(…,100%), "
+    "or add ellipsis/scroll/priority-drop) — never on the host. See "
+    "RESPONSIVE_COMPONENTS and ELASTIC_CONTENT_NEEDS_GIVE."
+)
+
+
+def _run_fit(ctx: HeadlessContext) -> AuditOutcome:
+    """Run the fits-its-own-box page and read its self-reported verdict."""
+    if _FIT_PAGE not in ctx.page_names:
+        return AuditOutcome(
+            slug="component-fit",
+            name="Component fits its own box",
+            principle="RESPONSIVE_COMPONENTS",
+            kind=AuditKind.HEADLESS,
+            status=AuditStatus.SKIPPED,
+            note=f"{_FIT_PAGE} not in served site",
+        )
+    page = ctx.browser.new_page()
+    try:
+        page.goto(f"{ctx.base_url}/{_FIT_PAGE}")
+        page.wait_for_function(_FIT_VERDICT_READY, timeout=30_000)
+        status = str(page.evaluate("document.body.dataset.testStatus"))
+        total = int(page.evaluate("document.body.dataset.testTotal"))
+        fail_rows = list(page.evaluate(_FIT_FAIL_ROWS_JS))
+    finally:
+        page.close()
+
+    findings = [Finding(locator=_FIT_PAGE, detail=str(row)) for row in fail_rows]
+    if total < _FIT_MIN_CHECKS:
+        findings.append(
+            Finding(
+                locator=_FIT_PAGE,
+                detail=f"only {total} checks ran; expected at least {_FIT_MIN_CHECKS}",
+            )
+        )
+    failed = status != "pass" or total < _FIT_MIN_CHECKS
+    return AuditOutcome(
+        slug="component-fit",
+        name="Component fits its own box",
+        principle="RESPONSIVE_COMPONENTS",
+        kind=AuditKind.HEADLESS,
+        status=AuditStatus.FAILED if failed else AuditStatus.PASSED,
+        findings=tuple(findings),
+        remediation=_FIT_REMEDIATION,
+    )
+
+
+FIT_SPEC = HeadlessSpec(
+    slug="component-fit",
+    name="Component fits its own box",
+    principle="RESPONSIVE_COMPONENTS",
+    run=_run_fit,
+)
+
+
+HEADLESS_REGISTRY: tuple[HeadlessSpec, ...] = (
+    OVERFLOW_SPEC,
+    RESPONSIVE_TABLE_SPEC,
+    ADAPTIVE_BEHAVIOR_SPEC,
+    FIT_SPEC,
+)
 
 
 def headless_specs() -> tuple[HeadlessSpec, ...]:

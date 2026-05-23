@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Adaptive Behavior Tests · design-kit</title>
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/session-stats-footer.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/breadcrumb.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/adaptive-metrics-list.css?{{CACHE_BUST}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+  }
+  .dk-app-shell-main {
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+  .dk-app-shell-main h1 {
+    font-size: var(--font-size-lg);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+  }
+  .summary-ok { color: var(--color-success); }
+  .summary-fail { color: var(--color-danger); }
+  .results table { width: 100%; border-collapse: collapse; }
+  .results th, .results td {
+    text-align: left;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+  }
+  .results th {
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+  }
+  .pass { color: var(--color-success); }
+  .fail { color: var(--color-danger); }
+  .failure-detail { color: var(--color-danger); white-space: pre-wrap; word-break: break-word; }
+  .mounts { position: fixed; left: -99999px; top: 0; } /* dimension-lint: ok, off-screen test mount */
+  .mount-wide { width: 800px; } /* dimension-lint: ok, WIDTH_CONTROLLED_TESTING fixture */
+  .mount-narrow { width: 200px; } /* dimension-lint: ok, WIDTH_CONTROLLED_TESTING fixture */
+</style>
+</head>
+<body>
+<div class="dk-app-shell">
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="responsive-adaptive-tests"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <h1>Adaptive Behavior Tests</h1>
+      <div class="summary" data-summary>Running…</div>
+      <div class="results">
+        <table>
+          <thead><tr><th>Case</th><th>Result</th><th>Detail</th></tr></thead>
+          <tbody data-results></tbody>
+        </table>
+      </div>
+
+      <div class="mounts" aria-hidden="true">
+        <div id="mount-wide" class="mount-wide"></div>
+        <div id="mount-narrow" class="mount-narrow"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
+
+<script type="module">
+// Behavior coverage for the adaptive (ResizeObserver-driven) components:
+// SessionStatsFooter (priority-drop), Breadcrumb (middle-collapse), and
+// AdaptiveMetricsList (priority column-hide). Each is mounted into an attached,
+// fixed-width off-screen container; the enhancer must adapt on mount via the
+// ResizeObserver delivering after attach (RESPONSIVE_COMPONENTS, AUTO_VERIFICATION).
+const SSF_URL = `./components/session-stats-footer.js?v={{CACHE_BUST}}`;
+const BC_URL = `./components/breadcrumb.js?v={{CACHE_BUST}}`;
+const AML_URL = `./components/adaptive-metrics-list.js?v={{CACHE_BUST}}`;
+
+const cases = [];
+const record = (name, pass, detail = '') => {
+  cases.push({ name, pass, detail });
+  const summary = document.querySelector('[data-summary]');
+  if (summary) summary.textContent = `Running… ${cases.length} checks, ${cases.filter(c => !c.pass).length} failing`;
+};
+
+async function block(name, fn) {
+  try { await fn(); }
+  catch (err) { record(`${name} threw`, false, `${err.name}: ${err.message}\n${err.stack?.slice(0, 400) ?? ''}`); }
+}
+
+// setTimeout (not rAF) so the harness itself runs even in a throttled tab; two
+// ticks give the component's ResizeObserver time to deliver its first entry.
+const nextFrame = () => new Promise((r) => setTimeout(r, 50));
+
+const visible = (el) => getComputedStyle(el).display !== 'none';
+
+async function mount(url, container, props) {
+  container.innerHTML = '';
+  const mod = await import(url);
+  const r = mod.render(props);
+  const node = r.node ?? r;
+  const cleanup = r.cleanup ?? (() => {});
+  container.append(node);
+  await nextFrame();
+  await nextFrame();
+  return { node, cleanup };
+}
+
+const SIX_CRUMBS = {
+  items: [
+    { label: 'Home', href: '#' },
+    { label: 'Projects', href: '#' },
+    { label: 'Acme Corp', href: '#' },
+    { label: 'Q3 Planning', href: '#' },
+    { label: 'Design System', href: '#' },
+    { label: 'Breadcrumb' },
+  ],
+};
+
+const AML_ITEMS = {
+  items: [
+    { id: 'a', name: 'Authentication', metricA: 4821, metricB: 12.4, metricC: 0.92 },
+    { id: 'b', name: 'Billing', metricA: 1203, metricB: 48.0, metricC: 0.45 },
+  ],
+};
+
+async function main() {
+  const summary = document.querySelector('[data-summary]');
+  const resultsBody = document.querySelector('[data-results]');
+  const wide = document.getElementById('mount-wide');
+  const narrow = document.getElementById('mount-narrow');
+
+  // ---- SessionStatsFooter: priority-drop -----------------------------------
+  await block('SessionStatsFooter wide', async () => {
+    const { node, cleanup } = await mount(SSF_URL, wide, {});
+    const items = [...node.querySelectorAll('.dk-ssf-item')];
+    record(
+      'SSF wide: all six items visible',
+      items.length === 6 && items.every(visible),
+      `total=${items.length}, visible=${items.filter(visible).length}`,
+    );
+    cleanup();
+  });
+
+  await block('SessionStatsFooter narrow', async () => {
+    const { node, cleanup } = await mount(SSF_URL, narrow, {});
+    const items = [...node.querySelectorAll('.dk-ssf-item')];
+    const vis = items.filter(visible);
+    const visPriorities = vis.map((i) => i.dataset.priority);
+    record(
+      'SSF narrow: at least one item dropped by priority',
+      vis.length > 0 && vis.length < items.length,
+      `visible=${vis.length} of ${items.length}`,
+    );
+    record(
+      'SSF narrow: highest-priority items (1,2) survive the drop',
+      visPriorities.includes('1') && visPriorities.includes('2'),
+      `visible priorities=[${visPriorities.join(',')}]`,
+    );
+    record(
+      'SSF narrow: strip fits its box (no overflow)',
+      node.scrollWidth <= node.clientWidth + 2,
+      `scrollW=${node.scrollWidth}, clientW=${node.clientWidth}`,
+    );
+    cleanup();
+  });
+
+  // ---- Breadcrumb: middle-collapse -----------------------------------------
+  await block('Breadcrumb wide', async () => {
+    const { node, cleanup } = await mount(BC_URL, wide, SIX_CRUMBS);
+    const crumbs = [...node.querySelectorAll('.dk-breadcrumb-crumb')];
+    record(
+      'Breadcrumb wide: no ellipsis, all crumbs visible',
+      !node.querySelector('.dk-breadcrumb-ellipsis') && crumbs.filter(visible).length === 6,
+      `ellipsis=${!!node.querySelector('.dk-breadcrumb-ellipsis')}, visible=${crumbs.filter(visible).length}/6`,
+    );
+    cleanup();
+  });
+
+  await block('Breadcrumb narrow', async () => {
+    const { node, cleanup } = await mount(BC_URL, narrow, SIX_CRUMBS);
+    const crumbs = [...node.querySelectorAll('.dk-breadcrumb-crumb')];
+    const vis = crumbs.filter(visible);
+    record(
+      'Breadcrumb narrow: middle collapses to an ellipsis',
+      !!node.querySelector('.dk-breadcrumb-ellipsis') && vis.length < 6,
+      `ellipsis=${!!node.querySelector('.dk-breadcrumb-ellipsis')}, visibleCrumbs=${vis.length}`,
+    );
+    record(
+      'Breadcrumb narrow: first and last crumb stay visible',
+      visible(crumbs[0]) && visible(crumbs[crumbs.length - 1]),
+      `first=${visible(crumbs[0])}, last=${visible(crumbs[crumbs.length - 1])}`,
+    );
+    record(
+      'Breadcrumb narrow: collapses to a single row',
+      node.scrollHeight <= node.clientHeight + 2,
+      `scrollH=${node.scrollHeight}, clientH=${node.clientHeight}`,
+    );
+    cleanup();
+  });
+
+  // ---- AdaptiveMetricsList: priority column-hide ----------------------------
+  // Doubles as the proof that a self-wired ResizeObserver adapts on mount
+  // (RO delivers after attach) without a requestAnimationFrame kick.
+  await block('AdaptiveMetricsList wide', async () => {
+    const { node, cleanup } = await mount(AML_URL, wide, AML_ITEMS);
+    record(
+      'AML wide: all three metric columns shown',
+      node.querySelectorAll('.dk-aml-metric-header').length === 3,
+      `headers=${node.querySelectorAll('.dk-aml-metric-header').length}`,
+    );
+    cleanup();
+  });
+
+  await block('AdaptiveMetricsList narrow', async () => {
+    const { node, cleanup } = await mount(AML_URL, narrow, AML_ITEMS);
+    record(
+      'AML narrow: hides lower-priority columns on mount',
+      node.querySelectorAll('.dk-aml-metric-header').length < 3,
+      `headers=${node.querySelectorAll('.dk-aml-metric-header').length} (expected < 3 at 200px)`,
+    );
+    cleanup();
+  });
+
+  // ---- Report ---------------------------------------------------------------
+  const total = cases.length;
+  const failed = cases.filter((c) => !c.pass).length;
+  for (const c of cases) {
+    const row = document.createElement('tr');
+    if (c.pass) {
+      row.innerHTML = `<td>${escapeHTML(c.name)}</td><td class="pass">PASS</td><td></td>`;
+    } else {
+      row.innerHTML = `<td>${escapeHTML(c.name)}</td><td class="fail">FAIL</td><td class="failure-detail">${escapeHTML(c.detail)}</td>`;
+    }
+    resultsBody.append(row);
+  }
+
+  if (failed === 0) {
+    summary.textContent = `All ${total} adaptive behavior checks pass.`;
+    summary.classList.add('summary-ok');
+  } else {
+    summary.textContent = `${failed} of ${total} checks failed.`;
+    summary.classList.add('summary-fail');
+  }
+  document.body.dataset.testStatus = failed === 0 ? 'pass' : 'fail';
+  document.body.dataset.testTotal = String(total);
+  document.body.dataset.testFailures = String(failed);
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+main().catch((err) => {
+  const summary = document.querySelector('[data-summary]');
+  summary.textContent = `Fatal: ${err.message}`;
+  summary.classList.add('summary-fail');
+  document.body.dataset.testStatus = 'fail';
+});
+</script>
+</body>
+</html>
