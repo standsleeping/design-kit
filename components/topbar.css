@@ -15,6 +15,12 @@
   border-bottom: var(--border-width-thin) solid var(--color-border);
   box-sizing: border-box;
   min-width: 0;
+  /* Cap to the host's width so the bar is responsive against its OWN box, not
+     just when a host (AppShell header) hands it an explicit width. Without this,
+     flex-shrink:0 lets the strip size to its content and overflow in any
+     content-sized context (e.g. a width-controlled preview); the cap forces the
+     title/subtitle to ellipsize instead. See ELASTIC_CONTENT_NEEDS_GIVE. */
+  max-width: 100%;
 }
 
 /* Bottom variant: rail at the bottom of a column. Border switches sides so
@@ -27,7 +33,11 @@
 /* Title takes the remaining horizontal space, pushing any siblings that
    follow it to the trailing edge. No spacer span needed. */
 .dk-topbar-title {
-  flex: 1;
+  /* `1 1 auto` (not `1`/`1 1 0`): still grows to fill and push trailing content,
+     but carries an intrinsic basis so it does not collapse to zero at narrow
+     widths — the subtitle (high flex-shrink below) yields first, keeping the
+     title visible longest (RESPONSIVE_COMPONENTS: identity is highest priority). */
+  flex: 1 1 auto;
   min-width: 0;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
@@ -46,6 +56,10 @@
 }
 
 .dk-topbar-subtitle {
+  /* Yield before the title: a high shrink factor makes the subtitle absorb the
+     negative space first, so it ellipsizes away while the title is still legible. */
+  flex: 0 100 auto;
+  min-width: 0;
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   overflow: hidden;
