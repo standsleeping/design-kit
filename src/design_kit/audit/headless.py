@@ -171,9 +171,9 @@ def run_headless_audits(
 
 # --- spec: horizontal overflow (runtime arm of SCROLL_CONTAINMENT) ---
 
-# Probe widths. 960 sits just above the storybook's 899px shell breakpoint and is narrow
-# enough that the fixed left nav + right inspector squeeze the center column, where
-# un-wrapped chrome overflowed; the wider widths are sanity probes.
+# Probe widths. 960 exercises the storybook's narrow tier (the responsive shell has
+# hidden the right inspector and the center column reflows); the wider widths are sanity
+# probes. A regression here is a center column that scrolls instead of yielding.
 _WIDTHS = (960, 1280, 1680)
 _HEIGHT = 900
 # scrollWidth / clientWidth are integers; allow 2px slack for sub-pixel borders so the
@@ -185,7 +185,9 @@ _SETTLE_MS = 350  # let JS-driven layout settle after load
 # the browser; `tol` is passed from Python.
 _OVERFLOW_JS = """
 (tol) => {
-  const overflowing = (el) => el.scrollWidth - el.clientWidth > tol;
+  // A zero-width element (e.g. content inside a rail collapsed to width:0) cannot
+  // present a visible horizontal scrollbar, so its scrollWidth is not real overflow.
+  const overflowing = (el) => el.clientWidth > 0 && el.scrollWidth - el.clientWidth > tol;
   const label = (el) => el.tagName.toLowerCase()
     + (typeof el.className === 'string' && el.className.trim()
         ? '.' + el.className.trim().split(/\\s+/).join('.') : '');
