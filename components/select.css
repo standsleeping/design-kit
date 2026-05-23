@@ -1,6 +1,6 @@
 .dk-select {
   width: 100%;
-  min-width: var(--control-input-width-md);
+  min-width: min(var(--control-input-width-md), 100%);
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text);

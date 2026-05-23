@@ -2,12 +2,12 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  min-width: var(--control-input-width-lg);
+  min-width: min(var(--control-input-width-lg), 100%);
 }
 
 .dk-range-input {
   flex: 1;
-  min-width: var(--control-input-width-sm);
+  min-width: min(var(--control-input-width-sm), 100%);
 }
 
 .dk-range-value {
