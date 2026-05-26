@@ -148,7 +148,8 @@
       "xl": "0"
     },
     "font": {
-      "family": "\"Recursive\", ui-monospace, \"SFMono-Regular\", Consolas, monospace",
+      "family-mono": "\"Recursive\", \"Recursive-fallback-mono\", ui-monospace, \"SFMono-Regular\", Consolas, monospace",
+      "family-prose": "\"Recursive\", \"Recursive-fallback-prose\", system-ui, sans-serif",
       "axis": {
         "mono": 1,
         "casl": 0,
@@ -222,9 +223,9 @@
   "semantic": {
     "default-theme": "mono-purple",
     "typography": {
-      "body": "{font.family}",
-      "heading": "{font.family}",
-      "mono": "{font.family}"
+      "body": "{font.family-prose}",
+      "heading": "{font.family-mono}",
+      "mono": "{font.family-mono}"
     },
     "layout": {
       "sidebar-width": "220px",

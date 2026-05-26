@@ -313,9 +313,7 @@ REGISTRY: tuple[LintSpec, ...] = (
             s.components_dir, pages_dir=s.pages_dir, extra_files=list(s.extra_files)
         ),
         to_findings=lambda r: (
-            Finding(
-                f"{v.file}:{v.line}", f"{v.declaration} → {v.literal}: {v.snippet}"
-            )
+            Finding(f"{v.file}:{v.line}", f"{v.declaration} → {v.literal}: {v.snippet}")
             for v in r.violations
         ),
         remediation=(
@@ -332,9 +330,7 @@ REGISTRY: tuple[LintSpec, ...] = (
             s.components_dir, pages_dir=s.pages_dir, extra_files=list(s.extra_files)
         ),
         to_findings=lambda r: (
-            Finding(
-                f"{v.file}:{v.line}", f"{v.declaration} → {v.literal}: {v.snippet}"
-            )
+            Finding(f"{v.file}:{v.line}", f"{v.declaration} → {v.literal}: {v.snippet}")
             for v in r.violations
         ),
         remediation=(

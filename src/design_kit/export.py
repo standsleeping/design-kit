@@ -29,9 +29,7 @@ def export_tokens(source_dir: Path, target_dir: Path) -> None:
     src_manifest = source_dir / MANIFEST_FILENAME
 
     if not src_tokens.exists():
-        raise FileNotFoundError(
-            f"{src_tokens} not found. Run `design-kit build` first"
-        )
+        raise FileNotFoundError(f"{src_tokens} not found. Run `design-kit build` first")
     if not src_manifest.exists():
         raise FileNotFoundError(
             f"{src_manifest} not found. Run `design-kit build` first"

@@ -71,14 +71,62 @@ def _validate_tokens_shape(data: dict[str, object]) -> None:
         )
 
 
-GOOGLE_FONTS_LINK = (
-    '  <link rel="preconnect" href="https://fonts.googleapis.com">\n'
-    '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-    '  <link href="https://fonts.googleapis.com/css2'
-    "?family=Recursive:slnt,wght,CASL,CRSV,MONO"
-    "@-15..0,300..1000,0..1,0..1,0..1"
-    '&display=swap" rel="stylesheet">'
-)
+# Self-hosted Recursive variable font + two metric-matched fallback faces.
+#
+# Recursive is the brand font (5 axes: MONO, CASL, wght, slnt, CRSV), loaded once
+# here so every page serves it from the same origin (no Google Fonts dependency).
+# Axes other than weight are driven at use time via `font-variation-settings`
+# (see RESET_LAYER and the `--mono`/`--casl`/`--slnt`/`--crsv` cascade); the face
+# only declares the variable `font-weight` range, leaving `slnt` to the axis so a
+# comment's `--slnt: -12` still slants the self-hosted face.
+#
+# The two fallback faces are metric-matched to Recursive so first paint (before the
+# woff2 decodes) is shift-free (NO_FIRST_PAINT_FLASH): the fallback's line box and
+# average advance width equal Recursive's, so the swap produces ~0 layout shift.
+# Mono vs proportional is the MONO axis, not a family, and the system locals have no
+# MONO axis, so the match needs two faces selected per family token:
+#   --font-family-mono  -> Recursive-fallback-mono  ~ Recursive MONO 1 over "Courier New"
+#   --font-family-prose -> Recursive-fallback-prose ~ Recursive MONO 0 over "Arial"
+#
+# Override values are reproducible (recompute if the woff2 is revendored):
+#   1. Instantiate the VF at {wght:400, CASL:0, slnt:0, CRSV:0} with MONO 1 and MONO 0
+#      via `fontTools.varLib.instancer` -> two static cuts.
+#   2. xWidthAvg of each cut via `@capsizecss/unpack` fromBuffer; Arial / Courier New
+#      metrics from `@capsizecss/metrics`; overrides via the Capsize formula
+#        size-adjust       = (pref.xWidthAvg/pref.upm) / (fb.xWidthAvg/fb.upm)
+#        {ascent,descent,line-gap}-override = pref.metric / (pref.upm * size-adjust)
+#   Inputs: Recursive upm 1000, ascent 950, descent -250, lineGap 0;
+#   xWidthAvg MONO 1 = 600, MONO 0 = 510. Arial upm 2048 xWidthAvg 913;
+#   Courier New upm 2048 xWidthAvg 1229.
+FONT_FACE = """\
+@font-face {
+  font-family: "Recursive";
+  font-weight: 300 1000;
+  font-style: normal;
+  font-display: swap;
+  src: url("fonts/Recursive_VF.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Recursive-fallback-mono";
+  src: local("Courier New");
+  size-adjust: 99.9837%;
+  ascent-override: 95.0155%;
+  descent-override: 25.0041%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Recursive-fallback-prose";
+  src: local("Arial");
+  size-adjust: 114.4009%;
+  ascent-override: 83.0413%;
+  descent-override: 21.8530%;
+  line-gap-override: 0%;
+}"""
+
+# Path (relative to the generated tokens.css) of the woff2 that FONT_FACE points at.
+# Shared with the build's font-preload injection so the preload href and the
+# @font-face src cannot drift (GENERATE_INVARIANTS_LINT_VARIATION).
+FONT_WOFF2_HREF = "fonts/Recursive_VF.woff2"
 
 
 def _flatten_primitives(
@@ -198,7 +246,7 @@ def _build_tokens_layer(
     lines.append("    --casl: var(--font-axis-casl);")
     lines.append("    --slnt: var(--font-axis-slnt);")
     lines.append("    --crsv: var(--font-axis-crsv);")
-    lines.append("    font-family: var(--font-family);")
+    lines.append("    font-family: var(--font-family-mono);")
     lines.append(
         "    font-variation-settings:"
         " 'MONO' var(--mono), 'CASL' var(--casl),"
@@ -365,6 +413,8 @@ def generate_token_css(
     )
 
     sections = [
+        FONT_FACE,
+        "",
         "@layer reset, tokens, defaults, utilities;",
         "",
         RESET_LAYER,

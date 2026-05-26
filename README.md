@@ -153,4 +153,4 @@ The manifest stamps each artifact with a `sha256` and byte count, and is written
 ## Credits
 
 - **Radix Icons**: Curated 28-icon subset under `components/icons/`. MIT License, Copyright © 2022 WorkOS. See `components/icons/LICENSE` and the upstream project: https://github.com/radix-ui/icons
-- **Recursive**: Variable font powering all typography. Designed by Stephen Nixon / Arrow Type. SIL Open Font License 1.1; loaded via Google Fonts (not redistributed). https://www.recursive.design/
+- **Recursive**: Variable font powering all typography. Designed by Stephen Nixon / Arrow Type. SIL Open Font License 1.1; self-hosted (vendored under `fonts/` with `fonts/OFL.txt`, served from `dist/fonts/`) and metric-matched for zero font-swap layout shift. https://www.recursive.design/

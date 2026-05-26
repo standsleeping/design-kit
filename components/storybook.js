@@ -388,6 +388,13 @@ async function mountSidebars() {
   navMount.append(navSb);
   inspectorMount.append(inspectorSb);
 
+  // Geometry was reserved at first paint via [storybook-rail-reserving] + the
+  // head geometry bootstrap (see HYDRATION_RESERVES_GEOMETRY). Now that the real
+  // Sidebars are mounted at the same width, hand width back to them so the
+  // resizer drives it; the rails become content-driven again.
+  navMount.classList.remove('storybook-rail-reserving');
+  inspectorMount.classList.remove('storybook-rail-reserving');
+
   // Auto-collapse rails on narrow viewports so the controls + variants area
   // keeps usable width. The nav is a NavStack (has an icon mode) so it
   // shrinks to the icon rail below bp-tablet-max; the inspector is a panel

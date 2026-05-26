@@ -46,6 +46,10 @@ Primitive sizing scales (`--control-min-width-sm` / `-md` / `-lg`, and matching 
 
 Default vs. high-contrast. The accessibility layer served by `prefers-contrast` and `forced-colors`. design-kit does not currently ship a high-contrast mode; the term is reserved so that when we do, it occupies its own vocabulary slot rather than colliding with *luminance mode* or *color theme*.
 
+## Cumulative layout shift (CLS)
+
+The web-vitals metric for how much visible content moves during load. In design-kit it measures a layout that mounts chrome or content after first paint and resizes the page. The `first-paint` headless audit sums CLS over the load and fails a surface that exceeds its budget; reserve geometry so hydration fills boxes that are already the right size. See `HYDRATION_RESERVES_GEOMETRY` and [the load lifecycle](../explanations/load-lifecycle.md).
+
 ## Dispatch
 
 The function that sends an *action* to the *reducer* and applies the result. `createApp` provides it, and calling `dispatch(action)` is the only way to change state. Updates are batched, so one dispatch notifies each *binding* at most once. See the [runtime reference](runtime.md).
@@ -57,6 +61,10 @@ See *Rule*. Prefer *rule* in new work; *divider* is acceptable when discussing M
 ## Effect
 
 A reactive computation that runs immediately and re-runs whenever a *signal* it read changes; it may return a cleanup. The *binding* helpers and the effect helpers (`urlSyncEffect`, `localStorageEffect`, `dispatchOnEvent`) are built on it. Effects are owner-disposed (see the [runtime reference](runtime.md)).
+
+## First-paint bootstrap
+
+A synchronous inline `<script>` in the head that establishes persisted render state (luminance, color theme) on `:root` before the page paints. Single source in `src/design_kit/head_bootstrap.py`, injected and verified by `design-kit build` on every page. The reason theme and luminance never flash on load. See `NO_FIRST_PAINT_FLASH` and [the load lifecycle](../explanations/load-lifecycle.md).
 
 ## Flow child
 
@@ -71,6 +79,14 @@ A layout mode where the chrome (header, footer, sidebars) is flush against the v
 A layout mode where cards stack edge-to-edge, separated by a single full-bleed rule rather than floating in a gutter. Apple calls this *plain*; Material calls it a *divider list*. The component-scale instance of *Flush layout*. Contrast: *Inset card*.
 
 In the flush mode, each card's own left/right borders collapse away; the outer container provides the horizontal boundary, and each card's top (or bottom) border serves as the divider above (or below) it.
+
+## FOUC
+
+Flash of unstyled (or wrong-themed) content: the page paints once, then a later script corrects the theme, so the user sees a flash on load. Prevented by establishing render state in the *first-paint bootstrap* before any deferred script runs. See `NO_FIRST_PAINT_FLASH`.
+
+## FOUT
+
+Flash of unstyled text: the page paints text in a fallback font, then re-lays it out when the web font arrives, so the text reflows mid-load (a font-layer cause of [CLS](#cumulative-layout-shift-cls), distinct from the theme flash of FOUC). Prevented here by self-hosting the brand font (Recursive) and shipping two **metric-matched fallback faces** whose line box and average advance width equal Recursive's, so the swap is shift-free. See [the brand font in the load lifecycle](../explanations/load-lifecycle.md#the-brand-font).
 
 ## Full-bleed
 
@@ -100,6 +116,10 @@ A card with four borders, floating inside a gutter. Each card is visually comple
 ## Inset layout
 
 A layout mode where the chrome (header, footer, sidebars) is flush against the viewport edge and the content region inside the chrome is a recessed field with a gutter on all sides. Surfaces inside float in the gutter; each owns its four borders. The shell-scale companion of *Inset card*. Contrast: *Flush layout*. See `INSET_VS_FLUSH_LAYOUT` in system-principles.
+
+## Load trajectory
+
+The sequence of frames between a page's first paint and its settled state. FOUC and layout shift live only here, invisible to checks that read the source or measure the settled DOM. design-kit treats it as a gated artifact, measured by the `first-paint` headless audit. See [the load lifecycle](../explanations/load-lifecycle.md).
 
 ## Luminance mode
 

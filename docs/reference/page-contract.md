@@ -38,9 +38,6 @@ A minimal conformant page:
 <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
   html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
@@ -80,6 +77,15 @@ A minimal conformant page:
 ```
 
 The `data-current="page-id"` highlights the current page in the system sidebar. Use the matching `id` from `components/system/nav-data.js` (e.g., `taxonomy`, `inset-vs-flush`, `storybook`). Omit `data-current` when the page is the index itself.
+
+## First-paint bootstrap and font (build-managed)
+
+The authored skeleton above deliberately omits two things every *built* page carries, both injected by `design-kit build` from a single source and verified to have landed in every page (a missing or misplaced injection fails the build):
+
+- A synchronous inline `<script>` in the head that establishes persisted render state (luminance, color theme) before first paint (`src/design_kit/head_bootstrap.py`), inserted immediately before the first stylesheet. This is why theme and luminance never flash on load, and why no page hand-rolls its own theme script.
+- A `<link rel="preload" as="font" crossorigin>` for the self-hosted Recursive variable font (`src/design_kit/font_preload.py`). The font itself is self-hosted (`fonts/`, served from `dist/fonts/`) and declared via `@font-face` in `tokens.css`, so a page **must not** add a Google Fonts (or any other) font link; doing so reintroduces a third-party connection and is redundant with the build-managed preload.
+
+A page that persists layout geometry (panel widths, collapsed rails) additionally authors its own synchronous geometry bootstrap in the head, because geometry is per-page rather than universal. See [the load lifecycle](../explanations/load-lifecycle.md) for the full order of execution and the trajectory audit that enforces it.
 
 ## Manual mount (augmented levels)
 
@@ -134,6 +140,7 @@ If a page is in the allowlist but actually passes every check, the build logs a 
 - `FLAT_CLASSED_FLEX_TREE`: the shell's flat, named-slot structure
 - `INSET_VS_FLUSH_LAYOUT`: every page picks a mode by composing content inside `dk-app-shell-main`
 - `LAYERED_UI_REVEAL`: the base / chrome / surface / item layer split is the shell's slot structure
+- `NO_FIRST_PAINT_FLASH` / `HYDRATION_RESERVES_GEOMETRY`: the build-injected first-paint bootstrap and reserved rail geometry (see [the load lifecycle](../explanations/load-lifecycle.md))
 
 ## References
 

@@ -12,7 +12,7 @@ Each audit names the principle it enforces and, where exceptions are legitimate,
 
 **Static audits** need no browser and are fast. Twelve are *lints*: text-scanning regex checks over CSS and HTML (raw-literal leaks, asymmetric padding, non-zero radius, layout margins, focus-ring placement, scroll-axis misuse, the page contract, and the rest). The thirteenth is the token-pair contrast check, a token-graph check over the generated `tokens.css` rather than a text lint. These run on every `design-kit build` and on demand via `design-kit audit`.
 
-**Headless audits** measure things that only exist in a rendered page: horizontal overflow at several widths, and the responsive-table component's behavior across its modes. These run in headless Chromium, added with `design-kit audit --headless`. When the browser or the served site is unavailable they report `SKIP`, never a false failure, so a token-only environment still completes.
+**Headless audits** measure things that only exist in a rendered page: horizontal overflow at several widths, the responsive components' behavior across their modes (table, adaptive, fits-its-own-box), and the **load trajectory** (first-paint state and cumulative layout shift, the window static and settle-then-measure checks cannot see). These run in headless Chromium, added with `design-kit audit --headless`. When the browser or the served site is unavailable they report `SKIP`, never a false failure, so a token-only environment still completes.
 
 ## One registry, two callers, no drift
 
@@ -28,5 +28,6 @@ An audit carries its inputs in a scope rather than hard-coding design-kit's own 
 
 - [CLI reference](../reference/cli.md): `audit` flags and scope precedence.
 - [Responsive audit](../reference/responsive-audit.md): the manual per-component status tracker that complements the headless `overflow` check.
+- [The load lifecycle](load-lifecycle.md): what the `first-paint` trajectory audit checks, and the order code runs before it can.
 - README "Build-time audits", "The audit command", "Headless audits": the full lint and rendered-audit tables.
 - `AUTO_VERIFICATION`, `TEST_INTEGRATION` in system-principles: the enforce-don't-review premise.

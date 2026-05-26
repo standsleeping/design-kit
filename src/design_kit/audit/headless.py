@@ -490,11 +490,183 @@ FIT_SPEC = HeadlessSpec(
 )
 
 
+# --- spec: load trajectory (first-paint state + layout stability) ---
+#
+# The other headless specs wait for the page to settle, then measure the final DOM.
+# This one measures the *trajectory* from first paint to settled — the window where
+# FOUC and load-time layout shift live, which a settle-then-measure check cannot see.
+#
+# Part 1 (NO_FIRST_PAINT_FLASH): seed a non-default theme, then load the page twice —
+# once normally, once with every .js request aborted. The inline head bootstrap is not
+# a request, so it still runs; the deferred/module scripts do not. If the no-JS render
+# already matches the settled render (same theme attributes, same body colors), then the
+# synchronous bootstrap alone establishes first-paint state and there is no flash. A page
+# that depended on deferred JS to apply the theme fails here: its no-JS colors are the
+# default, not the seeded theme.
+#
+# Part 2 (HYDRATION_RESERVES_GEOMETRY): register a layout-shift PerformanceObserver before
+# load and sum the cumulative score across the whole load. A shell that reserves its
+# geometry scores ~0; one that mounts chrome into collapsed rails scores a visible jump.
+# Enforced on every page at one tight bound now that the self-hosted, metric-matched font
+# removed the font-swap shift that previously forced a looser general threshold.
+
+_FP_SEED = {"dk-luminance": "dark", "dk-color-theme": "solarized"}
+_FP_LAYOUT_SEED = '{"nav":300,"inspector":400}'
+_SB_PAGE = "storybook.html"
+# Web-vitals "good" is < 0.1, but every design-kit page should score ~0: the brand font
+# is self-hosted with metric-matched fallbacks (token_css.FONT_FACE), so the font swap
+# no longer reflows text, and each shell reserves its geometry. With font-swap noise
+# eliminated, the former split (a looser 0.1 general bound vs a 0.05 storybook bound)
+# collapses into one tight threshold for every page; the only remaining load-time shift
+# would be a real geometry-reservation regression, which this catches.
+_CLS_THRESHOLD = 0.05
+_FP_SETTLE_MS = 700  # storybook: config fetch + dynamic imports + sidebar mount
+_CLS_SETTLE_MS = 800  # general: let load-time reflow settle
+
+_FP_CAPTURE_JS = """() => ({
+  lum: document.documentElement.getAttribute('data-luminance'),
+  theme: document.documentElement.getAttribute('data-color-theme'),
+  bg: getComputedStyle(document.body).backgroundColor,
+  fg: getComputedStyle(document.body).color,
+})"""
+
+_CLS_INIT_JS = """
+window.__cls = 0;
+new PerformanceObserver((list) => {
+  for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
+}).observe({ type: 'layout-shift', buffered: true });
+"""
+
+_FP_REMEDIATION = (
+    "see NO_FIRST_PAINT_FLASH and HYDRATION_RESERVES_GEOMETRY. Persisted render state "
+    "(theme, luminance) must be set by the inline head bootstrap (design_kit.head_bootstrap, "
+    "injected by build) before any module script; persisted geometry must be reserved in CSS "
+    "so JS-mounted chrome fills boxes that are already the right size."
+)
+
+
+def _seed_script(layout: bool) -> str:
+    sets = "".join(f"localStorage.setItem({k!r},{v!r});" for k, v in _FP_SEED.items())
+    if layout:
+        sets += f"localStorage.setItem('dk-storybook-layout',{_FP_LAYOUT_SEED!r});"
+    return f"try{{{sets}}}catch(e){{}}"
+
+
+def _run_first_paint(ctx: HeadlessContext) -> AuditOutcome:
+    """Measure the load trajectory: first-paint state correctness, and storybook CLS."""
+    findings: list[Finding] = []
+
+    # Part 1: no-JS render must equal settled render, for every page.
+    for name in ctx.page_names:
+        url = f"{ctx.base_url}/{name}"
+
+        settled_page = ctx.browser.new_page(viewport={"width": 1280, "height": 900})
+        settled_page.add_init_script(_seed_script(layout=name == _SB_PAGE))
+        try:
+            settled_page.goto(url, wait_until="load")
+            settled_page.wait_for_timeout(_FP_SETTLE_MS if name == _SB_PAGE else 200)
+            settled = settled_page.evaluate(_FP_CAPTURE_JS)
+        finally:
+            settled_page.close()
+
+        boot_page = ctx.browser.new_page(viewport={"width": 1280, "height": 900})
+        boot_page.add_init_script(_seed_script(layout=name == _SB_PAGE))
+        boot_page.route("**/*.js", lambda route: route.abort())
+        try:
+            boot_page.goto(url, wait_until="load")
+            boot = boot_page.evaluate(_FP_CAPTURE_JS)
+        finally:
+            boot_page.close()
+
+        if (
+            boot["theme"] != _FP_SEED["dk-color-theme"]
+            or boot["lum"] != _FP_SEED["dk-luminance"]
+        ):
+            findings.append(
+                Finding(
+                    locator=name,
+                    detail=(
+                        "first paint (no JS) missing seeded theme: "
+                        f"data-color-theme={boot['theme']!r} data-luminance={boot['lum']!r}; "
+                        "the head bootstrap did not establish it"
+                    ),
+                )
+            )
+        elif boot["bg"] != settled["bg"] or boot["fg"] != settled["fg"]:
+            findings.append(
+                Finding(
+                    locator=name,
+                    detail=(
+                        f"first paint colors differ from settled (FOUC): "
+                        f"first bg={boot['bg']} fg={boot['fg']}; "
+                        f"settled bg={settled['bg']} fg={settled['fg']}"
+                    ),
+                )
+            )
+
+    # Part 2: layout stability across the load (CLS), every page held to one tight bound.
+    # A page opts out with [data-cls-exempt] only when its load-time shift is by design (a
+    # self-reporting test harness injecting results after load, not a user surface) — the
+    # attribute's value documents why. Font swap is no longer a valid reason to exempt: the
+    # brand font is self-hosted with metric-matched fallbacks, so the swap is shift-free.
+    for name in ctx.page_names:
+        cls_page = ctx.browser.new_page(viewport={"width": 1280, "height": 900})
+        cls_page.add_init_script(_seed_script(layout=name == _SB_PAGE))
+        cls_page.add_init_script(_CLS_INIT_JS)
+        try:
+            cls_page.goto(f"{ctx.base_url}/{name}", wait_until="load")
+            cls_page.wait_for_timeout(
+                _FP_SETTLE_MS if name == _SB_PAGE else _CLS_SETTLE_MS
+            )
+            exempt = bool(
+                cls_page.evaluate(
+                    "!!(document.body && document.body.hasAttribute('data-cls-exempt'))"
+                    " || document.documentElement.hasAttribute('data-cls-exempt')"
+                )
+            )
+            cls = float(cls_page.evaluate("window.__cls || 0"))
+        finally:
+            cls_page.close()
+        if exempt:
+            continue
+        if cls > _CLS_THRESHOLD:
+            findings.append(
+                Finding(
+                    locator=name,
+                    detail=(
+                        f"cumulative layout shift {cls:.3f} over load exceeds "
+                        f"{_CLS_THRESHOLD}; chrome or content is resizing the layout "
+                        f"after first paint (reserve its geometry, or opt out with "
+                        f"data-cls-exempt if the shift is by design)"
+                    ),
+                )
+            )
+
+    return AuditOutcome(
+        slug="first-paint",
+        name="Load trajectory (first paint + CLS)",
+        principle="NO_FIRST_PAINT_FLASH",
+        kind=AuditKind.HEADLESS,
+        status=AuditStatus.FAILED if findings else AuditStatus.PASSED,
+        findings=tuple(findings),
+        remediation=_FP_REMEDIATION,
+    )
+
+
+FIRST_PAINT_SPEC = HeadlessSpec(
+    slug="first-paint",
+    name="Load trajectory (first paint + CLS)",
+    principle="NO_FIRST_PAINT_FLASH",
+    run=_run_first_paint,
+)
+
+
 HEADLESS_REGISTRY: tuple[HeadlessSpec, ...] = (
     OVERFLOW_SPEC,
     RESPONSIVE_TABLE_SPEC,
     ADAPTIVE_BEHAVIOR_SPEC,
     FIT_SPEC,
+    FIRST_PAINT_SPEC,
 )
 
 

@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 from design_kit.icon_registry import CURATED_ICONS, ICON_CATEGORIES, normalise_svg
-from design_kit.token_css import GOOGLE_FONTS_LINK
 
 # Palette families shown in the preview, in display order. Excludes
 # white/black (rendered separately if at all) and solarized (theme-specific,
@@ -83,7 +82,6 @@ def generate_preview_html() -> str:
   <link rel="stylesheet" href="components/topbar.css">
   <link rel="stylesheet" href="components/menu-item.css">
   <link rel="stylesheet" href="components/nav-stack.css">
-{GOOGLE_FONTS_LINK}
   <style>
     /* Viewport-lock the page so .dk-app-shell's height: 100% resolves:
        sidebar stays fixed, .dk-app-shell-main scrolls. */

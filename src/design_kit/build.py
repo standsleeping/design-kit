@@ -14,6 +14,8 @@ from design_kit.audit import AuditScope, raise_on_failure, run_audits
 from design_kit.audit.registry import REGISTRY
 from design_kit.breakpoints import load_breakpoints, substitute_breakpoints
 from design_kit.contrast_self_test import run as run_contrast_lint
+from design_kit.font_preload import font_preload_violation, inject_font_preload
+from design_kit.head_bootstrap import bootstrap_violation, inject_head_bootstrap
 from design_kit.icon_registry import generate_registry
 from design_kit.logging import get_logger
 from design_kit.page_lint import PageLintOutcome, run_page_lint
@@ -24,6 +26,10 @@ logger = get_logger(__name__)
 
 COMPONENTS_DIR = Path("components")
 PAGES_DIR = Path("pages")
+# Self-hosted fonts (Recursive variable woff2 + OFL license). Copied verbatim into
+# dist/ so pages serve the brand font from the same origin; see token_css.FONT_FACE
+# for the @font-face that points at dist/fonts/ and font_preload for the preload hint.
+FONTS_DIR = Path("fonts")
 # Top-level .js files under components/ that are framework infrastructure,
 # not contract-conformant components. The rest of the framework lives under
 # components/system/ and is excluded by directory; storybook.js stays at
@@ -130,10 +136,30 @@ def build(tokens_path: Path, output_dir: Path) -> None:
     )
     logger.info(f"Generated {tokens_manifest_path} (v{version})")
 
-    html = substitute_breakpoints(generate_preview_html(), breakpoints)
+    # Every built page carries two build-managed head injections before its first
+    # stylesheet: the first-paint render-state bootstrap and the font preload. Both
+    # come from a single source (GENERATE_INVARIANTS_LINT_VARIATION) and both are
+    # verified here, at build time, so a silent injection skip (marker collision, head
+    # with no stylesheet) is a named build failure instead of a runtime flash or a slow
+    # first paint that only the headless audit would notice (SHIFT_VALIDATION_LEFT).
+    head_failures: list[str] = []
+
+    def _inject_head(text: str) -> str:
+        # Preload first so the font fetch is discovered before the blocking bootstrap
+        # script; both land before the first stylesheet.
+        return inject_head_bootstrap(inject_font_preload(text))
+
+    def _check_head(name: str, text: str) -> None:
+        if (violation := bootstrap_violation(text)) is not None:
+            head_failures.append(f"{name}: {violation}")
+        if (violation := font_preload_violation(text)) is not None:
+            head_failures.append(f"{name}: {violation}")
+
+    html = _inject_head(substitute_breakpoints(generate_preview_html(), breakpoints))
     html_path = output_dir / "index.html"
     html_path.write_text(html, encoding="utf-8")
     logger.info(f"Generated {html_path}")
+    _check_head("index.html", html)
 
     cache_bust = str(int(time.time()))
     if PAGES_DIR.is_dir():
@@ -142,8 +168,28 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             text = page.read_text(encoding="utf-8")
             text = text.replace("{{CACHE_BUST}}", cache_bust)
             text = substitute_breakpoints(text, breakpoints)
+            text = _inject_head(text)
             dest.write_text(text, encoding="utf-8")
             logger.info(f"Copied {dest}")
+            _check_head(page.name, text)
+
+    if head_failures:
+        for failure in head_failures:
+            logger.error(f"Head injection: {failure}")
+        raise RuntimeError(
+            f"First-paint bootstrap or font preload missing or misplaced in "
+            f"{len(head_failures)} page(s); see design_kit.head_bootstrap / "
+            f"design_kit.font_preload (NO_FIRST_PAINT_FLASH)"
+        )
+
+    if FONTS_DIR.is_dir():
+        dest_fonts = output_dir / "fonts"
+        if dest_fonts.exists():
+            shutil.rmtree(dest_fonts)
+        shutil.copytree(FONTS_DIR, dest_fonts)
+        logger.info(f"Copied fonts to {dest_fonts}")
+    else:
+        logger.warning(f"Fonts directory not found: {FONTS_DIR}")
 
     if COMPONENTS_DIR.is_dir():
         dest_components = output_dir / "components"

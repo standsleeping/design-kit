@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Storybook · design-kit</title>
+<script>/* dk-first-paint geometry — reserve persisted rail widths before paint so
+   the JS-mounted Sidebars fill boxes that are already the right size, rather than
+   resizing the shell after load (HYDRATION_RESERVES_GEOMETRY). Per-page: the keys
+   and defaults are storybook's (see LAYOUT_STORAGE_KEY / LAYOUT_DEFAULTS in
+   components/storybook.js). Saved values are already clamped at save time. */
+(function(){try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('dk-storybook-layout')||'{}');
+if(p.nav)d.style.setProperty('--dk-rail-nav-w',Number(p.nav)+'px');
+if(p.inspector)d.style.setProperty('--dk-rail-inspector-w',Number(p.inspector)+'px');
+}catch(e){}})();</script>
 <link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
@@ -21,6 +30,24 @@
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--typography-body);
+  }
+
+  /* First-paint geometry reservation (HYDRATION_RESERVES_GEOMETRY). Before
+     storybook.js mounts the two Sidebars, the rails already carry their final
+     width from the persisted-layout custom props set by the head geometry
+     bootstrap (falling back to the layout defaults). Without this the empty left
+     rail is display:none (0 width) and the right rail sizes to its intrinsic
+     content; mounting a Sidebar then widens both and reflows the center column.
+     The left rail is empty until mount, so this also overrides app-shell's
+     `:empty { display:none }` collapse for the reserving state — equal specificity,
+     later source, so it wins. The `storybook-rail-reserving` class is removed on
+     mount; the Sidebar then drives the width and the resizer works normally. */
+  .dk-app-shell-left.storybook-rail-reserving {
+    display: block;
+    width: var(--dk-rail-nav-w, 240px); /* dimension-lint: ok, default mirrors LAYOUT_DEFAULTS.nav in storybook.js */
+  }
+  .dk-app-shell-right.storybook-rail-reserving {
+    width: var(--dk-rail-inspector-w, 320px); /* dimension-lint: ok, default mirrors LAYOUT_DEFAULTS.inspector in storybook.js */
   }
 
   .storybook-mobile-notice {
@@ -527,7 +554,7 @@
          storybook sub-level holding the component list). The slot opts
          out of auto-mount via [data-system-nav-manual] because the page
          needs the augmented level structure; see components/storybook.js. -->
-    <div class="dk-app-shell-left"
+    <div class="dk-app-shell-left storybook-rail-reserving"
          data-system-nav
          data-system-nav-manual
          data-current="storybook"></div>
@@ -575,7 +602,7 @@
 
     <!-- Inspector content host. storybook.js wraps this in a right Sidebar at
          startup and moves the host's children into the Sidebar's main slot. -->
-    <div class="dk-app-shell-right">
+    <div class="dk-app-shell-right storybook-rail-reserving">
       <div class="storybook-inspector-host" data-storybook-inspector-host>
         <div class="storybook-inspector-tabs" role="tablist">
           <button type="button" class="storybook-inspector-tab storybook-inspector-tab-active" data-storybook-inspector-tab="events" role="tab" aria-selected="true">Events</button>

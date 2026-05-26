@@ -9,9 +9,6 @@
 <link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
   html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
@@ -57,7 +54,7 @@
   .frame-host { position: fixed; left: -99999px; top: 0; width: 1280px; height: 900px; } /* dimension-lint: ok, off-screen test mount for headless audit at fixed viewport */
 </style>
 </head>
-<body>
+<body data-cls-exempt="self-reporting test harness; injects results after load (not a user surface)">
 <div class="dk-app-shell">
   <div class="dk-app-shell-body">
     <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"

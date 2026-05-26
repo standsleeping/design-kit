@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -11,7 +12,8 @@ from design_kit.token_css import generate_token_css
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
-    from pathlib import Path
+
+TOKENS_PATH = Path(__file__).parent.parent / "tokens" / "design-tokens.json"
 
 
 def _write_tokens(tmp_path: Path, data: Mapping[str, object]) -> Path:
@@ -82,6 +84,33 @@ def test_multi_theme_emits_root_and_override_blocks(tmp_path: Path) -> None:
     beta_block_end = css.index("}", beta_block_start)
     beta_block = css[beta_block_start:beta_block_end]
     assert "color-scheme" not in beta_block
+
+
+def test_emits_font_faces_and_split_family_tokens() -> None:
+    """tokens.css declares the self-hosted Recursive face plus two metric-matched fallback
+    faces, and splits the family token into mono (UI/headings) and prose (body) so the
+    pre-swap fallback matches the axis each role renders at."""
+    css = generate_token_css(TOKENS_PATH)
+
+    # Real face: variable weight range, same-origin vendored woff2.
+    assert "font-weight: 300 1000;" in css
+    assert 'url("fonts/Recursive_VF.woff2") format("woff2")' in css
+
+    # Two metric-matched fallbacks, each over a web-safe local with overrides.
+    assert 'font-family: "Recursive-fallback-mono";' in css
+    assert 'src: local("Courier New");' in css
+    assert 'font-family: "Recursive-fallback-prose";' in css
+    assert 'src: local("Arial");' in css
+    assert "size-adjust:" in css
+    assert "ascent-override:" in css
+    assert "descent-override:" in css
+
+    # Split family tokens, mapped: prose drives body, mono drives UI and headings.
+    assert '--font-family-mono: "Recursive", "Recursive-fallback-mono"' in css
+    assert '--font-family-prose: "Recursive", "Recursive-fallback-prose"' in css
+    assert "--typography-body: var(--font-family-prose);" in css
+    assert "--typography-heading: var(--font-family-mono);" in css
+    assert "--typography-mono: var(--font-family-mono);" in css
 
 
 def test_validation_rejects_theme_missing_luminance(tmp_path: Path) -> None:

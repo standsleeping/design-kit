@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 
 from design_kit.build import build
+from design_kit.font_preload import PRELOAD_MARKER
+from design_kit.head_bootstrap import BOOTSTRAP_MARKER
 
 TOKENS_PATH = Path(__file__).parent.parent / "tokens" / "design-tokens.json"
 
@@ -22,6 +24,63 @@ def test_build_creates_output_files(tmp_path: Path) -> None:
     html_content = index_html.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in html_content
     assert "tokens.css" in html_content
+
+
+def test_build_injects_first_paint_bootstrap_into_every_page(tmp_path: Path) -> None:
+    """Every built page (the generated index and each copied page) carries the
+    render-blocking first-paint bootstrap, so persisted theme state is established
+    before paint without each page hand-rolling its own copy (NO_FIRST_PAINT_FLASH)."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    index_html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert BOOTSTRAP_MARKER in index_html
+
+    pages = list(tmp_path.glob("*.html"))
+    assert len(pages) > 1
+    for page in pages:
+        text = page.read_text(encoding="utf-8")
+        assert BOOTSTRAP_MARKER in text, f"{page.name} missing first-paint bootstrap"
+        # Established before the first stylesheet, so styles compute with it applied.
+        assert text.index(BOOTSTRAP_MARKER) < text.index('<link rel="stylesheet"')
+
+
+def test_build_injects_font_preload_into_every_page(tmp_path: Path) -> None:
+    """Every built page carries the self-hosted-font preload before its first stylesheet,
+    from one build-managed source rather than a per-page Google Fonts link
+    (GENERATE_INVARIANTS_LINT_VARIATION); the early fetch keeps the metric-matched swap
+    shift-free (NO_FIRST_PAINT_FLASH)."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    pages = list(tmp_path.glob("*.html"))
+    assert len(pages) > 1
+    for page in pages:
+        text = page.read_text(encoding="utf-8")
+        assert PRELOAD_MARKER in text, f"{page.name} missing font preload"
+        assert text.index(PRELOAD_MARKER) < text.index('<link rel="stylesheet"')
+
+
+def test_build_drops_google_fonts(tmp_path: Path) -> None:
+    """No built page reaches out to Google Fonts: the brand font is self-hosted, so the
+    third-party preconnect and css2 link must be gone everywhere."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    for page in tmp_path.glob("*.html"):
+        text = page.read_text(encoding="utf-8")
+        assert "fonts.googleapis.com" not in text, f"{page.name} still links Google Fonts"
+        assert "fonts.gstatic.com" not in text, f"{page.name} still preconnects gstatic"
+
+
+def test_build_serves_self_hosted_font(tmp_path: Path) -> None:
+    """The build copies the vendored variable font and its license into dist/fonts/, the
+    same-origin source the tokens.css @font-face and the page preload both point at."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    fonts_dir = tmp_path / "fonts"
+    assert (fonts_dir / "Recursive_VF.woff2").exists()
+    assert (fonts_dir / "OFL.txt").exists()
+
+    css = (tmp_path / "tokens.css").read_text(encoding="utf-8")
+    assert 'url("fonts/Recursive_VF.woff2")' in css
 
 
 def test_build_stamps_version_header_on_tokens_css(tmp_path: Path) -> None:
