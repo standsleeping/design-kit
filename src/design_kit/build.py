@@ -58,6 +58,23 @@ def _read_version() -> str:
         return "0.0.0+unknown"
 
 
+def tokens_css_artifact(tokens_path: Path) -> str:
+    """Return the canonical tokens.css contents (header + generated body).
+
+    Single source for "what tokens.css looks like" so the build write, the example
+    snapshot in ``docs/examples/tokens.css``, and the freshness test that pins the
+    snapshot all derive from one function (GENERATE_INVARIANTS_LINT_VARIATION).
+    """
+    version = _read_version()
+    header = (
+        f"/* design-kit tokens v{version}\n"
+        " * regenerate via `design-kit build`; do not edit manually\n"
+        " */\n"
+    )
+    breakpoints = load_breakpoints(tokens_path)
+    return header + generate_token_css(tokens_path, breakpoints=breakpoints)
+
+
 def _copy_components_with_substitution(
     src_dir: Path, dest_dir: Path, breakpoints: dict[str, str]
 ) -> None:
@@ -92,13 +109,8 @@ def build(tokens_path: Path, output_dir: Path) -> None:
         logger.warning("Skipping icon registry: components/icons/ not found")
 
     version = _read_version()
-    header = (
-        f"/* design-kit tokens v{version}\n"
-        " * regenerate via `design-kit build`; do not edit manually\n"
-        " */\n"
-    )
     breakpoints = load_breakpoints(tokens_path)
-    css = header + generate_token_css(tokens_path, breakpoints=breakpoints)
+    css = tokens_css_artifact(tokens_path)
     css_path = output_dir / "tokens.css"
     css_path.write_text(css, encoding="utf-8")
     logger.info(f"Generated {css_path} (v{version})")

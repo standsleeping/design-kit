@@ -3,11 +3,14 @@
 import json
 from pathlib import Path
 
-from design_kit.build import build
+from design_kit.build import build, tokens_css_artifact
 from design_kit.font_preload import PRELOAD_MARKER
 from design_kit.head_bootstrap import BOOTSTRAP_MARKER
 
 TOKENS_PATH = Path(__file__).parent.parent / "tokens" / "design-tokens.json"
+EXAMPLE_TOKENS_PATH = (
+    Path(__file__).parent.parent / "docs" / "examples" / "tokens.css"
+)
 
 
 def test_build_creates_output_files(tmp_path: Path) -> None:
@@ -140,6 +143,23 @@ def test_build_ships_contract_tests_page(tmp_path: Path) -> None:
     html = contract_tests.read_text(encoding="utf-8")
     assert "Contract Tests" in html
     assert "storybook.config.json" in html
+
+
+def test_example_tokens_snapshot_matches_live_generator() -> None:
+    """The shared example tokens.css under docs/examples/ is a checked-in snapshot of
+    the live generator output (the three tutorial bundles reference it via ../tokens.css).
+    Any token change that does not refresh the snapshot is drift, and this test fails
+    until the snapshot is regenerated."""
+    snapshot = EXAMPLE_TOKENS_PATH.read_text(encoding="utf-8")
+    live = tokens_css_artifact(TOKENS_PATH)
+    assert snapshot == live, (
+        "docs/examples/tokens.css is stale (drift between the snapshot and the live "
+        "tokens generator). Regenerate it after the token change with:\n"
+        '    uv run python -c "from pathlib import Path; from design_kit.build '
+        "import tokens_css_artifact; "
+        "Path('docs/examples/tokens.css').write_text("
+        "tokens_css_artifact(Path('tokens/design-tokens.json')), encoding='utf-8')\""
+    )
 
 
 def test_build_creates_output_dir(tmp_path: Path) -> None:
