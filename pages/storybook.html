@@ -84,8 +84,24 @@ if(p.inspector)d.style.setProperty('--dk-rail-inspector-w',Number(p.inspector)+'
   }
 
   /* AppShell-header content: count + theme/luminance controls, all monospace
-     to match the rail. The dk-topbar provides height, padding, border. */
-  .storybook-header-count { color: var(--color-text-muted); }
+     to match the rail. The dk-topbar provides height, padding, border.
+
+     The count is a bare-text peer of the toggle buttons. Without an envelope
+     match, the toggle button box (padding + transparent border for peer-edge
+     reservation, plus UA content-centering inside <button>) is taller than the
+     count's line-box, and `align-items: center` on the topbar aligns the boxes
+     while leaving the count's uppercase glyphs sitting in the upper portion of
+     its line-box — visibly higher than the buttons' centered glyphs. Mirror
+     the button's vertical envelope (xs vertical padding + thin transparent
+     border on the block axis) and use inline-flex centering so the glyphs
+     share a row with the buttons. */
+  .storybook-header-count {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) 0; /* padding-lint: ok */
+    border-block: var(--border-width-thin) solid transparent;
+    color: var(--color-text-muted);
+  }
 
   /* Below tablet-max the header rail gets tight; drop the lowest-priority
      item (the registered count) so the theme/luminance toggles keep room

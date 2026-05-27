@@ -9,24 +9,24 @@
 }
 
 /* Header is a thin chrome strip; its child (title or back) owns padding so
-   the inset matches list items below (visual-language §11). The min-height
-   keeps the title-only case at chrome-bar height; back rows collapse to
-   their own content height. */
+   the inset matches list items below (visual-language §11). Peer-rail
+   member (PEER_RAIL): height tracks --layout-chrome-bar-h × --chrome-bar-rows
+   so the row aligns with sibling chrome strips (dk-topbar, dk-sticky-toc-summary,
+   ...) regardless of whether this level shows a title or a back button. The
+   back button stretches to fill via align-items: stretch; the title row centers
+   inside the same height. */
 .dk-nav-stack-header {
   flex-shrink: 0;
   border-bottom: var(--border-width-thin) solid var(--color-border);
   display: flex;
   align-items: stretch;
+  min-height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
+  /* PEER_RAIL: join the chrome rail; audit verifies computed height. */
+  --peer-rail: chrome;
 }
 
 .dk-nav-stack-header:not(:has(.dk-nav-stack-back)) {
   align-items: center;
-  /* Peer-rail member: height tracks --layout-chrome-bar-h × --chrome-bar-rows
-     so the NavStack title row aligns with sibling chrome strips (dk-topbar,
-     dk-sticky-toc-summary, ...). The :has(.back) variant collapses because a
-     drilled level uses the back-button row as its chrome. Already sized via
-     its own dk-nav-stack-back rules. */
-  min-height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
 }
 
 .dk-nav-stack-title {
