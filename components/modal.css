@@ -96,3 +96,5 @@
   scrollbar-width: none;
   padding: var(--spacing-lg);
 }
+
+.dk-modal-content::-webkit-scrollbar { display: none; }

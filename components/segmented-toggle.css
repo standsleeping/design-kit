@@ -3,9 +3,10 @@
   max-width: 100%;
   min-width: 0;
   overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
+  scrollbar-width: none;
 }
+
+.dk-segmented-toggle::-webkit-scrollbar { display: none; }
 
 .dk-segmented-toggle-button {
   flex: 0 0 auto;

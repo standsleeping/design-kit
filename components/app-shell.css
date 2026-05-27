@@ -65,8 +65,11 @@
      SCROLL_CONTAINMENT it must never scroll horizontally. Horizontal scroll
      belongs to leaf elements inside it (wide tables, code blocks), at their own
      edge. The old `overflow: auto` (both axes) silently turned any too-wide
-     child into a forbidden horizontal scrollbar on the column itself. */
+     child into a forbidden horizontal scrollbar on the column itself.
+     Bar is hidden per SCROLLBAR_HIDDEN_BY_DEFAULT — no gutter to reserve. */
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-gutter: stable;
+  scrollbar-width: none;
 }
+
+.dk-app-shell-main::-webkit-scrollbar { display: none; }

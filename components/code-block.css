@@ -20,7 +20,10 @@
   gap: var(--spacing-sm) var(--spacing-md);
   min-width: 0;
   overflow-x: auto;
+  scrollbar-width: none;
 }
+
+.dk-code-block-tabs::-webkit-scrollbar { display: none; }
 
 .dk-code-block-tab {
   padding: var(--spacing-xs);
@@ -97,11 +100,14 @@
   margin: 0;
   padding: var(--spacing-xl);
   overflow-x: auto;
+  scrollbar-width: none;
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   line-height: var(--font-line-height-relaxed);
   color: var(--color-text);
 }
+
+.dk-code-block-pre::-webkit-scrollbar { display: none; }
 
 .dk-code-block-code {
   font-family: inherit;

@@ -5,26 +5,17 @@
   background: var(--color-bg);
 }
 
-/* Transient-thumb scroll mode (visual-language §Scroll containers).
-   Canonical implementation: horizontal overflow inside a wide table.
-   The track stays transparent; only the thumb is ever visible. */
+/* Hidden-scrollbar scroll container (SCROLLBAR_HIDDEN_BY_DEFAULT). A wide
+   table's horizontal overflow scrolls via wheel / shift+wheel / touch /
+   keyboard without painting a bar. Discoverability for "more columns to
+   the right" lives in the mask-image fade on .dk-table-wrap, not in the
+   bar itself. */
 .dk-table-scroll {
   overflow-x: auto;
-  scrollbar-color: var(--color-gray-400) transparent;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
 
-.dk-table-scroll::-webkit-scrollbar {
-  height: var(--scrollbar-width-thin);
-}
-
-.dk-table-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.dk-table-scroll::-webkit-scrollbar-thumb {
-  background: var(--color-gray-400);
-}
+.dk-table-scroll::-webkit-scrollbar { display: none; }
 
 .dk-table {
   border-collapse: collapse;
@@ -332,7 +323,7 @@
   z-index: 100;
   max-height: 70vh;
   overflow-y: auto;
-  scrollbar-gutter: stable;
+  scrollbar-width: none;
   background: var(--color-bg);
   color: var(--color-text);
   border-top: var(--border-width-thin) solid var(--color-border);
@@ -341,6 +332,8 @@
   font-family: var(--typography-prop);
   font-size: var(--font-size-sm);
 }
+
+.dk-sn-popup::-webkit-scrollbar { display: none; }
 
 .dk-sn-popup.dk-sn-visible {
   transform: translateY(0);

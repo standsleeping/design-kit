@@ -1,34 +1,17 @@
-/* Boundary-rail scroll mode (visual-language §Scroll containers).
-   Canonical implementation: the scrollbar IS the column boundary, so
-   the rail is always rendered with a tinted track. Hover and selected
-   backgrounds end at a visible rail rather than appearing truncated.
-   Layout never shifts because the bar's space is always allocated.
-
-   "Always visible" on macOS requires classic (non-overlay) scrollbars.
-   Setting scrollbar-color/scrollbar-width on Chromium 121+ disables
-   ::-webkit-scrollbar styling and falls back to the platform default,
-   which on macOS is an overlay bar with no resting-state track. So we
-   style only via ::-webkit-scrollbar here; Firefox uses its native
-   scrollbar (no tint), which is the documented degradation.
-
-   The default project-wide mode is invisible-gutter (overflow-y: auto
-   with scrollbar-gutter: stable); see the doc for when each mode applies. */
+/* Hidden-scrollbar scroll container (SCROLLBAR_HIDDEN_BY_DEFAULT).
+   The container scrolls via every input modality, but the bar is never
+   painted. No gutter is reserved, so layout cannot shift and children
+   always paint to the column edge. */
 
 .dk-scroll-list {
   display: flex;
   flex-direction: column;
-  overflow-y: scroll;
+  overflow-y: auto;
   min-height: 0;
-  /* scrollbar-color and scrollbar-width are inherited; if the host page sets
-     either to a non-auto value, Chromium disables ::-webkit-scrollbar styling
-     on this container too. Reset to auto so the webkit pseudos take effect. */
-  scrollbar-color: auto;
-  scrollbar-width: auto;
+  scrollbar-width: none;
 }
 
-.dk-scroll-list::-webkit-scrollbar { width: var(--scrollbar-width-thin); }
-.dk-scroll-list::-webkit-scrollbar-track { background: var(--color-border); }
-.dk-scroll-list::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
+.dk-scroll-list::-webkit-scrollbar { display: none; }
 
 .dk-scroll-list-item {
   display: block;

@@ -87,15 +87,16 @@
   white-space: nowrap;
 }
 
-/* Invisible-gutter scroll mode (visual-language §Scroll containers).
-   scrollbar-width is inherited from the html-level rule. */
+/* Hidden-scrollbar scroll container (SCROLLBAR_HIDDEN_BY_DEFAULT). */
 .dk-nav-stack-body {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-gutter: stable;
   min-height: 0;
+  scrollbar-width: none;
 }
+
+.dk-nav-stack-body::-webkit-scrollbar { display: none; }
 
 .dk-nav-stack-list {
   display: flex;
