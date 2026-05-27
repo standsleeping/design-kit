@@ -1,3 +1,16 @@
+/* Peer-rail registry (PEER_RAIL). A chrome strip joins a named rail by setting
+   --peer-rail in the same rule that binds its height to chrome-bar-h × rows.
+   The audit (pages/peer-rail-audit.html) and the dev overlay
+   (components/peer-rail.js) query this token to find rail members; the audit
+   then asserts each member's computed height matches the expected formula.
+   @property registers the token non-inheriting so only declaring elements
+   carry the value — descendants don't inherit a stale rail tag. */
+@property --peer-rail {
+  syntax: "<custom-ident>";
+  inherits: false;
+  initial-value: none;
+}
+
 .dk-app-shell {
   display: flex;
   flex-direction: column;
