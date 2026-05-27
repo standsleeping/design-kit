@@ -56,8 +56,8 @@
   .pane + .pane {
     border-left: var(--border-width-thin) solid var(--color-border);
   }
-  /* Boundary-rail demands a visible boundary; the scrollbar sits flush
-     against this rule, completing the "scrollbar IS the column edge" contract. */
+  /* Flush pane's right border completes the column edge. The scrollbar is
+     never painted (SCROLLBAR_HIDDEN_BY_DEFAULT), so the border is the boundary. */
   .pane-flush {
     border-right: var(--border-width-thin) solid var(--color-border);
   }
@@ -92,19 +92,9 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    scrollbar-width: none;
   }
-  /* Each pane embodies its mode at every level, including its own scrollbar. */
-  .pane-inset .pane-body {
-    scrollbar-gutter: stable;
-  }
-  .pane-flush .pane-body {
-    overflow-y: scroll;
-    scrollbar-color: var(--color-hover-outline) var(--color-border);
-    scrollbar-width: thin;
-  }
-  .pane-flush .pane-body::-webkit-scrollbar { width: var(--scrollbar-width-thin); }
-  .pane-flush .pane-body::-webkit-scrollbar-track { background: var(--color-border); }
-  .pane-flush .pane-body::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
+  .pane-body::-webkit-scrollbar { display: none; }
 
   /* ---- Section inside a pane ----
      A section is a flex column. Section-intro wraps label + blurb with
@@ -173,17 +163,17 @@
     color: var(--color-text-muted);
   }
 
-  /* Inset scroll surface: invisible-gutter scrollbar mode.
-     The bordered card owns its own boundary; the scrollbar lives inside.
-     Recessed background (code-bg) so the card surface reads against the
-     section bg, not just via a 1px outline. */
+  /* Inset scroll surface. The bordered card owns its own boundary; the
+     scrollbar is hidden (SCROLLBAR_HIDDEN_BY_DEFAULT). Recessed background
+     (code-bg) so the card surface reads against the section bg. */
   .inset-scroll {
     border: var(--border-width-thin) solid var(--color-border);
     background: var(--color-code-bg);
     max-height: 220px; /* dimension-lint: ok, demo pane height tuned to fit example rows */
     overflow-y: auto;
-    scrollbar-gutter: stable;
+    scrollbar-width: none;
   }
+  .inset-scroll::-webkit-scrollbar { display: none; }
   .inset-scroll-row {
     padding: var(--spacing-sm) var(--spacing-md);
     border-bottom: var(--border-width-thin) solid var(--color-border);
@@ -230,27 +220,22 @@
   }
 
   /* Frame holds the top/bottom rules; spans the full pane width via its
-     full-bleed placement inside .section-flush. Right padding (3xl)
-     creates the mandatory dead zone between the inner scrollbar and the
-     pane's outer rail so they don't read as one thickened bar
-     (visual-language §Scroll containers). */
+     full-bleed placement inside .section-flush. */
   .flush-scroll-frame {
     border-top: var(--border-width-thin) solid var(--color-border);
     border-bottom: var(--border-width-thin) solid var(--color-border);
-    padding-right: var(--spacing-3xl); /* padding-lint: ok */
   }
 
-  /* Nested boundary-rail inside a flush column: same gutter colors as the
-     pane's outer rail (inherited via scrollbar-color). */
+  /* Nested scroll container inside a flush column. Bar hidden per
+     SCROLLBAR_HIDDEN_BY_DEFAULT. */
   .flush-scroll {
     display: flex;
     flex-direction: column;
     max-height: 220px; /* dimension-lint: ok, demo pane height tuned to fit example rows */
-    overflow-y: scroll;
+    overflow-y: auto;
+    scrollbar-width: none;
   }
-  .flush-scroll::-webkit-scrollbar { width: var(--scrollbar-width-thin); }
-  .flush-scroll::-webkit-scrollbar-track { background: var(--color-border); }
-  .flush-scroll::-webkit-scrollbar-thumb { background: var(--color-hover-outline); }
+  .flush-scroll::-webkit-scrollbar { display: none; }
 
   /* Section containing the frame surrenders its own bottom padding+border
      to the frame; the contract that follows surrenders its top padding so
@@ -343,8 +328,8 @@
 
             <section class="section">
               <div class="section-intro">
-                <div class="section-label">Invisible-gutter scrollbar</div>
-                <p class="section-blurb">Bar appears intermittently inside the bordered card. <code>scrollbar-gutter: stable</code> reserves the space so layout never shifts. Inherits the html-level transparent track.</p>
+                <div class="section-label">Scrollable card · bar hidden</div>
+                <p class="section-blurb">Bordered card with vertical overflow. The bar is never painted (<code>SCROLLBAR_HIDDEN_BY_DEFAULT</code>), so the card's four borders read as the complete boundary and layout cannot shift on overflow toggle.</p>
               </div>
               <div class="inset-scroll">
                 <div class="inset-scroll-row"><span>Cron job</span><span>daily</span></div>
@@ -368,7 +353,7 @@
                 <dt>Border</dt><dd>Four sides, thin, square corners</dd>
                 <dt>Padding</dt><dd>Square (xl–3xl token range)</dd>
                 <dt>Sibling gap</dt><dd>Gutter (parent's flex/grid gap)</dd>
-                <dt>Scroll mode</dt><dd>Invisible-gutter (auto + scrollbar-gutter: stable)</dd>
+                <dt>Scrollbar</dt><dd>Hidden (`SCROLLBAR_HIDDEN_BY_DEFAULT`)</dd>
                 <dt>Used for</dt><dd>Modals, code blocks, expandable cards, preview cards</dd>
               </dl>
             </section>
@@ -402,8 +387,8 @@
 
             <section class="section section-flush section-frame-host">
               <div class="section-intro">
-                <div class="section-label">Nested boundary-rail · 2rem dead zone</div>
-                <p class="section-blurb">Two boundary-rails along the same scroll-line (the inner list and the pane itself) share the same gutter colors. They're disambiguated by the 2rem horizontal dead zone between their tracks (visual-language minimum: 1rem). Adjacent rails without that gap would read as a single thickened bar.</p>
+                <div class="section-label">Nested scroll · framed</div>
+                <p class="section-blurb">A scroll container inside a scroll container, both with bars hidden (<code>SCROLLBAR_HIDDEN_BY_DEFAULT</code>). The bookend frame's top and bottom rules carry the structural separation; nothing else is needed to distinguish the nested region.</p>
               </div>
               <div class="flush-scroll-frame">
                 <div class="flush-scroll">
@@ -430,7 +415,7 @@
                 <dt>Padding</dt><dd>Asymmetric inline (sm–md vertical, xl horizontal owned by container)</dd>
                 <dt>Sibling gap</dt><dd>None: rows touch, separated by the rule</dd>
                 <dt>Active state</dt><dd>Left border (medium, color-link) + selected-bg fill, full-bleed</dd>
-                <dt>Scroll mode</dt><dd>Boundary-rail (scroll + tinted track) when bar is the column edge; otherwise invisible-gutter</dd>
+                <dt>Scrollbar</dt><dd>Hidden (`SCROLLBAR_HIDDEN_BY_DEFAULT`); the column's right border carries the edge</dd>
                 <dt>Used for</dt><dd>Nav rows, scroll-list rows, sticky-toc entries, table rows, menu items</dd>
               </dl>
             </section>

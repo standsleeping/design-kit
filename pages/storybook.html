@@ -116,8 +116,9 @@ if(p.inspector)d.style.setProperty('--dk-rail-inspector-w',Number(p.inspector)+'
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    scrollbar-gutter: stable;
+    scrollbar-width: none;
   }
+  .storybook-main-body::-webkit-scrollbar { display: none; }
 
   /* Width / height controls strip. Sits on a dk-topbar; inputs and labels are
      children. The labels need a row layout (label text + range slider).
