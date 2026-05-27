@@ -285,7 +285,7 @@ RESET_LAYER = """\
 DEFAULTS_LAYER = """\
 @layer defaults {
   /* UA-default chrome: every browser-colored surface routed through tokens. */
-  html { accent-color: var(--color-link); caret-color: var(--color-link); -webkit-tap-highlight-color: transparent; scrollbar-color: var(--color-border) transparent; scrollbar-width: thin; }
+  html { accent-color: var(--color-link); caret-color: var(--color-link); -webkit-tap-highlight-color: transparent; }
   ::selection { background: var(--color-focus-ring-light); color: var(--color-text); }
   ::placeholder { color: var(--color-text-muted); opacity: 1; }
   :focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }

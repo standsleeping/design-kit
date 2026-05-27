@@ -136,10 +136,8 @@
         "lg": "8.75rem"
       }
     },
-    "scrollbar": {
-      "width": {
-        "thin": "0.5rem"
-      }
+    "resizer-handle": {
+      "width": "0.5rem"
     },
     "radius": {
       "sm": "0",

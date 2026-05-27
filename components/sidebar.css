@@ -122,33 +122,35 @@
   flex-shrink: 0;
 }
 
-/* Invisible-gutter scroll mode (visual-language §Scroll containers). The
-   sidebar hosts arbitrary content; an inner component (scroll-list, table)
-   may opt into boundary-rail. Hiding the bar would violate
-   BOUNDARY_OWNERSHIP. */
+/* Hidden-scrollbar scroll container (SCROLLBAR_HIDDEN_BY_DEFAULT). The
+   sidebar hosts arbitrary content; the bar is never painted, so children
+   always paint to the column edge — including expanded sections with
+   tinted backgrounds that would otherwise break against a reserved gutter. */
 .dk-sidebar-main {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-gutter: stable;
   min-height: 0;
+  scrollbar-width: none;
 }
+
+.dk-sidebar-main::-webkit-scrollbar { display: none; }
 
 .dk-sidebar-resizer {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: var(--scrollbar-width-thin);
+  width: var(--resizer-handle-width);
   cursor: ew-resize;
   z-index: 2;
 }
 
 .dk-sidebar-left .dk-sidebar-resizer {
-  right: calc(var(--scrollbar-width-thin) / -2);
+  right: calc(var(--resizer-handle-width) / -2);
 }
 
 .dk-sidebar-right .dk-sidebar-resizer {
-  left: calc(var(--scrollbar-width-thin) / -2);
+  left: calc(var(--resizer-handle-width) / -2);
 }
 
 .dk-sidebar-resizer:hover { /* state-lint: ok, drag-only handle; mouse-driven resize */
