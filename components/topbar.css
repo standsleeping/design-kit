@@ -11,6 +11,10 @@
   align-items: center;
   gap: var(--spacing-md);
   height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
+  /* PEER_RAIL: join the chrome rail, so the audit can verify this strip's
+     computed height matches the formula above. See components/app-shell.css
+     for the --peer-rail registration. */
+  --peer-rail: chrome;
   padding: var(--spacing-md);
   border-bottom: var(--border-width-thin) solid var(--color-border);
   box-sizing: border-box;

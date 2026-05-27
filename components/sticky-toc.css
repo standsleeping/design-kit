@@ -21,6 +21,8 @@
      border-box keeps the safe-area-inset padding and the bottom rule
      from growing the box past the rail. */
   height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
+  /* PEER_RAIL: join the chrome rail; audit verifies computed height. */
+  --peer-rail: chrome;
   box-sizing: border-box;
   padding: var(--spacing-md) var(--spacing-lg); /* padding-lint: ok */
   padding-top: calc(var(--spacing-md) + env(safe-area-inset-top, 0px)); /* padding-lint: ok */
