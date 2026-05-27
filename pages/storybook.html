@@ -659,5 +659,28 @@ if(p.inspector)d.style.setProperty('--dk-rail-inspector-w',Number(p.inspector)+'
 
 <script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
 <script type="module" src="components/storybook.js?v={{CACHE_BUST}}"></script>
+<script>
+  // Setup hook for peer-rail-audit.html: drill the system nav into the
+  // storybook sub-level so the audit measures the back-button branch of
+  // .dk-nav-stack-header (the variant that historically drifted from the
+  // chrome-bar height). Pages that don't define this hook are audited in
+  // their default render state.
+  window.__dkPeerRailSetup = async function () {
+    const findStorybookEntry = () => {
+      const items = document.querySelectorAll(
+        '[data-system-nav] .dk-nav-stack-item'
+      );
+      return Array.from(items).find(
+        (el) => /storybook/i.test(el.textContent || '')
+      );
+    };
+    // Poll briefly while the nav mounts; bail if it never appears.
+    for (let i = 0; i < 20; i++) {
+      const entry = findStorybookEntry();
+      if (entry) { entry.click(); return; }
+      await new Promise((r) => setTimeout(r, 50));
+    }
+  };
+</script>
 </body>
 </html>

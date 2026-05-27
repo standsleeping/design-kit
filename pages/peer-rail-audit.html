@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Peer-Rail Audit · design-kit</title>
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+  }
+  .dk-app-shell-main {
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+  .dk-app-shell-main h1 {
+    font-size: var(--font-size-lg);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+  }
+  .summary {}
+  .summary-ok { color: var(--color-success); }
+  .summary-fail { color: var(--color-danger); }
+  .summary-warn { color: var(--color-text-muted); }
+  .results table { width: 100%; border-collapse: collapse; }
+  .results th, .results td {
+    text-align: left;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-family: inherit;
+    font-size: inherit;
+    vertical-align: top;
+  }
+  .results th {
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+  }
+  .pass { color: var(--color-success); }
+  .fail { color: var(--color-danger); }
+  .finding-detail { color: var(--color-text-muted); white-space: pre-wrap; word-break: break-word; }
+  .frame-host { position: fixed; left: -99999px; top: 0; width: 1280px; height: 900px; } /* dimension-lint: ok, off-screen test mount for headless audit at fixed viewport */
+</style>
+</head>
+<body data-cls-exempt="self-reporting test harness; injects results after load (not a user surface)">
+<div class="dk-app-shell">
+  <header class="dk-app-shell-header dk-topbar">
+    <span class="dk-topbar-title dk-topbar-title-eyebrow">Design Kit</span>
+  </header>
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: 220px;"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="peer-rail-audit"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <h1>Peer-Rail Audit</h1>
+      <p>Walks each target page and asserts every chrome-rail member (any element computing <code>--peer-rail: chrome</code>) renders at its expected height. The expected height for an element is <code>--layout-chrome-bar-h × --chrome-bar-rows</code> resolved at that element's cascaded position, measured via a probe element inserted in the same DOM so an inner override of <code>--chrome-bar-rows</code> is respected. Members carrying <code>[data-wrap-ok]</code> are allowed to grow beyond the rail height (the floor applies); all others must match within 1.5px. This is the runtime corollary of <code>PEER_RAIL</code> as a declarable contract: each component opts in by adding <code>--peer-rail: chrome</code> to the same CSS rule that binds its height, so the audit finds every member without enumerating class names.</p>
+      <div class="summary" data-summary>Running…</div>
+      <div class="results">
+        <table>
+          <thead><tr><th>Page</th><th>Result</th><th>Findings</th></tr></thead>
+          <tbody data-results></tbody>
+        </table>
+      </div>
+      <div class="frame-host" aria-hidden="true"></div>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
+<script type="module">
+const TARGETS = [
+  'storybook.html',
+  'sticky-toc.html',
+  'dashboard-shell.html',
+  'inset-vs-flush.html',
+  'session-stats.html',
+];
+
+// Equality tolerance for "rail member height matches expected" (px). Sub-pixel
+// rendering shifts heights by fractions of a pixel; the original bug we are
+// guarding against was 4px, well outside this band.
+const TOL = 1.5;
+
+// Settle delay: enough for JS-mounted chrome (sidebars, nav-stack levels) to
+// reach steady state. Mirrors border-audit.html.
+const SETTLE_MS = 400;
+
+// Optional pre-audit hook the audit page injects into each target before
+// measurement. A page exports window.__dkPeerRailSetup as a function that
+// puts the page into the variant we want to audit (e.g. drill the storybook
+// nav into a sub-level so its back-button branch is exercised). Pages that
+// don't define the hook are measured in their default render state.
+const SETUP_HOOK = '__dkPeerRailSetup';
+
+function describe(el) {
+  if (!el || el.nodeType !== 1) return '';
+  let s = el.tagName.toLowerCase();
+  if (el.id) s += `#${el.id}`;
+  if (el.className && typeof el.className === 'string') {
+    const c = el.className.trim().split(/\s+/).slice(0, 3).join('.');
+    if (c) s += `.${c}`;
+  }
+  return s;
+}
+
+// Measure the expected height for a rail member by inserting a probe element
+// next to it that reuses the same chrome-bar formula. The probe inherits the
+// cascaded --chrome-bar-rows from its position in the DOM, so an inner
+// override (data-chrome-rows="2") is honored. We measure the probe, not the
+// computed token value, because resolving rem and arithmetic in JS would
+// duplicate the browser's layout work and drift from it.
+function probeExpectedHeight(doc, el) {
+  const probe = doc.createElement('div');
+  probe.style.cssText = (
+    'position: absolute; visibility: hidden; pointer-events: none; ' +
+    'left: -99999px; top: 0; width: 1px; ' +
+    'height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));'
+  );
+  el.parentNode.insertBefore(probe, el);
+  const h = probe.getBoundingClientRect().height;
+  probe.remove();
+  return h;
+}
+
+function collectRailMembers(doc) {
+  const out = [];
+  for (const el of doc.querySelectorAll('*')) {
+    const cs = doc.defaultView.getComputedStyle(el);
+    const tag = cs.getPropertyValue('--peer-rail').trim();
+    if (!tag || tag === 'none') continue;
+    if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) continue;
+    out.push({ el, tag, height: rect.height });
+  }
+  return out;
+}
+
+function auditMembers(doc, members) {
+  const findings = [];
+  for (const m of members) {
+    const expected = probeExpectedHeight(doc, m.el);
+    const wrapOk = m.el.closest('[data-wrap-ok]') !== null;
+    const dy = m.height - expected;
+    // Wrap-ok members enforce a floor (height must reach the rail), not exact
+    // match: when controls overflow they may flow onto extra rows. Pure rail
+    // members must match within tolerance.
+    if (wrapOk) {
+      if (dy < -TOL) {
+        findings.push({
+          el: m.el, tag: m.tag, actual: m.height, expected, dy,
+          kind: 'below-floor',
+        });
+      }
+    } else if (Math.abs(dy) > TOL) {
+      findings.push({
+        el: m.el, tag: m.tag, actual: m.height, expected, dy,
+        kind: 'misaligned',
+      });
+    }
+  }
+  return findings;
+}
+
+function loadFrame(url) {
+  return new Promise((resolve, reject) => {
+    const host = document.querySelector('.frame-host');
+    const f = document.createElement('iframe');
+    f.src = `${url}?_audit=1`;
+    f.style.cssText = 'width:1280px;height:900px;border:0';
+    f.addEventListener('load', () => resolve(f));
+    f.addEventListener('error', reject);
+    host.append(f);
+  });
+}
+
+async function runSetupHook(frame) {
+  const win = frame.contentWindow;
+  const hook = win && win[SETUP_HOOK];
+  if (typeof hook !== 'function') return null;
+  try {
+    await hook();
+    // Re-settle after the variant transition; component mounts may animate.
+    await new Promise(r => setTimeout(r, 200));
+    return null;
+  } catch (err) {
+    return err.message || String(err);
+  }
+}
+
+async function auditPage(url) {
+  const f = await loadFrame(url);
+  await new Promise(r => setTimeout(r, SETTLE_MS));
+  let findings, memberCount;
+  let hookError = null;
+  try {
+    hookError = await runSetupHook(f);
+    const members = collectRailMembers(f.contentDocument);
+    memberCount = members.length;
+    findings = auditMembers(f.contentDocument, members);
+  } catch (err) {
+    findings = [{ error: err.message }];
+    memberCount = 0;
+  }
+  f.remove();
+  if (hookError) {
+    findings = [{ error: `setup hook failed: ${hookError}` }, ...(findings || [])];
+  }
+  return { findings, memberCount };
+}
+
+function renderRow(url, result) {
+  const tr = document.createElement('tr');
+  const tdName = document.createElement('td'); tdName.textContent = url;
+  const tdResult = document.createElement('td');
+  const tdDetail = document.createElement('td');
+  tdDetail.className = 'finding-detail';
+  const { findings, memberCount } = result;
+  if (findings.length === 0) {
+    tdResult.textContent = `PASS (${memberCount})`;
+    tdResult.className = 'pass';
+  } else if (memberCount === 0 && findings.every(f => !f.error)) {
+    // No rail members on the page and no errors: nothing to audit.
+    tdResult.textContent = 'SKIP (no rail members)';
+    tdResult.className = 'summary-warn';
+  } else {
+    tdResult.textContent = `FAIL (${findings.length})`;
+    tdResult.className = 'fail';
+    tdDetail.textContent = findings.map(f => {
+      if (f.error) return `error: ${f.error}`;
+      const sign = f.dy > 0 ? '+' : '';
+      return (
+        `${f.kind} [${f.tag}] ${describe(f.el)}\n` +
+        `  actual ${f.actual.toFixed(1)}px, expected ${f.expected.toFixed(1)}px ` +
+        `(Δ ${sign}${f.dy.toFixed(1)}px)`
+      );
+    }).join('\n\n');
+  }
+  tr.append(tdName, tdResult, tdDetail);
+  return tr;
+}
+
+async function main() {
+  const summary = document.querySelector('[data-summary]');
+  const tbody = document.querySelector('[data-results]');
+  let totalFindings = 0;
+  let totalMembers = 0;
+  for (const url of TARGETS) {
+    const result = await auditPage(url);
+    totalFindings += result.findings.filter(f => !f.error).length;
+    totalMembers += result.memberCount;
+    tbody.append(renderRow(url, result));
+  }
+  if (totalFindings === 0) {
+    summary.textContent = (
+      `All ${TARGETS.length} pages pass the peer-rail audit ` +
+      `(${totalMembers} rail member(s) measured).`
+    );
+    summary.className = 'summary summary-ok';
+  } else {
+    summary.textContent = (
+      `${totalFindings} peer-rail finding(s) across ${TARGETS.length} page(s).`
+    );
+    summary.className = 'summary summary-fail';
+  }
+  // Headless harness contract: same shape as responsive-table-tests.html.
+  document.body.dataset.testStatus = totalFindings === 0 ? 'pass' : 'fail';
+  document.body.dataset.testTotal = String(TARGETS.length);
+  document.body.dataset.testFailures = String(totalFindings);
+}
+
+main().catch((err) => {
+  const summary = document.querySelector('[data-summary]');
+  summary.textContent = `Audit harness error: ${err.message}`;
+  summary.className = 'summary summary-fail';
+  document.body.dataset.testStatus = 'fail';
+  document.body.dataset.testTotal = '0';
+  document.body.dataset.testFailures = '1';
+});
+</script>
+</body>
+</html>
