@@ -31,7 +31,7 @@ EXPECTED_SLUGS = {
     "focus-ring",
     "interactive-state",
     "peer-edge",
-    "scrollbar-gutter",
+    "scrollbar-hidden",
     "scroll-axis",
     "padding",
     "radius",

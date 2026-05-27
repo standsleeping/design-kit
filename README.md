@@ -97,7 +97,7 @@ uv run pytest tests/test_tsc.py   # same check, inside the pytest suite
 | Focus ring | `focus_ring_lint.py` (`components/*.css`) | Focus indicators drawn outside the focusable element: `FOCUS_RING_INSIDE_CLIPPED_CONTAINER`; `/* focus-ring: standalone */` |
 | Interactive state | `interactive_state_lint.py` (`components/*.css`) | `:hover`/`:active` on non-focusable selectors: `STATE_BELONGS_TO_INTERACTIVE`; `/* state-lint: ok */` |
 | Peer edge | `peer_edge_lint.py` (`components/*.css`) | Selection/edge accents not reserved on every peer: `PEER_EDGE_RESERVATION`; `/* peer-edge: ok */` |
-| Scrollbar gutter | `scrollbar_gutter_lint.py` (`components/*.css`) | Intermittent scroll containers missing `scrollbar-gutter: stable`: `STABLE_SCROLLBAR_GUTTER`; `/* scroll-gutter: ok */` |
+| Scrollbar hidden | `scrollbar_hidden_lint.py` (`components/*.css`) | Visible-scrollbar regressions (`overflow: scroll`, missing `scrollbar-width: none`, `scrollbar-gutter`/`scrollbar-color`, partial `::-webkit-scrollbar` styling): `SCROLLBAR_HIDDEN_BY_DEFAULT`; `/* scrollbar: ok */` |
 | Scroll axis | `scroll_axis_lint.py` (`components/*.css`) | Two-axis `overflow: auto`/`scroll` shorthand on a layout container: `SCROLL_CONTAINMENT`; `/* scroll-axis: ok */` |
 | Padding | `padding_lint.py` (`components/*.css`) | Asymmetric padding declarations: `SQUARE_PADDING_DEFAULT` / `PADDING_IS_INSET_ONLY`; `/* padding-lint: ok */` |
 | Radius | `radius_lint.py` (`components/*.css`) | Non-zero `border-radius`: corners are square by design; `/* radius-lint: ok */` |
