@@ -4,7 +4,7 @@ This page explains what the audit set is and why it exists. For how to run it, s
 
 ## The premise: enforce, don't review
 
-The design system is a large set of rules: square corners, square padding, no layout margins, semantic tokens only, thin borders, focus rings drawn inside clipped containers, stable scrollbar gutters, no page-level horizontal scroll, and more. Many of these are checkable mechanically. Anything checkable should be enforced by tooling rather than by remembering to look, because manual inspection does not scale and drifts the moment attention lapses. The audit set is that tooling: it turns the visual language's checkable subset into assertions that fail a build.
+The design system is a large set of rules: square corners, square padding, no layout margins, semantic tokens only, thin borders, focus rings drawn inside clipped containers, scrollbars hidden by default, no page-level horizontal scroll, and more. Many of these are checkable mechanically. Anything checkable should be enforced by tooling rather than by remembering to look, because manual inspection does not scale and drifts the moment attention lapses. The audit set is that tooling: it turns the visual language's checkable subset into assertions that fail a build.
 
 Each audit names the principle it enforces and, where exceptions are legitimate, recognizes an allowlist comment (for example `/* token-leak: ok */`) so a deliberate deviation is documented in place rather than silently tolerated.
 

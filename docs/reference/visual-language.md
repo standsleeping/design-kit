@@ -95,7 +95,7 @@ In an inset layout, the field's recessed background is what makes the gutter vis
 
 **Surface / item level: the same dichotomy, one nesting down.**
 
-Within either layout mode, individual elements still divide into inset *surfaces* and flush *items*. The asymmetry is ownership: a surface owns its own boundary (four borders, square corners) and floats in its parent's gutter; an item doesn't own a boundary. The column it lives in does, via a sibling rule, the parent's border, or a boundary-rail scrollbar. Get the ownership right and every downstream choice (scrollbar mode, active indicator, padding role, background) follows.
+Within either layout mode, individual elements still divide into inset *surfaces* and flush *items*. The asymmetry is ownership: a surface owns its own boundary (four borders, square corners) and floats in its parent's gutter; an item doesn't own a boundary. The column it lives in does, via a sibling rule or the parent's border. Get the ownership right and every downstream choice (active indicator, padding role, background) follows. Scrollbars are not part of the boundary contract — they are never painted; see SCROLLBAR_HIDDEN_BY_DEFAULT.
 
 | Property | Surface (inset) | Item (flush) |
 |---|---|---|
@@ -104,7 +104,6 @@ Within either layout mode, individual elements still divide into inset *surfaces
 | Padding | Square (xl–3xl), owned by the surface | Square or zero on the item; horizontal inset and vertical rhythm both owned by the container (`padding` + `gap`) |
 | Sibling separation | Gutter (parent's flex/grid gap) | None: siblings touch; the rule between them does the separating |
 | Active indicator | Border-color shift on the four-side border + `--color-selected-bg` fill | Single-side border (left for vertical lists, bottom for horizontal) at `--border-width-medium`, `--color-link` + full-bleed `--color-selected-bg` |
-| Scrollbar | Invisible-gutter, inside the surface | Boundary-rail at the column edge, against a visible rule |
 | Examples | Modals, code blocks, expandable cards, preview cards | Menu items, nav rows, scroll-list rows, sticky-toc entries, collapsible-section headers, table rows |
 
 The most common drift is treating an item as a surface: a row with four borders and a radius. Even when the radius token resolves to 0, the four drawn lines still leak card vocabulary into a row context. Ask whether the element's neighbors are siblings of the same kind (item) or distinct content blocks (surface). Mixing layout modes inside a single content region is the same drift one nesting up: a flush-mode list that draws four borders around each row leaks card vocabulary; an inset-mode card whose left edge touches the field's interior breaks the gutter that defines the mode.
@@ -297,27 +296,29 @@ This collapses the older split (`padding: 0 X` on the container, `padding: X 0` 
 
 ### Scroll containers
 
-Three scroll-container modes exist. Pick one per overflow region.
+One scroll-container configuration applies to every overflow region in the system: the container scrolls, but the bar is never painted. This is the contract codified in `SCROLLBAR_HIDDEN_BY_DEFAULT`.
 
-| Mode | When to use | Treatment |
-|---|---|---|
-| Invisible-gutter (default) | Vertical scroll inside a content surface; bar may or may not appear depending on content height. The default for any scrollable region not covered by the other two modes. | `overflow-y: auto; scrollbar-gutter: stable;` Inherits the html-level transparent track and `border`-tinted thumb so the reserved gutter does not read as a visible stripe. |
-| Boundary-rail | Vertical scroll where the bar is also a structural column edge: sidebar against main, planning rail against documents. The rail belongs to the boundary, not to the content. **The bar IS the column edge only when there's a visible rule for it to butt against** (typically the parent's `border-right`); without one, the bar floats and reads as recessed. | `overflow-y: scroll;` plus `::-webkit-scrollbar { width: 8px }` with `track` tinted `--color-border` and `thumb` tinted `--color-hover-outline`. Always visible on Chromium/WebKit. Standard `scrollbar-color`/`scrollbar-width` are deliberately omitted: setting either disables `::-webkit-scrollbar` styling on Chromium 121+ and falls back to the platform default, which on macOS is an overlay bar with no resting-state track. Firefox lacks `::-webkit-scrollbar` and renders its native scrollbar without the tint: the documented degradation. Canonical implementation: `dk-scroll-list`. |
-| Transient-thumb | Horizontal overflow inside a wide table or code block. The bar fades with the content; only the thumb is ever visible. | `overflow-x: auto; scrollbar-color: var(--color-gray-400) transparent; scrollbar-width: thin;` Canonical implementation: `dk-table-scroll`. |
+```css
+.scroll-region {
+  overflow-y: auto;            /* or overflow-x: auto for horizontal leaves */
+  scrollbar-width: none;       /* Firefox 64+ */
+}
+.scroll-region::-webkit-scrollbar {
+  display: none;               /* Chromium, Safari, Edge */
+}
+```
 
-The invisible-gutter mode requires `scrollbar-gutter: stable` whenever the content height can change during user interaction (collapse/expand, filter, lazy-load, tab swap); without it, the bar appearing or disappearing changes the content-box width by the bar's width on every toggle. See `STABLE_SCROLLBAR_GUTTER`.
+Because no bar is rendered, no gutter is ever reserved; children always paint to the column edge, and layout cannot shift between scrollable and non-scrollable states. This collapses what used to be three modes (invisible-gutter, boundary-rail, transient-thumb) into a single recipe that works regardless of layout mode, child surface tint, or platform scrollbar style.
 
 Skip overflow declarations entirely on regions guaranteed never to overflow.
 
-Hiding the scrollbar (`scrollbar-width: none`) is not a fourth mode. It removes a structural affordance and violates `BOUNDARY_OWNERSHIP`: the container's edge no longer reads as a scroll surface.
-
-**Nested boundary-rails need a dead zone.** Two boundary-rail scrollbars may coexist along the same scroll-line (an inner list inside a flush column whose own outer scrollbar is also boundary-rail) *only* when they are separated by a horizontal dead zone of at least `1rem` between their tracks. Without that gap, the two rails read as a single thickened bar (or a duplicate-edge mistake). Same gutter colors on both is correct: they're the same kind of edge at different levels. The dead zone, not the color, is what disambiguates them.
+When a "more below" or "more to the right" cue genuinely matters (typically wide horizontal scroll inside a table or code block), supplement the scroll container with a CSS mask-image fade on its parent. The fade is a separate affordance from the bar and does not reintroduce any of the failure modes the principle closes; canonical implementation: `dk-table-wrap`.
 
 When a scroll container holds both a sticky chrome bar (app bar, section header) at `top: 0` and sticky cell content (`<thead>` cells, sub-section headers) at `top: <chrome-height>`, give the chrome a higher stacking layer than the in-flow stickies. Same `z-index` plus DOM order means the later element (the table header) paints over the chrome in the overlap band, and content briefly appears to sit above the bar before disappearing under it. Use `--z-chrome` for the bar and `--z-sticky` for in-content stickies; both stay below `--z-overlay`.
 
 ### Bookend frame for flush dividers
 
-When a horizontal rule must function as a section divider with no padding gap above or below (typically wrapping a flush scrollable region between two sections), the rule cannot live as a child element's `border`. The child only spans its own width, so its border stops short of the column edge (and stops short of any reserved scrollbar gutter). Wrap the content in a *frame* element that owns the full column width and the divider role:
+When a horizontal rule must function as a section divider with no padding gap above or below (typically wrapping a flush scrollable region between two sections), the rule cannot live as a child element's `border`. The child only spans its own width, so its border stops short of the column edge. Wrap the content in a *frame* element that owns the full column width and the divider role:
 
 ```html
 <section class="section-frame-host">…blurb…</section>
@@ -327,7 +328,7 @@ When a horizontal rule must function as a section divider with no padding gap ab
 <section class="section-after-frame">…next section…</section>
 ```
 
-The frame carries the top and bottom rules and extends pane-edge to pane-edge (including any horizontal dead zone reserved for nested boundary-rails). The surrounding sections surrender their adjacent padding to it: the section above zeros its `padding-bottom` and `border-bottom`; the section below zeros its `padding-top`. The frame's bottom rule then serves as the structural section divider with zero gap. Canonical implementation: `pages/inset-vs-flush.html`.
+The frame carries the top and bottom rules and extends pane-edge to pane-edge. The surrounding sections surrender their adjacent padding to it: the section above zeros its `padding-bottom` and `border-bottom`; the section below zeros its `padding-top`. The frame's bottom rule then serves as the structural section divider with zero gap. Canonical implementation: `pages/inset-vs-flush.html`.
 
 ### Structural ornament patterns
 

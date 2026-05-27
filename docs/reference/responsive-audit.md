@@ -59,9 +59,9 @@ Responsiveness here is keyed to a component's **own box**, not the viewport. Thr
 | Range | `✓` Fluid | input `flex:1`; value `3ch`; min-width floors relaxed via `min(…, 100%)` | — |
 | ReadingPositionNav | `✓` Fluid | absolute overlay, `max-width` content-track, items empty-collapse | — |
 | ResponsiveTable | `✓✓` Adaptive | ResizeObserver: priority column-hide (<360/<600), card-stack fallback, h-scroll affordance, line-clamp, sidenote inline → bottom-sheet | — |
-| ScrollList | `✓` Fluid | Vertical scroll (boundary-rail); long labels wrap | — |
+| ScrollList | `✓` Fluid | Vertical scroll (bar hidden per SCROLLBAR_HIDDEN_BY_DEFAULT); long labels wrap | — |
 | SearchInput | `✓` Fluid | `width:100%` fills container; min-width floor relaxed via `min(…, 100%)` | — |
-| SegmentedToggle | `✓` Fluid | Joined-segment row scrolls horizontally as a boundary scroller (`overflow-x:auto`, `scrollbar-gutter:stable`); buttons never shrink | — |
+| SegmentedToggle | `✓` Fluid | Joined-segment row scrolls horizontally (`overflow-x:auto`, bar hidden per SCROLLBAR_HIDDEN_BY_DEFAULT); buttons never shrink | — |
 | Select | `✓` Fluid | `width:100%` fills container; min-width floor relaxed via `min(…, 100%)` | — |
 | SessionStatsFooter | `✓✓` Adaptive | `installResponsiveStats` (self-wired in `render`): a `ResizeObserver` drops items by `data-priority` on a single row (keeps on/off/scroll), hiding orphan separators too | — |
 | Sidebar | `✓` Fluid | expanded → icon → hidden + overlay mode, width transitions | Relayouts fully when its state is driven; AppShell's `installResponsiveRails` now supplies that trigger. No self-trigger by design (a Sidebar does not know its container's budget). |
@@ -112,4 +112,4 @@ When self-wiring a `ResizeObserver` inside `render()`, observe the root and let 
 ## Known tradeoffs
 
 - **Accessibility of priority-drop / collapse.** SessionStatsFooter and Breadcrumb hide dropped items with `display: none`, which removes them from the accessibility tree at narrow widths — screen-reader users get the reduced set too. This is consistent with the "show less" model (`RESPONSIVE_COMPONENTS` reduces content for everyone, not just sighted users), and keeping hidden items in the tree would defeat the natural-width measurement the enhancers rely on. Accepted, not a defect. Full labels that merely *ellipsize* (BottomTabBar, Modal title) stay in the tree.
-- **Horizontal-scroller bar and vertical jitter.** On SegmentedToggle and CodeBlock's tab strip, switching the active item changes its weight; near the overflow threshold that can toggle the horizontal scrollbar, whose thickness adds height. With overlay scrollbars (macOS default) the bar takes no layout space, so there is no jitter; with classic scrollbars (`scrollbar-width: thin`) the effect is a few px at a precise width during interaction. Left unreserved: reserving block-end space would add a permanent gap for an edge that rarely manifests (`SIMPLIFICATION_PATTERNS`).
+- **Horizontal-scroller bar and vertical jitter.** Resolved by `SCROLLBAR_HIDDEN_BY_DEFAULT`: SegmentedToggle, CodeBlock's tab strip, and every other horizontal scroller paint no bar, so changing an item's weight near the overflow threshold cannot toggle bar height. The earlier `scrollbar-width: thin` jitter is no longer reachable.
