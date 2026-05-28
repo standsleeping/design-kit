@@ -317,8 +317,14 @@ function hashToSelection(hash, registry) {
   );
 }
 
+// Inspector width remains storybook-specific (no other page hosts a right inspector
+// panel). Nav width is universal: every page renders the same system sidebar at the
+// same width, so it lives under a shared key the head bootstrap also reads. Keeping
+// them split avoids cross-page contamination of the inspector while still letting a
+// resize in storybook persist to every page.
 const LAYOUT_STORAGE_KEY = 'dk-storybook-layout';
-const LAYOUT_DEFAULTS = { nav: 240, inspector: 320 };
+const NAV_WIDTH_STORAGE_KEY = 'dk-sidebar-nav-width';
+const LAYOUT_DEFAULTS = { nav: 220, inspector: 320 };
 const LAYOUT_CONSTRAINTS = {
   nav: { min: 160, max: 360 },
   inspector: { min: 240, max: 480 },
@@ -328,17 +334,25 @@ const LAYOUT_CONSTRAINTS = {
  * @returns {LayoutState}
  */
 function loadLayout() {
+  let nav = LAYOUT_DEFAULTS.nav;
+  let inspector = LAYOUT_DEFAULTS.inspector;
+  try {
+    const navRaw = localStorage.getItem(NAV_WIDTH_STORAGE_KEY);
+    const parsedNav = navRaw === null ? NaN : parseInt(navRaw, 10);
+    if (Number.isFinite(parsedNav) && parsedNav > 0) nav = parsedNav;
+  } catch {
+    /* quota / disabled: keep default */
+  }
   try {
     const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
-    if (!raw) return { ...LAYOUT_DEFAULTS };
-    const parsed = JSON.parse(raw);
-    return {
-      nav: Number(parsed.nav) || LAYOUT_DEFAULTS.nav,
-      inspector: Number(parsed.inspector) || LAYOUT_DEFAULTS.inspector,
-    };
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      inspector = Number(parsed.inspector) || LAYOUT_DEFAULTS.inspector;
+    }
   } catch {
-    return { ...LAYOUT_DEFAULTS };
+    /* quota / disabled: keep default */
   }
+  return { nav, inspector };
 }
 
 /**
@@ -347,7 +361,15 @@ function loadLayout() {
  */
 function saveLayout(layout) {
   try {
-    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout));
+    localStorage.setItem(NAV_WIDTH_STORAGE_KEY, String(layout.nav));
+  } catch {
+    /* quota or disabled: ignore */
+  }
+  try {
+    localStorage.setItem(
+      LAYOUT_STORAGE_KEY,
+      JSON.stringify({ inspector: layout.inspector }),
+    );
   } catch {
     /* quota or disabled: ignore */
   }

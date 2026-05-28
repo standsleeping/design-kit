@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Storybook · design-kit</title>
-<script>/* dk-first-paint geometry — reserve persisted rail widths before paint so
-   the JS-mounted Sidebars fill boxes that are already the right size, rather than
-   resizing the shell after load (HYDRATION_RESERVES_GEOMETRY). Per-page: the keys
-   and defaults are storybook's (see LAYOUT_STORAGE_KEY / LAYOUT_DEFAULTS in
-   components/storybook.js). Saved values are already clamped at save time. */
+<script>/* dk-first-paint geometry — reserve the inspector rail width before paint so
+   storybook.js mounts the right Sidebar into a box that is already the right
+   size (HYDRATION_RESERVES_GEOMETRY). The left nav width is universal (every
+   page hosts the same system sidebar) and is established by the head bootstrap
+   from the shared `dk-sidebar-nav-width` key, so this script only handles the
+   page-specific inspector. */
 (function(){try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('dk-storybook-layout')||'{}');
-if(p.nav)d.style.setProperty('--dk-rail-nav-w',Number(p.nav)+'px');
 if(p.inspector)d.style.setProperty('--dk-rail-inspector-w',Number(p.inspector)+'px');
 }catch(e){}})();</script>
 <link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
@@ -44,7 +44,7 @@ if(p.inspector)d.style.setProperty('--dk-rail-inspector-w',Number(p.inspector)+'
      mount; the Sidebar then drives the width and the resizer works normally. */
   .dk-app-shell-left.storybook-rail-reserving {
     display: block;
-    width: var(--dk-rail-nav-w, 240px); /* dimension-lint: ok, default mirrors LAYOUT_DEFAULTS.nav in storybook.js */
+    width: var(--dk-rail-nav-w, 220px); /* dimension-lint: ok, default mirrors LAYOUT_DEFAULTS.nav in storybook.js */
   }
   .dk-app-shell-right.storybook-rail-reserving {
     width: var(--dk-rail-inspector-w, 320px); /* dimension-lint: ok, default mirrors LAYOUT_DEFAULTS.inspector in storybook.js */
