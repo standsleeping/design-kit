@@ -57,6 +57,10 @@
   text-transform: uppercase;
   letter-spacing: var(--font-letter-spacing-wide);
   color: var(--color-text-muted);
+  /* Anchor the visible glyph rect to font metrics so the eyebrow lines up
+     with adjacent topbar peers (counts, toggles, buttons) regardless of
+     line-height drift between <span>/<a>/<button>. See VERTICAL_METRIC_DRIFT. */
+  text-box: trim-both cap alphabetic;
 }
 
 .dk-topbar-subtitle {

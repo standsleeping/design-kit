@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VMD audit fixture</title>
+<link rel="stylesheet" href="tokens.css">
+</head>
+<body>
+<!--
+  Self-test fixture for the vertical-metric-drift audit. Each <header>
+  here is a single-row flex container with two same-font-size text peers
+  whose visible glyphs sit at different y. The audit must flag every row;
+  if it returns zero findings on this page, its filters have grown too
+  strict and the spec's detector is dead.
+
+  This file is copied into the temp build by the audit's pytest test only;
+  it is not part of the production pages/ directory, so the production
+  audit never sees it.
+-->
+<header data-row="padding-skew" style="display: flex; align-items: center; gap: 8px; padding: 8px;">
+  <span style="font-family: var(--typography-mono); font-size: var(--font-size-xs); text-transform: uppercase;">SPAN A</span>
+  <span style="font-family: var(--typography-mono); font-size: var(--font-size-xs); text-transform: uppercase; padding-top: 4px;">SPAN B</span>
+</header>
+<header data-row="ua-line-height" style="display: flex; align-items: center; gap: 8px; padding: 8px;">
+  <span style="font-family: var(--typography-mono); font-size: var(--font-size-xs); text-transform: uppercase; padding: 4px 0; border-block: 1px solid transparent;">SPAN PEER</span>
+  <button style="font-family: var(--typography-mono); font-size: var(--font-size-xs); text-transform: uppercase; padding: 4px 8px; border: 1px solid transparent; background: transparent;">BUTTON PEER</button>
+</header>
+</body>
+</html>
