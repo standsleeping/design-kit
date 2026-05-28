@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/responsive-table.css?{{CACHE_BUST}}">
 <style>
   html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
@@ -34,23 +35,6 @@
   .summary-ok { color: var(--color-success); }
   .summary-warn { color: var(--color-text-muted); }
   .summary-fail { color: var(--color-danger); }
-  .results table { width: 100%; border-collapse: collapse; }
-  .results th, .results td {
-    text-align: left;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-    font-family: inherit;
-    font-size: inherit;
-  }
-  .results th {
-    text-transform: uppercase;
-    letter-spacing: var(--font-letter-spacing-wide);
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-semibold);
-  }
-  .pass { color: var(--color-success); }
-  .fail { color: var(--color-danger); }
-  .skip { color: var(--color-text-muted); }
   .failure-detail {
     color: var(--color-danger);
     white-space: pre-wrap;
@@ -75,7 +59,7 @@
       <h1>Component Contract Tests</h1>
       <div class="summary" data-summary>Running…</div>
       <div class="results">
-        <table>
+        <table class="dk-table dk-table-static">
           <thead>
             <tr><th>Component</th><th>Checks</th><th>Failures</th></tr>
           </thead>
@@ -241,7 +225,7 @@ async function main() {
           break;
         }
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${filename}</td><td class="fail">IMPORT FAIL</td><td class="failure-detail">${escapeHTML(err.message)}</td>`;
+        row.innerHTML = `<td>${filename}</td><td class="dk-flag-fail">IMPORT FAIL</td><td class="failure-detail">${escapeHTML(err.message)}</td>`;
         resultsBody.append(row);
         totalFailures += 1;
         continue;
@@ -255,9 +239,9 @@ async function main() {
       const row = document.createElement('tr');
       const name = mod.metadata?.name ?? filename;
       if (failures.length === 0) {
-        row.innerHTML = `<td>${name}</td><td class="pass">PASS</td><td></td>`;
+        row.innerHTML = `<td>${name}</td><td class="dk-flag-ok">PASS</td><td></td>`;
       } else {
-        row.innerHTML = `<td>${name}</td><td class="fail">FAIL</td><td class="failure-detail">${failures.map((f) => escapeHTML(f)).join('\n')}</td>`;
+        row.innerHTML = `<td>${name}</td><td class="dk-flag-fail">FAIL</td><td class="failure-detail">${failures.map((f) => escapeHTML(f)).join('\n')}</td>`;
       }
       resultsBody.append(row);
     }
@@ -265,7 +249,7 @@ async function main() {
 
   for (const p of unreachablePools) {
     const row = document.createElement('tr');
-    row.innerHTML = `<td>pool: ${p.name}</td><td class="skip">UNREACHABLE</td><td class="failure-detail">${escapeHTML(p.path)}: ${escapeHTML(p.reason)}</td>`;
+    row.innerHTML = `<td>pool: ${p.name}</td><td class="dk-flag-skip">UNREACHABLE</td><td class="failure-detail">${escapeHTML(p.path)}: ${escapeHTML(p.reason)}</td>`;
     resultsBody.append(row);
   }
 

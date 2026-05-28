@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/responsive-table.css?{{CACHE_BUST}}">
 <style>
   html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
@@ -40,23 +41,6 @@
   }
   .summary-ok { color: var(--color-success); }
   .summary-fail { color: var(--color-danger); }
-  .results table { width: 100%; border-collapse: collapse; }
-  .results th, .results td {
-    text-align: left;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-    font-family: inherit;
-    font-size: inherit;
-    vertical-align: top;
-  }
-  .results th {
-    text-transform: uppercase;
-    letter-spacing: var(--font-letter-spacing-wide);
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-semibold);
-  }
-  .pass { color: var(--color-success); }
-  .fail { color: var(--color-danger); }
   .failure-detail {
     color: var(--color-danger);
     white-space: pre-wrap;
@@ -98,7 +82,7 @@
       </p>
       <div class="summary" data-summary>Running…</div>
       <div class="results">
-        <table>
+        <table class="dk-table dk-table-static">
           <thead>
             <tr><th>Test</th><th>Result</th><th>Detail</th></tr>
           </thead>
@@ -355,10 +339,10 @@ function run() {
     try {
       fn();
       passed++;
-      row.innerHTML = `<td>${escapeHTML(name)}</td><td class="pass">PASS</td><td></td>`;
+      row.innerHTML = `<td>${escapeHTML(name)}</td><td class="dk-flag-ok">PASS</td><td></td>`;
     } catch (err) {
       failed++;
-      row.innerHTML = `<td>${escapeHTML(name)}</td><td class="fail">FAIL</td><td class="failure-detail">${escapeHTML(err && err.stack || err)}</td>`;
+      row.innerHTML = `<td>${escapeHTML(name)}</td><td class="dk-flag-fail">FAIL</td><td class="failure-detail">${escapeHTML(err && err.stack || err)}</td>`;
     }
     body.append(row);
   }

@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/responsive-table.css?{{CACHE_BUST}}">
 <style>
   html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
@@ -34,23 +35,6 @@
   .summary-ok { color: var(--color-success); }
   .summary-fail { color: var(--color-danger); }
   .summary-warn { color: var(--color-text-muted); }
-  .results table { width: 100%; border-collapse: collapse; }
-  .results th, .results td {
-    text-align: left;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-    font-family: inherit;
-    font-size: inherit;
-    vertical-align: top;
-  }
-  .results th {
-    text-transform: uppercase;
-    letter-spacing: var(--font-letter-spacing-wide);
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-semibold);
-  }
-  .pass { color: var(--color-success); }
-  .fail { color: var(--color-danger); }
   .finding-detail { color: var(--color-text-muted); white-space: pre-wrap; word-break: break-word; }
   .frame-host { position: fixed; left: -99999px; top: 0; width: 1280px; height: 900px; } /* dimension-lint: ok, off-screen test mount for headless audit at fixed viewport */
 </style>
@@ -73,7 +57,7 @@
       <p>Walks each target page and reports two classes of border problem with overlapping ranges. <strong>Doubled borders</strong> (axes within 1.5px) are the runtime detection corollary of <code>BOUNDARY_OWNERSHIP</code>: exactly one element should own each visible edge. <strong>Near-rail borders</strong> (horizontal edges 1.5–12px apart with overlapping x ranges, sibling elements only) are the runtime detection corollary of <code>PEER_RAIL</code>'s quantization sharpening: chrome strips that look like they're on the same rail must actually share a height (use <code>--chrome-bar-rows</code> on the shell so peers grow together).</p>
       <div class="summary" data-summary>Running…</div>
       <div class="results">
-        <table>
+        <table class="dk-table dk-table-static">
           <thead><tr><th>Page</th><th>Result</th><th>Findings</th></tr></thead>
           <tbody data-results></tbody>
         </table>
@@ -241,10 +225,10 @@ function renderRow(url, findings) {
   tdDetail.className = 'finding-detail';
   if (findings.length === 0) {
     tdResult.textContent = 'PASS';
-    tdResult.className = 'pass';
+    tdResult.className = 'dk-flag-ok';
   } else {
     tdResult.textContent = `FAIL (${findings.length})`;
-    tdResult.className = 'fail';
+    tdResult.className = 'dk-flag-fail';
     tdDetail.textContent = findings.map(f => {
       if (f.error) return `error: ${f.error}`;
       const axisLabel = f.a.axis === 'h' ? 'horizontal' : 'vertical';

@@ -34,20 +34,6 @@
   .summary {}
   .summary-ok { color: var(--color-success); }
   .summary-fail { color: var(--color-danger); }
-  .results table { width: 100%; border-collapse: collapse; }
-  .results th, .results td {
-    text-align: left;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-  }
-  .results th {
-    text-transform: uppercase;
-    letter-spacing: var(--font-letter-spacing-wide);
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-semibold);
-  }
-  .pass { color: var(--color-success); }
-  .fail { color: var(--color-danger); }
   .failure-detail { color: var(--color-danger); white-space: pre-wrap; word-break: break-word; }
   .mounts { position: fixed; left: -99999px; top: 0; } /* dimension-lint: ok, off-screen test mount */
   .mount-wide { width: 800px; } /* dimension-lint: ok, WIDTH_CONTROLLED_TESTING fixture */
@@ -71,7 +57,7 @@
       <h1>ResponsiveTable Behavior Tests</h1>
       <div class="summary" data-summary>Running…</div>
       <div class="results">
-        <table>
+        <table class="dk-table dk-table-static">
           <thead><tr><th>Case</th><th>Result</th><th>Detail</th></tr></thead>
           <tbody data-results></tbody>
         </table>
@@ -394,9 +380,9 @@ async function main() {
   for (const c of cases) {
     const row = document.createElement('tr');
     if (c.pass) {
-      row.innerHTML = `<td>${escapeHTML(c.name)}</td><td class="pass">PASS</td><td></td>`;
+      row.innerHTML = `<td>${escapeHTML(c.name)}</td><td class="dk-flag-ok">PASS</td><td></td>`;
     } else {
-      row.innerHTML = `<td>${escapeHTML(c.name)}</td><td class="fail">FAIL</td><td class="failure-detail">${escapeHTML(c.detail)}</td>`;
+      row.innerHTML = `<td>${escapeHTML(c.name)}</td><td class="dk-flag-fail">FAIL</td><td class="failure-detail">${escapeHTML(c.detail)}</td>`;
     }
     resultsBody.append(row);
   }

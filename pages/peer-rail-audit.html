@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/responsive-table.css?{{CACHE_BUST}}">
 <style>
   html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
@@ -34,23 +35,6 @@
   .summary-ok { color: var(--color-success); }
   .summary-fail { color: var(--color-danger); }
   .summary-warn { color: var(--color-text-muted); }
-  .results table { width: 100%; border-collapse: collapse; }
-  .results th, .results td {
-    text-align: left;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-    font-family: inherit;
-    font-size: inherit;
-    vertical-align: top;
-  }
-  .results th {
-    text-transform: uppercase;
-    letter-spacing: var(--font-letter-spacing-wide);
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-semibold);
-  }
-  .pass { color: var(--color-success); }
-  .fail { color: var(--color-danger); }
   .finding-detail { color: var(--color-text-muted); white-space: pre-wrap; word-break: break-word; }
   .frame-host { position: fixed; left: -99999px; top: 0; width: 1280px; height: 900px; } /* dimension-lint: ok, off-screen test mount for headless audit at fixed viewport */
 </style>
@@ -72,7 +56,7 @@
       <p>Walks each target page and asserts every chrome-rail member (any element computing <code>--peer-rail: chrome</code>) renders at its expected height. The expected height for an element is <code>--layout-chrome-bar-h × --chrome-bar-rows</code> resolved at that element's cascaded position, measured via a probe element inserted in the same DOM so an inner override of <code>--chrome-bar-rows</code> is respected. Members carrying <code>[data-wrap-ok]</code> are allowed to grow beyond the rail height (the floor applies); all others must match within 1.5px. This is the runtime corollary of <code>PEER_RAIL</code> as a declarable contract: each component opts in by adding <code>--peer-rail: chrome</code> to the same CSS rule that binds its height, so the audit finds every member without enumerating class names.</p>
       <div class="summary" data-summary>Running…</div>
       <div class="results">
-        <table>
+        <table class="dk-table dk-table-static">
           <thead><tr><th>Page</th><th>Result</th><th>Findings</th></tr></thead>
           <tbody data-results></tbody>
         </table>
@@ -234,14 +218,14 @@ function renderRow(url, result) {
   const { findings, memberCount } = result;
   if (findings.length === 0) {
     tdResult.textContent = `PASS (${memberCount})`;
-    tdResult.className = 'pass';
+    tdResult.className = 'dk-flag-ok';
   } else if (memberCount === 0 && findings.every(f => !f.error)) {
     // No rail members on the page and no errors: nothing to audit.
     tdResult.textContent = 'SKIP (no rail members)';
-    tdResult.className = 'summary-warn';
+    tdResult.className = 'dk-flag-skip';
   } else {
     tdResult.textContent = `FAIL (${findings.length})`;
-    tdResult.className = 'fail';
+    tdResult.className = 'dk-flag-fail';
     tdDetail.textContent = findings.map(f => {
       if (f.error) return `error: ${f.error}`;
       const sign = f.dy > 0 ? '+' : '';

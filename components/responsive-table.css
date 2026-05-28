@@ -102,6 +102,25 @@
 .dk-table-align-center { text-align: center; }
 .dk-table-nowrap { white-space: nowrap; }
 
+/* --- Static-density variant: tighter cell padding for diagnostic /
+   audit tables, where each page renders 30+ rows of computed values and
+   the default `sm lg` cell padding is too airy. Same monospace header
+   and gray-400 separator as the default; only padding tightens. */
+.dk-table-static th,
+.dk-table-static td {
+  padding: var(--spacing-xs) var(--spacing-sm); /* padding-lint: ok */
+}
+
+/* --- Cell-content utility classes for diagnostic tables. Used by
+   self-reporting audit pages (border-audit, peer-rail-audit,
+   control-audit, contract-tests, the responsive-* tests families) and
+   by preview.py-generated tables. */
+.dk-flag-ok { color: var(--color-success); }
+.dk-flag-warn { color: var(--color-text-muted); }
+.dk-flag-fail { color: var(--color-danger); }
+.dk-flag-skip { color: var(--color-text-muted); }
+.dk-numeric { font-variant-numeric: tabular-nums; }
+
 .dk-table-clamped tbody td .dk-table-cell {
   display: -webkit-box;
   -webkit-box-orient: vertical;
