@@ -1,0 +1,37 @@
+.dk-textarea {
+  width: 100%;
+  min-height: 4lh;
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-sm);
+  line-height: var(--font-line-height-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: var(--border-width-thin) solid var(--color-border);
+  padding: var(--control-padding);
+  outline: none;
+  resize: vertical;
+}
+
+.dk-textarea:hover {
+  border-color: var(--color-text-muted);
+}
+
+.dk-textarea:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+}
+
+.dk-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-code-bg);
+}
+
+.dk-textarea-invalid {
+  border-color: var(--color-danger);
+}
+
+.dk-textarea-sm {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs);
+}
