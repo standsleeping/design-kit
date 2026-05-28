@@ -21,7 +21,7 @@
   border-collapse: collapse;
   width: 100%;
   font-size: var(--font-size-xs);
-  font-family: var(--typography-prop);
+  font-family: var(--typography-body);
 }
 
 .dk-table-fixed {
@@ -329,7 +329,7 @@
   border-top: var(--border-width-thin) solid var(--color-border);
   transform: translateY(100%);
   transition: transform 0.25s ease;
-  font-family: var(--typography-prop);
+  font-family: var(--typography-body);
   font-size: var(--font-size-sm);
 }
 
