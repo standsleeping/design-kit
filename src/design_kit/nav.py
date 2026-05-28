@@ -56,6 +56,7 @@ LEVELS: list[NavLevel] = [
             {"kind": "section-item", "id": "line-height-units", "label": "Line Height Units"},
             {"kind": "section-header", "id": "audits-header", "label": "Audits"},
             {"kind": "section-item", "id": "border-audit", "label": "Border Audit"},
+            {"kind": "section-item", "id": "control-audit", "label": "Control Audit"},
             {"kind": "section-item", "id": "contract-tests", "label": "Contract Tests"},
             {"kind": "section-item", "id": "app-runtime-tests", "label": "App Runtime Tests"},
             {"kind": "section-item", "id": "responsive-table-tests", "label": "Responsive Table Tests"},

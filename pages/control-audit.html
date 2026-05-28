@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Control Audit · design-kit</title>
+<link rel="stylesheet" href="tokens.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/button.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/icon-button.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/text-input.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/search-input.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/number-input.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/select.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/checkbox.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/menu-item.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/tab-bar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/segmented-toggle.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/scroll-list.css?{{CACHE_BUST}}">
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    --mono: 1;
+  }
+  .dk-app-shell-main {
+    padding: var(--spacing-xl);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2xl);
+  }
+  h1 {
+    font-size: var(--font-size-lg);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    font-weight: var(--font-weight-semibold);
+    padding: 0;
+  }
+  h2 {
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    padding: 0;
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    padding-bottom: var(--spacing-xs);
+  }
+  p {
+    margin: 0;
+    font-family: var(--typography-body);
+    font-size: var(--font-size-sm);
+    line-height: var(--font-line-height-base);
+    --mono: 0;
+    max-width: 70ch; /* dimension-lint: ok, prose readability cap on this self-reporting audit surface; kit has no reading-width token yet */
+  }
+
+  /* Summary strip */
+  .summary {
+    padding: var(--spacing-md);
+    border: var(--border-width-thin) solid var(--color-border);
+    font-family: var(--typography-mono);
+  }
+  .summary-ok { color: var(--color-success); }
+  .summary-fail { color: var(--color-danger); }
+
+  /* Section layout */
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  /* Gallery: visible side-by-side rendering */
+  .gallery {
+    display: grid;
+    grid-template-columns: 14ch 1fr;
+    gap: var(--spacing-sm) var(--spacing-lg);
+    align-items: center;
+    padding: var(--spacing-md) 0; /* padding-lint: ok, vertical breathing only; horizontal owned by parent main */
+  }
+  .gallery-label {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-2xs, var(--font-size-xs));
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+  }
+  .gallery-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+  }
+
+  /* Diagnostic table */
+  table { width: 100%; border-collapse: collapse; }
+  th, td {
+    text-align: left;
+    padding: var(--spacing-xs) var(--spacing-sm); /* padding-lint: ok, tabular cell density */
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    font-family: var(--typography-mono);
+    font-size: var(--font-size-xs);
+    vertical-align: top;
+  }
+  th {
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+    border-bottom-color: var(--color-text-muted);
+  }
+  td.role { color: var(--color-text-muted); }
+  td.flag-ok { color: var(--color-success); }
+  td.flag-warn { color: var(--color-warning, var(--color-text-muted)); }
+  td.flag-fail { color: var(--color-danger); }
+  td.numeric { font-variant-numeric: tabular-nums; }
+
+  /* Pairs comparison */
+  .pairs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(36ch, 1fr));
+    gap: var(--spacing-lg);
+  }
+  .pair-card {
+    border: var(--border-width-thin) solid var(--color-border);
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  .pair-card h3 {
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+    padding: 0;
+  }
+  .pair-demo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--color-code-bg);
+    border: var(--border-width-thin) solid var(--color-border);
+  }
+  .pair-demo .dk-text-input,
+  .pair-demo .dk-search-input,
+  .pair-demo .dk-select { width: auto; min-width: 0; flex: 1; }
+  .pair-deltas {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--spacing-2xs) var(--spacing-md);
+    font-size: var(--font-size-xs);
+  }
+  .pair-deltas .key { color: var(--color-text-muted); }
+  .pair-deltas .val { font-variant-numeric: tabular-nums; text-align: right; }
+  .pair-deltas .val-flag { color: var(--color-danger); }
+
+  /* Off-screen measure mount (in-page; not iframed). Probed for computed
+     styles after first paint to fill the diagnostic table. */
+  [data-audit-control] { /* anchor */ }
+</style>
+</head>
+<body data-cls-exempt="self-reporting test harness; injects results after load (not a user surface)">
+<div class="dk-app-shell">
+
+  <header class="dk-app-shell-header dk-topbar">
+    <span class="dk-topbar-title dk-topbar-title-eyebrow">Design Kit</span>
+  </header>
+  <div class="dk-app-shell-body">
+    <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
+           data-state="expanded"
+           style="--dk-sidebar-width: var(--dk-rail-nav-w, 220px);"
+           aria-label="Design Kit navigation">
+      <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="control-audit"></div>
+    </aside>
+    <main class="dk-app-shell-main">
+      <h1>Control Audit</h1>
+      <p>Surfaces inconsistencies in how buttons, inputs, and interactive chrome are sized, padded, and bordered across the kit. Each control is rendered once and measured at first paint, so the diagnostic table reflects the live computed values, not the source declarations. Pass/fail is informational: the kit currently allows asymmetric padding on controls via <code>/* padding-lint: ok */</code>, so this audit flags divergences for human review rather than gating the build.</p>
+
+      <div class="summary" data-summary>Measuring…</div>
+
+      <section>
+        <h2>Gallery</h2>
+        <p>Every interactive control rendered at default size, in the order a reader scans a form: actions, then inputs, then chrome.</p>
+        <div class="gallery">
+          <span class="gallery-label">Button</span>
+          <div class="gallery-row">
+            <button class="dk-button" data-audit-control data-audit-id="btn" data-audit-role="button">Action</button>
+            <button class="dk-button dk-button-primary" data-audit-control data-audit-id="btn-primary" data-audit-role="button">Primary</button>
+            <button class="dk-button" disabled>Disabled</button>
+          </div>
+
+          <span class="gallery-label">Icon button</span>
+          <div class="gallery-row">
+            <button class="dk-icon-button dk-icon-button-sm" aria-label="Small" data-audit-control data-audit-id="icon-btn-sm" data-audit-role="button">×</button>
+            <button class="dk-icon-button dk-icon-button-default" aria-label="Default" data-audit-control data-audit-id="icon-btn-default" data-audit-role="button">×</button>
+            <button class="dk-icon-button dk-icon-button-touch" aria-label="Touch" data-audit-control data-audit-id="icon-btn-touch" data-audit-role="button">×</button>
+          </div>
+
+          <span class="gallery-label">Text input</span>
+          <div class="gallery-row">
+            <input class="dk-text-input" type="text" placeholder="Text" data-audit-control data-audit-id="text-input" data-audit-role="input">
+          </div>
+
+          <span class="gallery-label">Search input</span>
+          <div class="gallery-row">
+            <input class="dk-search-input" type="search" placeholder="Search" data-audit-control data-audit-id="search-input" data-audit-role="input">
+          </div>
+
+          <span class="gallery-label">Number input</span>
+          <div class="gallery-row">
+            <input class="dk-number-input" type="number" value="42" data-audit-control data-audit-id="number-input" data-audit-role="input">
+          </div>
+
+          <span class="gallery-label">Select</span>
+          <div class="gallery-row">
+            <select class="dk-select" data-audit-control data-audit-id="select" data-audit-role="input">
+              <option>Option A</option>
+              <option>Option B</option>
+            </select>
+          </div>
+
+          <span class="gallery-label">Menu item</span>
+          <div class="gallery-row" style="width: 24ch; border: var(--border-width-thin) solid var(--color-border);">
+            <button class="dk-menu-item" data-audit-control data-audit-id="menu-item" data-audit-role="chrome">Menu item</button>
+          </div>
+
+          <span class="gallery-label">Tab bar</span>
+          <div class="gallery-row">
+            <div class="dk-tab-bar">
+              <button class="dk-tab-bar-tab dk-tab-bar-tab-active" data-audit-control data-audit-id="tab-bar-tab" data-audit-role="chrome">Overview</button>
+              <span class="dk-tab-bar-separator" aria-hidden="true">·</span>
+              <button class="dk-tab-bar-tab">API</button>
+            </div>
+          </div>
+
+          <span class="gallery-label">Segmented</span>
+          <div class="gallery-row">
+            <div class="dk-segmented-toggle">
+              <button class="dk-segmented-toggle-button dk-segmented-toggle-button-active" data-audit-control data-audit-id="segmented-toggle" data-audit-role="chrome">All</button>
+              <button class="dk-segmented-toggle-button">Now</button>
+              <button class="dk-segmented-toggle-button">Later</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Diagnostics</h2>
+        <p>Per-control computed values, measured live. The <strong>Square?</strong> column flags any control whose block-axis padding differs from its inline-axis padding (a violation of <code>SQUARE_PADDING_DEFAULT</code>). The <strong>Floor</strong> column reports the height floor: explicit (<code>min-height</code> set), or implicit (content-driven, grows with font-size). The <strong>Focus</strong> column reports the focus pattern declared in CSS.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Role</th>
+              <th>Padding<br>(block / inline)</th>
+              <th>Height<br>(rendered)</th>
+              <th>Font<br>(size / weight)</th>
+              <th>Min-width</th>
+              <th>Border</th>
+              <th>Square?</th>
+              <th>Floor</th>
+              <th>Focus</th>
+            </tr>
+          </thead>
+          <tbody data-results></tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Cross-component pairs</h2>
+        <p>The framework split: when a button and an input sit next to each other, do they read as peers? Each card renders the pair and reports the delta. Large deltas mean side-by-side composition will look misaligned.</p>
+        <div class="pairs" data-pairs></div>
+      </section>
+
+      <section>
+        <h2>What this audit does not catch</h2>
+        <p>This page measures static rendered values. It does not capture: focus-ring clipping under scroll containers (see <code>INSET_FOCUS_RING</code>); hover/active state divergence; touch-target enforcement under coarse pointers; text-baseline drift (see <code>VERTICAL_METRIC_DRIFT</code>). Those need their own probes. For now, eyeball the gallery above in both light and dark themes; this page declares <code>color-scheme: light dark</code> and respects the OS preference.</p>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="components/system/system-sidebar.js?{{CACHE_BUST}}"></script>
+<script type="module">
+// Pixel tolerance for "padding is square": browsers occasionally render at
+// fractional pixels; differences below this floor read as equal to the eye.
+const PADDING_EPSILON = 0.5;
+
+// Sub-pixel tolerance for "two rendered heights are the same". Two controls
+// that differ by less than this stack cleanly visually.
+const HEIGHT_EPSILON = 1.0;
+
+const ROLE_LABEL = { button: 'button', input: 'input', chrome: 'chrome' };
+
+function px(v) { return `${v.toFixed(1)}px`; }
+
+function readControl(el) {
+  const cs = getComputedStyle(el);
+  const padBlockStart = parseFloat(cs.paddingBlockStart);
+  const padBlockEnd = parseFloat(cs.paddingBlockEnd);
+  const padInlineStart = parseFloat(cs.paddingInlineStart);
+  const padInlineEnd = parseFloat(cs.paddingInlineEnd);
+  // Square check: every side must equal every other within epsilon.
+  const sides = [padBlockStart, padBlockEnd, padInlineStart, padInlineEnd];
+  const minSide = Math.min(...sides);
+  const maxSide = Math.max(...sides);
+  const square = (maxSide - minSide) <= PADDING_EPSILON;
+  // Asymmetric breakdown for diagnostic display
+  const padBlock = padBlockStart === padBlockEnd ? px(padBlockStart) : `${px(padBlockStart)} / ${px(padBlockEnd)}`;
+  const padInline = padInlineStart === padInlineEnd ? px(padInlineStart) : `${px(padInlineStart)} / ${px(padInlineEnd)}`;
+
+  const height = el.getBoundingClientRect().height;
+  const fontSize = parseFloat(cs.fontSize);
+  const fontWeight = cs.fontWeight;
+  const minWidth = cs.minWidth === '0px' ? '—' : cs.minWidth;
+  const minHeight = cs.minHeight === '0px' ? null : cs.minHeight;
+
+  // Border: report each side if they differ, otherwise collapsed.
+  const bw = {
+    top: parseFloat(cs.borderTopWidth),
+    right: parseFloat(cs.borderRightWidth),
+    bottom: parseFloat(cs.borderBottomWidth),
+    left: parseFloat(cs.borderLeftWidth),
+  };
+  const bwUnique = [...new Set(Object.values(bw))];
+  let border;
+  if (bwUnique.length === 1) {
+    border = bwUnique[0] === 0 ? '—' : px(bwUnique[0]);
+  } else {
+    const parts = [];
+    if (bw.top) parts.push(`top ${px(bw.top)}`);
+    if (bw.right) parts.push(`right ${px(bw.right)}`);
+    if (bw.bottom) parts.push(`bottom ${px(bw.bottom)}`);
+    if (bw.left) parts.push(`left ${px(bw.left)}`);
+    border = parts.join(', ');
+  }
+
+  return {
+    padBlock, padInline,
+    padSidesEqual: square,
+    padBlockTotal: padBlockStart + padBlockEnd,
+    padInlineTotal: padInlineStart + padInlineEnd,
+    height,
+    fontSize,
+    fontWeight,
+    minWidth,
+    minHeight,
+    border,
+  };
+}
+
+// Focus pattern is declared in CSS, not measurable cheaply (you'd have to
+// focus the element and re-read getComputedStyle, which fights :focus-visible
+// gating). Instead, we hardcode the patterns per component class and surface
+// them in the table — the audit's job is to make the divergence visible, not
+// to re-derive it from the cascade.
+const FOCUS_PATTERN = {
+  'dk-button':                  'outline +2px (standalone)',
+  'dk-icon-button':             'outline +2px (standalone)',
+  'dk-text-input':              'outline +2px (standalone) + border shift',
+  'dk-search-input':            'box-shadow 2px (unique)',
+  'dk-number-input':            'outline +2px (standalone) + border shift',
+  'dk-select':                  'outline +2px (standalone) + border shift',
+  'dk-menu-item':               'outline -2px (inset)',
+  'dk-tab-bar-tab':             'outline -2px (inset)',
+  'dk-segmented-toggle-button': 'outline -2px (inset)',
+};
+
+function focusPatternFor(el) {
+  for (const cls of el.classList) {
+    if (FOCUS_PATTERN[cls]) return FOCUS_PATTERN[cls];
+  }
+  return '—';
+}
+
+function primaryClass(el) {
+  for (const cls of el.classList) {
+    if (cls.startsWith('dk-')) return cls;
+  }
+  return el.tagName.toLowerCase();
+}
+
+function renderRow(el) {
+  const id = el.dataset.auditId;
+  const role = el.dataset.auditRole;
+  const m = readControl(el);
+
+  const tr = document.createElement('tr');
+
+  const cls = primaryClass(el);
+  // If the element has a size variant (icon-button-sm, etc.), include it.
+  const sizeVariant = [...el.classList].find(c => c.startsWith(`${cls}-`) && c !== cls);
+  const componentLabel = sizeVariant ? `.${cls}.${sizeVariant}` : `.${cls}`;
+
+  const tdName = document.createElement('td');
+  tdName.textContent = componentLabel;
+  const tdRole = document.createElement('td');
+  tdRole.className = 'role';
+  tdRole.textContent = ROLE_LABEL[role];
+  const tdPad = document.createElement('td');
+  tdPad.className = 'numeric';
+  tdPad.textContent = `${m.padBlock} / ${m.padInline}`;
+  const tdHeight = document.createElement('td');
+  tdHeight.className = 'numeric';
+  tdHeight.textContent = px(m.height);
+  const tdFont = document.createElement('td');
+  tdFont.className = 'numeric';
+  tdFont.textContent = `${px(m.fontSize)} / ${m.fontWeight}`;
+  const tdMinW = document.createElement('td');
+  tdMinW.className = 'numeric';
+  tdMinW.textContent = m.minWidth;
+  const tdBorder = document.createElement('td');
+  tdBorder.className = 'numeric';
+  tdBorder.textContent = m.border;
+  const tdSquare = document.createElement('td');
+  if (m.padSidesEqual) {
+    tdSquare.textContent = 'yes';
+    tdSquare.className = 'flag-ok';
+  } else {
+    tdSquare.textContent = `no (Δ block=${px(m.padBlockTotal)}, inline=${px(m.padInlineTotal)})`;
+    tdSquare.className = 'flag-fail';
+  }
+  const tdFloor = document.createElement('td');
+  tdFloor.textContent = m.minHeight ? `explicit ${m.minHeight}` : 'content-driven';
+  tdFloor.className = m.minHeight ? 'flag-ok' : 'flag-warn';
+  const tdFocus = document.createElement('td');
+  tdFocus.textContent = focusPatternFor(el);
+  if (tdFocus.textContent.startsWith('outline -2px')) {
+    tdFocus.className = 'flag-ok';
+  } else if (tdFocus.textContent.startsWith('box-shadow')) {
+    tdFocus.className = 'flag-fail';
+  } else {
+    tdFocus.className = 'flag-warn';
+  }
+
+  tr.append(tdName, tdRole, tdPad, tdHeight, tdFont, tdMinW, tdBorder, tdSquare, tdFloor, tdFocus);
+  tr.dataset.auditId = id;
+  return { tr, metrics: m };
+}
+
+const PAIRS = [
+  {
+    title: 'Button + Text input',
+    leftId: 'btn',
+    rightId: 'text-input',
+    demoHtml: `
+      <input class="dk-text-input" type="text" placeholder="email@example.com">
+      <button class="dk-button">Submit</button>
+    `,
+  },
+  {
+    title: 'Button + Search input',
+    leftId: 'btn',
+    rightId: 'search-input',
+    demoHtml: `
+      <input class="dk-search-input" type="search" placeholder="Search…">
+      <button class="dk-button">Go</button>
+    `,
+  },
+  {
+    title: 'Button + Select',
+    leftId: 'btn',
+    rightId: 'select',
+    demoHtml: `
+      <select class="dk-select"><option>Option A</option></select>
+      <button class="dk-button">Apply</button>
+    `,
+  },
+];
+
+function renderPairs(metricsById) {
+  const root = document.querySelector('[data-pairs]');
+  for (const p of PAIRS) {
+    const card = document.createElement('div');
+    card.className = 'pair-card';
+
+    const h3 = document.createElement('h3');
+    h3.textContent = p.title;
+    card.append(h3);
+
+    const demo = document.createElement('div');
+    demo.className = 'pair-demo';
+    demo.innerHTML = p.demoHtml;
+    card.append(demo);
+
+    const left = metricsById[p.leftId];
+    const right = metricsById[p.rightId];
+    const dHeight = left.height - right.height;
+    const dFontSize = left.fontSize - right.fontSize;
+    const dFontWeight = parseFloat(left.fontWeight) - parseFloat(right.fontWeight);
+    const dPadBlock = left.padBlockTotal - right.padBlockTotal;
+    const dPadInline = left.padInlineTotal - right.padInlineTotal;
+
+    const grid = document.createElement('div');
+    grid.className = 'pair-deltas';
+
+    function row(key, val, flag) {
+      const k = document.createElement('span');
+      k.className = 'key';
+      k.textContent = key;
+      const v = document.createElement('span');
+      v.className = flag ? 'val val-flag' : 'val';
+      v.textContent = val;
+      grid.append(k, v);
+    }
+
+    row('Δ height',       (dHeight >= 0 ? '+' : '') + px(dHeight),                   Math.abs(dHeight) > HEIGHT_EPSILON);
+    row('Δ font-size',    (dFontSize >= 0 ? '+' : '') + px(dFontSize),               Math.abs(dFontSize) > 0.5);
+    row('Δ font-weight',  (dFontWeight >= 0 ? '+' : '') + dFontWeight.toFixed(0),    Math.abs(dFontWeight) >= 100);
+    row('Δ padding-block',  (dPadBlock >= 0 ? '+' : '') + px(dPadBlock),             Math.abs(dPadBlock) > PADDING_EPSILON);
+    row('Δ padding-inline', (dPadInline >= 0 ? '+' : '') + px(dPadInline),           Math.abs(dPadInline) > PADDING_EPSILON);
+
+    card.append(grid);
+    root.append(card);
+  }
+}
+
+async function main() {
+  // Allow custom fonts / first-paint settling.
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  const tbody = document.querySelector('[data-results]');
+  const controls = [...document.querySelectorAll('[data-audit-control]')];
+  let squareFails = 0;
+  let focusFails = 0;
+  const metricsById = {};
+
+  for (const el of controls) {
+    const { tr, metrics } = renderRow(el);
+    if (!metrics.padSidesEqual) squareFails++;
+    if (focusPatternFor(el).startsWith('box-shadow')) focusFails++;
+    metricsById[el.dataset.auditId] = metrics;
+    tbody.append(tr);
+  }
+
+  renderPairs(metricsById);
+
+  // Pair divergences: count any pair whose button/input height delta exceeds epsilon.
+  let pairFails = 0;
+  for (const p of PAIRS) {
+    const dh = Math.abs(metricsById[p.leftId].height - metricsById[p.rightId].height);
+    if (dh > HEIGHT_EPSILON) pairFails++;
+  }
+
+  const totalFindings = squareFails + focusFails + pairFails;
+  const summary = document.querySelector('[data-summary]');
+  if (totalFindings === 0) {
+    summary.textContent = `All ${controls.length} controls render with square padding, consistent focus pattern, and button/input pairs stack cleanly.`;
+    summary.className = 'summary summary-ok';
+  } else {
+    const parts = [];
+    if (squareFails) parts.push(`${squareFails} non-square padding`);
+    if (focusFails) parts.push(`${focusFails} non-standard focus`);
+    if (pairFails) parts.push(`${pairFails}/${PAIRS.length} mismatched button/input pair${pairFails === 1 ? '' : 's'}`);
+    summary.textContent = `${controls.length} controls measured. Findings: ${parts.join(', ')}.`;
+    summary.className = 'summary summary-fail';
+  }
+
+  // Headless harness contract: same shape as border-audit.html.
+  document.body.dataset.testStatus = totalFindings === 0 ? 'pass' : 'fail';
+  document.body.dataset.testTotal = String(controls.length);
+  document.body.dataset.testFailures = String(totalFindings);
+}
+
+main().catch((err) => {
+  const summary = document.querySelector('[data-summary]');
+  summary.textContent = `Audit harness error: ${err.message}`;
+  summary.className = 'summary summary-fail';
+  document.body.dataset.testStatus = 'fail';
+  document.body.dataset.testTotal = '0';
+  document.body.dataset.testFailures = '1';
+});
+</script>
+</body>
+</html>
