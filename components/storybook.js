@@ -690,7 +690,7 @@ async function main() {
     if (descriptor.type === 'boolean') {
       const input = document.createElement('input');
       input.type = 'checkbox';
-      input.className = 'storybook-prop-input storybook-prop-checkbox';
+      input.className = 'dk-checkbox';
       input.checked = Boolean(value);
       input.addEventListener('change', () => onChange(input.checked));
       label.prepend(input);
@@ -700,7 +700,7 @@ async function main() {
     }
     if (descriptor.type === 'enum') {
       const select = document.createElement('select');
-      select.className = 'storybook-prop-input';
+      select.className = 'dk-select dk-select-sm';
       for (const option of (descriptor.options ?? [])) {
         const opt = document.createElement('option');
         opt.value = String(option);
@@ -715,7 +715,7 @@ async function main() {
     if (descriptor.type === 'number') {
       const input = document.createElement('input');
       input.type = 'number';
-      input.className = 'storybook-prop-input';
+      input.className = 'dk-number-input dk-number-input-sm';
       if (value !== undefined && value !== null) input.value = String(value);
       input.addEventListener('input', () => {
         const v = input.value === '' ? null : Number(input.value);
@@ -726,17 +726,17 @@ async function main() {
     }
     if (descriptor.type === 'array' || descriptor.type === 'object') {
       const textarea = document.createElement('textarea');
-      textarea.className = 'storybook-prop-input';
+      textarea.className = 'dk-textarea dk-textarea-sm';
       textarea.value = value === null || value === undefined
         ? (descriptor.type === 'array' ? '[]' : '{}')
         : JSON.stringify(value, null, 2);
       textarea.addEventListener('input', () => {
         try {
           const parsed = JSON.parse(textarea.value);
-          textarea.classList.remove('storybook-prop-input-invalid');
+          textarea.classList.remove('dk-textarea-invalid');
           onChange(parsed);
         } catch {
-          textarea.classList.add('storybook-prop-input-invalid');
+          textarea.classList.add('dk-textarea-invalid');
         }
       });
       row.append(textarea);
@@ -745,7 +745,7 @@ async function main() {
     // string default
     const input = document.createElement('input');
     input.type = 'text';
-    input.className = 'storybook-prop-input';
+    input.className = 'dk-text-input dk-text-input-sm';
     input.value = value != null ? String(value) : '';
     input.addEventListener('input', () => onChange(input.value));
     row.append(input);
@@ -796,7 +796,7 @@ async function main() {
       const target = tab.dataset.storybookInspectorTab;
       for (const t of Array.from(/** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('[data-storybook-inspector-tab]')))) {
         const isActive = t === tab;
-        t.classList.toggle('storybook-inspector-tab-active', isActive);
+        t.classList.toggle('dk-tab-bar-tab-active', isActive);
         t.setAttribute('aria-selected', String(isActive));
       }
       for (const panel of Array.from(/** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('[data-storybook-inspector-panel]')))) {
