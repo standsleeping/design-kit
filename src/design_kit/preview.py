@@ -247,6 +247,7 @@ def generate_preview_html() -> str:
       font-size: var(--font-size-lg);
       color: var(--color-text);
       text-align: center;
+      vertical-align: middle;
     }}
     .icon-table td.icon-name {{
       width: 12em; /* dimension-lint: ok, em-relative column for icon names */
