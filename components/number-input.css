@@ -1,11 +1,13 @@
 .dk-number-input {
   width: var(--control-input-width-xs);
+  min-height: var(--control-min-height-lg);
   font-family: var(--typography-mono);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
+  line-height: var(--font-line-height-base);
   color: var(--color-text);
   background: var(--color-bg);
   border: var(--border-width-thin) solid var(--color-border);
-  padding: var(--spacing-xs) var(--spacing-sm); /* padding-lint: ok */
+  padding: var(--control-padding);
   outline: none;
 }
 
@@ -14,9 +16,8 @@
 }
 
 .dk-number-input:focus-visible {
-  border-color: var(--color-focus-ring);
   outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px; /* focus-ring: standalone */
+  outline-offset: -2px;
 }
 
 .dk-number-input:disabled {

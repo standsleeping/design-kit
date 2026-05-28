@@ -3,8 +3,9 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-md);
+  padding: var(--control-padding);
   min-width: var(--control-min-width-md);
+  min-height: var(--control-min-height-lg);
   font-family: var(--typography-body);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -23,7 +24,7 @@
 
 .dk-button:focus-visible {
   outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px; /* focus-ring: standalone */
+  outline-offset: -2px;
 }
 
 .dk-button:disabled {

@@ -134,7 +134,8 @@
         "sm": "6.25rem",
         "md": "7.5rem",
         "lg": "8.75rem"
-      }
+      },
+      "padding": "0.5rem"
     },
     "resizer-handle": {
       "width": "0.5rem"
