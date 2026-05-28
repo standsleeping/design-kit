@@ -38,3 +38,9 @@
   font-size: var(--font-size-xs);
   user-select: none;
 }
+
+.dk-tab-bar-tab-sm {
+  font-size: var(--font-size-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--font-letter-spacing-wide);
+}
