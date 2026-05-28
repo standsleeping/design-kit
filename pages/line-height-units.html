@@ -10,6 +10,9 @@
   <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/checkbox.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/range.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/responsive-table.css?{{CACHE_BUST}}">
   <style>
     html, body { height: 100%; margin: 0; overflow: hidden; }
     body {
@@ -91,18 +94,9 @@
       user-select: none;
     }
 
-    .control-label input[type="checkbox"] {
-      accent-color: var(--color-purple-500);
-    }
-
+    .control-label input[type="checkbox"],
     .control-label input[type="range"] {
       accent-color: var(--color-purple-500);
-      width: var(--control-input-width-md);
-    }
-
-    .control-value {
-      min-width: 3.5em; /* dimension-lint: ok, em-relative width for numeric readout */
-      text-align: right;
     }
 
     /* ── Scenarios ── */
@@ -226,7 +220,7 @@
       padding-top: var(--spacing-xl);
     }
 
-    .summary table {
+    .summary .dk-table-wrap {
       max-width: 600px; /* dimension-lint: ok, demo summary table width */
     }
   </style>
@@ -257,7 +251,7 @@
 
     <div class="controls">
       <label class="control-label">
-        <input type="checkbox" id="grid-toggle">
+        <input type="checkbox" class="dk-checkbox" id="grid-toggle">
         Line grid
       </label>
       <span class="control-label" style="cursor: default;">
@@ -281,8 +275,10 @@
       <div class="scenario-controls">
         <label class="control-label">
           Font size
-          <input type="range" id="font-size-slider" min="12" max="28" value="16" step="1">
-          <span class="control-value" id="font-size-value">16px</span>
+          <span class="dk-range">
+            <input type="range" class="dk-range-input" id="font-size-slider" min="12" max="28" value="16" step="1">
+            <span class="dk-range-value" id="font-size-value">16px</span>
+          </span>
         </label>
         <span class="control-label" style="cursor: default;">
           1lh = <span id="adaptive-lh-value"></span>
@@ -451,37 +447,41 @@
         value (24px at 1rem root). Body text keeps its 1.6 line-height via
         the <code>body</code> rule.
       </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Unit</th>
-            <th>Resolves to</th>
-            <th>Value (at defaults)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>1rlh</code></td>
-            <td>root line-height (html)</td>
-            <td id="summary-rlh"></td>
-          </tr>
-          <tr>
-            <td><code>1lh</code> (body)</td>
-            <td>body line-height</td>
-            <td id="summary-lh-body"></td>
-          </tr>
-          <tr>
-            <td><code>1lh</code> (h2)</td>
-            <td>heading line-height</td>
-            <td id="summary-lh-h2"></td>
-          </tr>
-          <tr>
-            <td><code>1rem</code></td>
-            <td>root font-size</td>
-            <td>16px</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="dk-table-wrap">
+        <div class="dk-table-scroll">
+          <table class="dk-table">
+            <thead>
+              <tr>
+                <th>Unit</th>
+                <th>Resolves to</th>
+                <th>Value (at defaults)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>1rlh</code></td>
+                <td>root line-height (html)</td>
+                <td id="summary-rlh"></td>
+              </tr>
+              <tr>
+                <td><code>1lh</code> (body)</td>
+                <td>body line-height</td>
+                <td id="summary-lh-body"></td>
+              </tr>
+              <tr>
+                <td><code>1lh</code> (h2)</td>
+                <td>heading line-height</td>
+                <td id="summary-lh-h2"></td>
+              </tr>
+              <tr>
+                <td><code>1rem</code></td>
+                <td>root font-size</td>
+                <td>16px</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 

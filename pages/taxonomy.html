@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/responsive-table.css?{{CACHE_BUST}}">
   <style>
     html, body { height: 100%; margin: 0; overflow: hidden; }
     body {
@@ -323,32 +324,36 @@
   <!-- ============================================================ -->
   <div class="section">
     <div class="section-heading">Typefaces by Lineage</div>
-    <table>
-      <thead>
-        <tr>
-          <th>Lineage</th>
-          <th>Primary typefaces</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="font-family: var(--typography-mono);">Systems modernism</td>
-          <td style="font-family: var(--typography-mono);">Helvetica, Akzidenz-Grotesk, Univers, Futura</td>
-        </tr>
-        <tr>
-          <td style="font-family: var(--typography-mono);">Aerospace standards-manual</td>
-          <td style="font-family: var(--typography-mono);">Helvetica (NASA), City Medium (IBM), Futura</td>
-        </tr>
-        <tr>
-          <td style="font-family: var(--typography-mono);">Machine-legibility</td>
-          <td style="font-family: var(--typography-mono);">OCR-A, OCR-B, MICR E-13B, Courier, IBM Plex Mono</td>
-        </tr>
-        <tr>
-          <td style="font-family: var(--typography-mono);">Display-constrained</td>
-          <td style="font-family: var(--typography-mono);">New Alphabet (Crouwel), DSEG / seven-segment, Chicago (bitmap)</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="dk-table-wrap">
+      <div class="dk-table-scroll">
+        <table class="dk-table">
+          <thead>
+            <tr>
+              <th>Lineage</th>
+              <th>Primary typefaces</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Systems modernism</td>
+              <td>Helvetica, Akzidenz-Grotesk, Univers, Futura</td>
+            </tr>
+            <tr>
+              <td>Aerospace standards-manual</td>
+              <td>Helvetica (NASA), City Medium (IBM), Futura</td>
+            </tr>
+            <tr>
+              <td>Machine-legibility</td>
+              <td>OCR-A, OCR-B, MICR E-13B, Courier, IBM Plex Mono</td>
+            </tr>
+            <tr>
+              <td>Display-constrained</td>
+              <td>New Alphabet (Crouwel), DSEG / seven-segment, Chicago (bitmap)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- ============================================================ -->

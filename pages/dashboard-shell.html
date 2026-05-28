@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/icon-button.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/luminance-toggle.css?{{CACHE_BUST}}">
 <style>
   /* ── Dashboard shell ────────────────────────────────────────────────────
@@ -47,26 +48,6 @@
   .dk-app-shell[data-nav-collapsed] #nav-expand { display: inline-flex; }
   .dk-app-shell[data-nav-collapsed] #nav-collapse { display: none; }
   .dk-app-shell[data-right-collapsed] #right-expand { display: inline-flex; }
-
-  /* Collapse/expand buttons in chrome strips (the visual treatment of the
-     buttons themselves; the strips are dk-topbar). */
-  .chrome-btn {
-    flex-shrink: 0;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    font-family: inherit;
-    font-size: var(--font-size-sm);
-    line-height: var(--font-line-height-none);
-    transition: color 0.15s ease;
-  }
-  .chrome-btn:hover { color: var(--color-text); }
-  .chrome-btn:focus-visible {
-    outline: var(--border-width-medium) solid var(--color-link);
-    outline-offset: -2px;
-  }
 
   /* ── Main column wrap: chrome strip (dk-topbar) + scroll body + footer
      strip (dk-topbar-bottom). dk-app-shell-main owns the column slot but
@@ -119,11 +100,11 @@
     <!-- Center column: chrome strip + body + footer strip. -->
     <main class="dk-app-shell-main">
       <header class="dk-topbar">
-        <button class="chrome-btn" id="nav-collapse" aria-label="Collapse navigation">«</button>
-        <button class="chrome-btn" id="nav-expand" aria-label="Expand navigation">»</button>
+        <button class="dk-icon-button dk-icon-button-sm" id="nav-collapse" aria-label="Collapse navigation">«</button>
+        <button class="dk-icon-button dk-icon-button-sm" id="nav-expand" aria-label="Expand navigation">»</button>
         <span class="dk-topbar-title dk-topbar-title-eyebrow">Lorem ipsum</span>
         <span data-luminance aria-label="Luminance mode"></span>
-        <button class="chrome-btn" id="right-expand" aria-label="Expand panel">«</button>
+        <button class="dk-icon-button dk-icon-button-sm" id="right-expand" aria-label="Expand panel">«</button>
       </header>
       <div class="main-body">
         <div class="main-placeholder">Lorem ipsum dolor sit amet</div>
@@ -139,7 +120,7 @@
            id="right"
            aria-label="Lorem">
         <div class="dk-sidebar-header dk-topbar" data-slot="header">
-          <button class="chrome-btn" id="right-collapse" aria-label="Collapse panel">»</button>
+          <button class="dk-icon-button dk-icon-button-sm" id="right-collapse" aria-label="Collapse panel">»</button>
           <span class="dk-topbar-title">Lorem</span>
         </div>
         <div class="dk-sidebar-main" data-slot="main">
