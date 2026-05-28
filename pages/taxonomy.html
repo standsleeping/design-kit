@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="components/app-shell.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
   <style>
     html, body { height: 100%; margin: 0; overflow: hidden; }
     body {
@@ -157,10 +158,14 @@
 </head>
 <body>
 <div class="dk-app-shell">
+
+  <header class="dk-app-shell-header dk-topbar">
+    <span class="dk-topbar-title dk-topbar-title-eyebrow">Design Kit</span>
+  </header>
   <div class="dk-app-shell-body">
     <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
            data-state="expanded"
-           style="--dk-sidebar-width: 220px;"
+           style="--dk-sidebar-width: var(--dk-rail-nav-w, 220px);"
            aria-label="Design Kit navigation">
       <div class="dk-sidebar-main" data-slot="main" data-system-nav data-current="taxonomy"></div>
     </aside>

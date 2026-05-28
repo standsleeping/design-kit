@@ -301,7 +301,7 @@ def _sidebar() -> str:
     return """\
   <aside class="dk-app-shell-left dk-sidebar dk-sidebar-left dk-sidebar-mode-inline"
          data-state="expanded"
-         style="--dk-sidebar-width: 220px;"
+         style="--dk-sidebar-width: var(--dk-rail-nav-w, 220px);"
          aria-label="Design Kit navigation">
     <div class="dk-sidebar-main" data-slot="main" data-system-nav></div>
   </aside>"""
