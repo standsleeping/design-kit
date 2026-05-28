@@ -25,3 +25,9 @@
   cursor: not-allowed;
   background: var(--color-code-bg);
 }
+
+.dk-number-input-sm {
+  min-height: var(--control-min-height-sm);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs);
+}

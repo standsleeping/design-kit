@@ -30,3 +30,10 @@
   cursor: not-allowed;
   background: var(--color-code-bg);
 }
+
+.dk-search-input-sm {
+  min-width: 0;
+  min-height: var(--control-min-height-sm);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs);
+}

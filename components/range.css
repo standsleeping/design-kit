@@ -17,3 +17,16 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
 }
+
+.dk-range-sm {
+  min-width: 0;
+  gap: var(--spacing-xs);
+}
+
+.dk-range-sm .dk-range-input {
+  min-width: 0;
+}
+
+.dk-range-sm .dk-range-value {
+  font-size: var(--font-size-2xs);
+}
