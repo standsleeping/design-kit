@@ -18,6 +18,7 @@ from design_kit.font_preload import font_preload_violation, inject_font_preload
 from design_kit.head_bootstrap import bootstrap_violation, inject_head_bootstrap
 from design_kit.icon_registry import generate_registry
 from design_kit.logging import get_logger
+from design_kit.nav import inject_system_nav
 from design_kit.page_lint import PageLintOutcome, run_page_lint
 from design_kit.preview import generate_preview_html
 from design_kit.token_css import generate_token_css
@@ -167,7 +168,9 @@ def build(tokens_path: Path, output_dir: Path) -> None:
         if (violation := font_preload_violation(text)) is not None:
             head_failures.append(f"{name}: {violation}")
 
-    html = _inject_head(substitute_breakpoints(generate_preview_html(), breakpoints))
+    html = inject_system_nav(
+        _inject_head(substitute_breakpoints(generate_preview_html(), breakpoints))
+    )
     html_path = output_dir / "index.html"
     html_path.write_text(html, encoding="utf-8")
     logger.info(f"Generated {html_path}")
@@ -181,6 +184,7 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             text = text.replace("{{CACHE_BUST}}", cache_bust)
             text = substitute_breakpoints(text, breakpoints)
             text = _inject_head(text)
+            text = inject_system_nav(text)
             dest.write_text(text, encoding="utf-8")
             logger.info(f"Copied {dest}")
             _check_head(page.name, text)
