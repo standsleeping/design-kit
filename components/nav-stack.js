@@ -169,7 +169,7 @@ function renderHeader(root, level, depth, backLabel, backIcon) {
       if (!s || s.path.length <= 1) return;
       s.path.pop();
       const newLevelId = s.path[s.path.length - 1];
-      renderBody(root);
+      renderBody(root, 'pop');
       emit(root, 'back', { fromLevel: level.id, toLevel: newLevelId, path: [...s.path] });
     });
     header.append(backBtn);
@@ -242,7 +242,7 @@ function renderItem(root, item) {
       const s = STATE.get(root);
       if (!s) return;
       s.path.push(item.branchTo);
-      renderBody(root);
+      renderBody(root, 'push');
       emit(root, 'branch', { from: item.id, toLevel: item.branchTo, path: [...s.path] });
     } else {
       setSelected(root, item.id);
@@ -254,10 +254,90 @@ function renderItem(root, item) {
 }
 
 /**
+ * Build a level wrapper for the given level: a single element containing the
+ * header and the scrollable body. Levels are the unit of swap so an animated
+ * drill can keep the outgoing and incoming levels alive simultaneously.
  * @param {HTMLElement} root
+ * @param {NavLevel} level
+ * @param {number} depth
+ * @param {string} backLabel
+ * @param {string} backIcon
+ * @returns {HTMLDivElement}
+ */
+function buildLevel(root, level, depth, backLabel, backIcon) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'dk-nav-stack-level';
+  wrapper.dataset.level = level.id;
+  wrapper.append(renderHeader(root, level, depth, backLabel, backIcon));
+  const body = document.createElement('div');
+  body.className = 'dk-nav-stack-body';
+  const list = document.createElement('div');
+  list.className = 'dk-nav-stack-list';
+  for (const item of level.items ?? []) {
+    list.append(renderItem(root, item));
+  }
+  body.append(list);
+  wrapper.append(body);
+  return wrapper;
+}
+
+/**
+ * @returns {boolean}
+ */
+function prefersReducedMotion() {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
+/**
+ * Slide the outgoing level off and the incoming level in. Push enters from
+ * the right (the user is going deeper); pop enters from the left (the user
+ * is returning). Falls back to an instant swap when no transitions are
+ * available (no old level on first render, no direction passed, or the user
+ * prefers reduced motion).
+ * @param {HTMLElement} root
+ * @param {HTMLElement} oldLevel
+ * @param {HTMLElement} newLevel
+ * @param {'push' | 'pop'} direction
  * @returns {void}
  */
-function renderBody(root) {
+function animateLevelSwap(root, oldLevel, newLevel, direction) {
+  const incomingFrom = direction === 'push' ? 'incoming-from-right' : 'incoming-from-left';
+  const outgoingTo = direction === 'push' ? 'outgoing-to-left' : 'outgoing-to-right';
+  root.dataset.animating = direction;
+  oldLevel.dataset.animState = 'settled';
+  newLevel.dataset.animState = incomingFrom;
+  root.append(newLevel);
+  // Force layout so the browser applies the starting transform before the
+  // class swap, otherwise both transforms land in the same frame and the
+  // transition collapses to an instant swap.
+  void newLevel.offsetWidth;
+  oldLevel.dataset.animState = outgoingTo;
+  newLevel.dataset.animState = 'settled';
+
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    oldLevel.remove();
+    delete newLevel.dataset.animState;
+    delete root.dataset.animating;
+  };
+  newLevel.addEventListener('transitionend', finish, { once: true });
+  // Fallback in case transitionend never fires (e.g. the new level is
+  // detached before the frame, or a CSS override neutralises the transition).
+  setTimeout(finish, 400);
+}
+
+/**
+ * @param {HTMLElement} root
+ * @param {'push' | 'pop'} [direction]
+ * @returns {void}
+ */
+function renderBody(root, direction) {
   const s = STATE.get(root);
   if (!s) return;
   const currentLevelId = s.path[s.path.length - 1];
@@ -267,22 +347,17 @@ function renderBody(root) {
   root.dataset.level = currentLevelId;
   root.dataset.depth = String(s.path.length);
 
-  const oldHeader = root.querySelector(':scope > .dk-nav-stack-header');
-  const oldBody = root.querySelector(':scope > .dk-nav-stack-body');
-  if (oldHeader) oldHeader.remove();
-  if (oldBody) oldBody.remove();
+  const oldLevel = /** @type {HTMLElement | null} */ (
+    root.querySelector(':scope > .dk-nav-stack-level')
+  );
+  const newLevel = buildLevel(root, level, s.path.length, s.backLabel, s.backIcon);
 
-  root.append(renderHeader(root, level, s.path.length, s.backLabel, s.backIcon));
-
-  const body = document.createElement('div');
-  body.className = 'dk-nav-stack-body';
-  const list = document.createElement('div');
-  list.className = 'dk-nav-stack-list';
-  for (const item of level.items ?? []) {
-    list.append(renderItem(root, item));
+  if (oldLevel && direction && !prefersReducedMotion()) {
+    animateLevelSwap(root, oldLevel, newLevel, direction);
+    return;
   }
-  body.append(list);
-  root.append(body);
+  if (oldLevel) oldLevel.remove();
+  root.append(newLevel);
 }
 
 /**

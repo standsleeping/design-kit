@@ -1,4 +1,5 @@
 .dk-nav-stack {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -6,6 +7,55 @@
   font-family: var(--typography-mono);
   --mono: 1;
   font-size: var(--font-size-xs);
+}
+
+/* One drill level (header + body). Wraps the per-level contents so drill
+   transitions can stack the outgoing and incoming levels side-by-side and
+   slide them with a single transform, with the nav root acting as the
+   viewport. In steady state the wrapper is a normal flex column; only
+   during animation do levels become absolutely positioned. */
+.dk-nav-stack-level {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Drill animation: the root clips while two levels slide past each other.
+   Outgoing translates off in the direction opposite the new level's entry;
+   incoming translates from the entry edge to settled (translateX(0)). The
+   absolutely-positioned levels share the root's box (inset: 0), so the
+   header rail and the scroll body keep their normal sizes. */
+.dk-nav-stack[data-animating] {
+  overflow: hidden;
+}
+.dk-nav-stack[data-animating] .dk-nav-stack-level {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.22s ease-out;
+  will-change: transform;
+}
+.dk-nav-stack-level[data-anim-state="incoming-from-right"] {
+  transform: translateX(100%);
+}
+.dk-nav-stack-level[data-anim-state="incoming-from-left"] {
+  transform: translateX(-100%);
+}
+.dk-nav-stack-level[data-anim-state="settled"] {
+  transform: translateX(0);
+}
+.dk-nav-stack-level[data-anim-state="outgoing-to-left"] {
+  transform: translateX(-100%);
+}
+.dk-nav-stack-level[data-anim-state="outgoing-to-right"] {
+  transform: translateX(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dk-nav-stack[data-animating] .dk-nav-stack-level {
+    transition: none;
+  }
 }
 
 /* Header is a thin chrome strip; its child (title or back) owns padding so
