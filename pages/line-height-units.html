@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="components/sidebar.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/page-header.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/panel.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/checkbox.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/range.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/responsive-table.css?{{CACHE_BUST}}">
@@ -34,24 +36,10 @@
       max-width: 1200px; /* dimension-lint: ok, demo page container width */
     }
 
-    .page-header {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-md);
-    }
-
     .scenarios {
       display: flex;
       flex-direction: column;
       gap: var(--spacing-2xl);
-    }
-
-    .page-title {
-      font-size: var(--font-size-2xl);
-      font-weight: var(--font-weight-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--font-letter-spacing-wide);
-      --mono: 1;
     }
 
     .page-desc {
@@ -126,38 +114,6 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--spacing-xl);
-    }
-
-    .panel {
-      border: var(--border-width-thin) solid var(--color-border);
-      overflow: hidden;
-    }
-
-    .panel-header {
-      padding: var(--spacing-sm) var(--spacing-lg);
-      border-bottom: var(--border-width-thin) solid var(--color-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      background: var(--color-code-bg);
-    }
-
-    .panel-label {
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--font-letter-spacing-wider);
-      --mono: 1;
-    }
-
-    .panel-meta {
-      font-size: var(--font-size-2xs);
-      color: var(--color-text-muted);
-      --mono: 1;
-    }
-
-    .panel-body {
-      padding: var(--spacing-xl);
     }
 
     /* ── Prose containers ── */
@@ -240,14 +196,14 @@
     </aside>
     <main class="dk-app-shell-main">
   <div class="page">
-    <header class="page-header">
-      <h1 class="page-title">Line Height Units</h1>
-      <p class="page-desc">
-        Comparing <code>gap: var(--spacing-xl)</code> (rem-based)
-        with <code>gap: 1lh</code> (line-height-based).
-        Toggle the grid overlay to see alignment.
-      </p>
+    <header class="dk-page-header">
+      <h1 class="dk-page-header-title">Line Height Units</h1>
     </header>
+    <p class="page-desc">
+      Comparing <code>gap: var(--spacing-xl)</code> (rem-based)
+      with <code>gap: 1lh</code> (line-height-based).
+      Toggle the grid overlay to see alignment.
+    </p>
 
     <div class="controls">
       <label class="control-label">
@@ -285,24 +241,24 @@
         </span>
       </div>
       <div class="comparison">
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-label">rem</span>
-            <span class="panel-meta">gap: 16px (fixed)</span>
+        <div class="dk-panel">
+          <div class="dk-panel-header">
+            <span class="dk-panel-label">rem</span>
+            <span class="dk-panel-meta">gap: 16px (fixed)</span>
           </div>
-          <div class="panel-body">
+          <div class="dk-panel-body">
             <div class="prose-rem" id="adaptive-rem">
               <p>Turn the soil to a depth of eight inches and work in two inches of aged compost. The texture should feel loose and crumbly when squeezed. Water the prepared bed the evening before planting.</p>
               <p>Space seedlings twelve inches apart in rows running north to south. This orientation gives each plant equal sun exposure as the day progresses. Mulch between rows to retain moisture.</p>
             </div>
           </div>
         </div>
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-label">lh</span>
-            <span class="panel-meta">gap: 1lh (adaptive)</span>
+        <div class="dk-panel">
+          <div class="dk-panel-header">
+            <span class="dk-panel-label">lh</span>
+            <span class="dk-panel-meta">gap: 1lh (adaptive)</span>
           </div>
-          <div class="panel-body">
+          <div class="dk-panel-body">
             <div class="prose-lh" id="adaptive-lh">
               <p>Turn the soil to a depth of eight inches and work in two inches of aged compost. The texture should feel loose and crumbly when squeezed. Water the prepared bed the evening before planting.</p>
               <p>Space seedlings twelve inches apart in rows running north to south. This orientation gives each plant equal sun exposure as the day progresses. Mulch between rows to retain moisture.</p>
@@ -323,12 +279,12 @@
         across band boundaries after each break.
       </p>
       <div class="comparison">
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-label">rem</span>
-            <span class="panel-meta">gap: var(--spacing-xl) → 16px</span>
+        <div class="dk-panel">
+          <div class="dk-panel-header">
+            <span class="dk-panel-label">rem</span>
+            <span class="dk-panel-meta">gap: var(--spacing-xl) → 16px</span>
           </div>
-          <div class="panel-body">
+          <div class="dk-panel-body">
             <div class="prose-rem">
               <p>Measure the workspace and mark cut lines with a straightedge. Double-check each measurement against the plan before making any cuts. Precision at this stage prevents waste and rework later.</p>
               <p>Assemble the frame on a flat surface using wood glue at each joint. Clamp the corners square and let the glue set for at least an hour before adding fasteners. A speed square helps verify right angles.</p>
@@ -336,12 +292,12 @@
             </div>
           </div>
         </div>
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-label">lh</span>
-            <span class="panel-meta">gap: 1lh → <span class="js-lh-base"></span></span>
+        <div class="dk-panel">
+          <div class="dk-panel-header">
+            <span class="dk-panel-label">lh</span>
+            <span class="dk-panel-meta">gap: 1lh → <span class="js-lh-base"></span></span>
           </div>
-          <div class="panel-body">
+          <div class="dk-panel-body">
             <div class="prose-lh">
               <p>Measure the workspace and mark cut lines with a straightedge. Double-check each measurement against the plan before making any cuts. Precision at this stage prevents waste and rework later.</p>
               <p>Assemble the frame on a flat surface using wood glue at each joint. Clamp the corners square and let the glue set for at least an hour before adding fasteners. A speed square helps verify right angles.</p>
@@ -363,12 +319,12 @@
         After five breaks the cumulative offset is 8px: visible in the bands.
       </p>
       <div class="comparison">
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-label">spacing-2xl</span>
-            <span class="panel-meta">gap: var(--spacing-2xl) → 24px</span>
+        <div class="dk-panel">
+          <div class="dk-panel-header">
+            <span class="dk-panel-label">spacing-2xl</span>
+            <span class="dk-panel-meta">gap: var(--spacing-2xl) → 24px</span>
           </div>
-          <div class="panel-body">
+          <div class="dk-panel-body">
             <div class="prose-2xl">
               <p>Measure the stock twice and mark the waste side of every cut line. A sharp pencil leaves a thinner mark than a marker, which matters when tolerances are tight.</p>
               <p>Set the blade depth so one tooth clears the bottom face of the material. Too shallow leaves a ragged edge; too deep wastes energy and increases tear-out.</p>
@@ -378,12 +334,12 @@
             </div>
           </div>
         </div>
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-label">lh</span>
-            <span class="panel-meta">gap: 1lh → <span class="js-lh-base"></span></span>
+        <div class="dk-panel">
+          <div class="dk-panel-header">
+            <span class="dk-panel-label">lh</span>
+            <span class="dk-panel-meta">gap: 1lh → <span class="js-lh-base"></span></span>
           </div>
-          <div class="panel-body">
+          <div class="dk-panel-body">
             <div class="prose-lh">
               <p>Measure the stock twice and mark the waste side of every cut line. A sharp pencil leaves a thinner mark than a marker, which matters when tolerances are tight.</p>
               <p>Set the blade depth so one tooth clears the bottom face of the material. Too shallow leaves a ragged edge; too deep wastes energy and increases tear-out.</p>
@@ -407,12 +363,12 @@
         introduces a phase shift because its line-height differs.
       </p>
       <div class="comparison">
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-label">rem</span>
-            <span class="panel-meta">gap: var(--spacing-xl) → 16px</span>
+        <div class="dk-panel">
+          <div class="dk-panel-header">
+            <span class="dk-panel-label">rem</span>
+            <span class="dk-panel-meta">gap: var(--spacing-xl) → 16px</span>
           </div>
-          <div class="panel-body">
+          <div class="dk-panel-body">
             <div class="prose-rem">
               <h2>Materials List</h2>
               <p>Select boards that are straight, dry, and free of twist. Sight down each edge from one end to check for bow. Reject any stock with visible cupping or checks along the grain.</p>
@@ -420,12 +376,12 @@
             </div>
           </div>
         </div>
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-label">lh</span>
-            <span class="panel-meta">gap: 1lh → <span class="js-lh-base"></span></span>
+        <div class="dk-panel">
+          <div class="dk-panel-header">
+            <span class="dk-panel-label">lh</span>
+            <span class="dk-panel-meta">gap: 1lh → <span class="js-lh-base"></span></span>
           </div>
-          <div class="panel-body">
+          <div class="dk-panel-body">
             <div class="prose-lh">
               <h2>Materials List</h2>
               <p>Select boards that are straight, dry, and free of twist. Sight down each edge from one end to check for bow. Reject any stock with visible cupping or checks along the grain.</p>

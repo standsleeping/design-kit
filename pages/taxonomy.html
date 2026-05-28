@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="components/nav-stack.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/topbar.css?{{CACHE_BUST}}">
   <link rel="stylesheet" href="components/responsive-table.css?{{CACHE_BUST}}">
+  <link rel="stylesheet" href="components/page-header.css?{{CACHE_BUST}}">
   <style>
     html, body { height: 100%; margin: 0; overflow: hidden; }
     body {
@@ -26,24 +27,6 @@
       justify-content: center;
       padding: var(--spacing-2xl) var(--spacing-xl);
       gap: var(--spacing-3xl);
-    }
-    .page-header {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-sm);
-    }
-    .page-title {
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-2xl);
-      font-weight: var(--font-weight-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--font-letter-spacing-wide);
-      color: var(--color-text);
-    }
-    .page-subtitle {
-      font-family: var(--typography-mono);
-      font-size: var(--font-size-xs);
-      color: var(--color-text-muted);
     }
     /* Section: stack of headings, descriptions, sub-blocks. Top inset comes
        from padding-top (companion to the border-top rule above). */
@@ -173,9 +156,9 @@
     <main class="dk-app-shell-main">
       <div class="taxonomy-content">
 
-  <header class="page-header">
-    <div class="page-title">Early-Tech Graphic Design Taxonomy</div>
-    <div class="page-subtitle">Design lineage and influences behind the visual language.</div>
+  <header class="dk-page-header">
+    <div class="dk-page-header-title">Early-Tech Graphic Design Taxonomy</div>
+    <div class="dk-page-header-subtitle">Design lineage and influences behind the visual language.</div>
   </header>
 
   <!-- ============================================================ -->
