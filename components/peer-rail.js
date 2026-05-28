@@ -20,6 +20,7 @@
   const TOL = 1.5;
   const HOST_ID = '__dk-peer-rail-overlay-host';
 
+  /** @param {Element} el */
   function probeExpectedHeight(el) {
     const probe = el.ownerDocument.createElement('div');
     probe.style.cssText = (
@@ -27,16 +28,20 @@
       'left: -99999px; top: 0; width: 1px; ' +
       'height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));'
     );
+    if (!el.parentNode) return 0;
     el.parentNode.insertBefore(probe, el);
     const h = probe.getBoundingClientRect().height;
     probe.remove();
     return h;
   }
 
+  /** @param {Document} doc */
   function collectMembers(doc) {
+    /** @type {Array<{ el: Element, tag: string, rect: DOMRect }>} */
     const out = [];
-    for (const el of doc.querySelectorAll('*')) {
-      const cs = doc.defaultView.getComputedStyle(el);
+    const view = doc.defaultView ?? window;
+    for (const el of Array.from(doc.querySelectorAll('*'))) {
+      const cs = view.getComputedStyle(el);
       const tag = cs.getPropertyValue('--peer-rail').trim();
       if (!tag || tag === 'none') continue;
       if (cs.visibility === 'hidden' || cs.display === 'none') continue;
@@ -47,6 +52,7 @@
     return out;
   }
 
+  /** @param {{ el: Element, tag: string, rect: DOMRect }} member */
   function classify(member) {
     const expected = probeExpectedHeight(member.el);
     const wrapOk = member.el.closest('[data-wrap-ok]') !== null;
@@ -72,6 +78,7 @@
     return host;
   }
 
+  /** @param {{ el: Element, tag: string, rect: DOMRect, expected: number, dy: number, status: string, wrapOk: boolean }} record */
   function makeMarker(record) {
     const r = record.rect;
     const passColor = 'rgba(40, 167, 69, 0.85)';
@@ -102,6 +109,7 @@
   }
 
   let active = false;
+  /** @type {MutationObserver | null} */
   let mo = null;
   let raf = 0;
 
@@ -163,6 +171,7 @@
       }));
   }
 
+  /** @param {Element} el */
   function describe(el) {
     let s = el.tagName.toLowerCase();
     if (el.id) s += `#${el.id}`;
@@ -172,5 +181,5 @@
     return s;
   }
 
-  window.__dkPeerRailOverlay = { show, hide, toggle, audit };
+  /** @type {any} */ (window).__dkPeerRailOverlay = { show, hide, toggle, audit };
 })();
