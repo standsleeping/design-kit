@@ -56,6 +56,14 @@ export async function mountLuminanceToggle(mountEl) {
   try {
     const mod = await import('../luminance-toggle.js');
     mountEl.innerHTML = '';
+    // Layout-transparent mount: the placeholder element itself contributes
+    // no box, so the mounted component is the effective flex/inline child
+    // of its surrounding context. Without this, the placeholder inherits
+    // the surrounding line-height (often a body-relaxed 1.6×font-size) and
+    // sits in the layout as a much taller box than the mounted component
+    // intends, breaking peer alignment on chrome rails. See
+    // VERTICAL_METRIC_DRIFT in system-principles.
+    mountEl.style.display = 'contents';
     mountEl.append(mod.render({ value: initial }));
   } catch (err) {
     console.warn('[dk-runtime] luminance toggle mount failed:', err);
@@ -81,6 +89,10 @@ export async function mountColorThemeToggle(mountEl) {
   try {
     const mod = await import('../color-theme-toggle.js');
     mountEl.innerHTML = '';
+    // See note on mountLuminanceToggle: display:contents on the placeholder
+    // keeps the mounted component the effective layout child of its
+    // surrounding context, preserving peer alignment on chrome rails.
+    mountEl.style.display = 'contents';
     mountEl.append(
       mod.render({
         value: /** @type {'mono-purple' | 'monochrome' | 'solarized'} */ (initial),

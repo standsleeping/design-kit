@@ -661,12 +661,182 @@ FIRST_PAINT_SPEC = HeadlessSpec(
 )
 
 
+# --- spec: vertical metric drift (runtime arm of VERTICAL_METRIC_DRIFT) ---
+
+# Two glyph-baseline positions on the same flex row are "drifted" when their visible
+# glyph rectangles disagree by more than this many CSS pixels on the block axis. 1.0
+# catches the canonical case (the storybook header's 1.4px count-vs-button drift before
+# text-box-trim) while staying above sub-pixel anti-aliasing noise (typically < 0.5px).
+_VMD_GLYPH_TOLERANCE = 1.0
+
+# Compare only sibling pairs whose font-sizes match within this many CSS pixels. A flex
+# row that intentionally mixes scales (a heading next to a count) is not vertical-metric
+# drift; that is design. Tighter than 0.5px would treat 12px-vs-12.5px sub-token sizes as
+# distinct, which they are not for any practical alignment intent.
+_VMD_FONT_SIZE_TOLERANCE = 0.5
+
+_VMD_REMEDIATION = (
+    "see VERTICAL_METRIC_DRIFT: sibling inline elements drift when each computes its "
+    "inline-box height from a different reference (UA defaults vs cascade vs explicit "
+    "override). Anchor every peer's visible glyph rectangle to font metrics with "
+    "text-box: trim-both cap alphabetic. Opt a documented pair out with "
+    "data-vmd-exempt on the row or any ancestor."
+)
+
+# Walks every single-line, row-direction flex container and reports pairs of children
+# whose visible glyph rectangles drift on the block axis despite sharing a font-size.
+# `Range.getBoundingClientRect()` measures actual rendered glyph pixels — independent of
+# the surrounding line-box — so the comparison is glyph-anchored, not box-anchored, and
+# catches drift inside boxes that PEER_RAIL would consider correctly sized. The
+# single-line filter (glyph height < ~2x font-size) excludes block-level columns and
+# multi-line prose containers, which produce huge unaligned glyph rects under
+# `selectNodeContents` and would otherwise drown the chrome-rail signal.
+_VMD_JS = """
+(args) => {
+  const { glyphTolerance, fontSizeTolerance } = args;
+  const label = (el) => {
+    const tag = el.tagName.toLowerCase();
+    const cls = (typeof el.className === 'string' && el.className.trim())
+      ? '.' + el.className.trim().split(/\\s+/).join('.') : '';
+    return tag + cls;
+  };
+  const preview = (el) => {
+    const t = (el.textContent || '').trim().replace(/\\s+/g, ' ');
+    return t.length > 30 ? t.slice(0, 30) + '\\u2026' : t;
+  };
+  // Measure the rect of the first significant text node only, not selectNodeContents
+  // over the whole element. A child that contains a form control or inline visual
+  // alongside its text (e.g. <label><input>Text</label>) would otherwise report a
+  // rect dominated by the control's box, not the visible glyphs we want to align.
+  // Also return the font-size of the text's parent (not of the flex child el):
+  // a placeholder span inheriting body font-size at 16px may wrap a button at 12px,
+  // and the rect we measure is the button's text, not the placeholder's.
+  const glyphMeasure = (el) => {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => (n.textContent && n.textContent.trim())
+        ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
+    });
+    const firstText = walker.nextNode();
+    if (!firstText || !firstText.parentElement) return null;
+    const r = document.createRange();
+    try {
+      r.selectNodeContents(firstText);
+      const rect = r.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return null;
+      const cs = getComputedStyle(firstText.parentElement);
+      return { rect, fontSize: parseFloat(cs.fontSize) };
+    } catch { return null; }
+  };
+  const out = [];
+  document.querySelectorAll('*').forEach((el) => {
+    if (el.closest('[data-vmd-exempt]')) return;
+    const style = getComputedStyle(el);
+    const disp = style.display;
+    if (disp !== 'flex' && disp !== 'inline-flex') return;
+    const dir = style.flexDirection;
+    if (dir !== 'row' && dir !== 'row-reverse') return;
+    const wrap = style.flexWrap;
+    if (wrap === 'wrap' || wrap === 'wrap-reverse') return;
+    const kids = [...el.children].filter((c) => {
+      const r = c.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return false;
+      return (c.textContent || '').trim().length > 0;
+    });
+    if (kids.length < 2) return;
+    const measured = [];
+    for (const c of kids) {
+      const box = c.getBoundingClientRect();
+      // Chrome-rail filter: a peer in a chrome rail has a short outer box (a
+      // row of items, not a page column). A flex container whose children are
+      // hundreds of pixels tall is a layout shell, not a rail; skip its
+      // children entirely. The threshold (80px) is comfortably above typical
+      // chrome-row item heights (titles, toggles, badges run 14-40px) and
+      // well below column heights (300px+).
+      if (box.height > 80) continue;
+      const gm = glyphMeasure(c);
+      if (!gm) continue;
+      // Single-line text filter: even within chrome, skip a child whose
+      // first-text-node rect spans more than two font-sizes; that's a
+      // multi-line block, not a chrome label.
+      if (gm.rect.height > gm.fontSize * 2) continue;
+      measured.push({ el: c, glyph: gm.rect, fontSize: gm.fontSize });
+    }
+    for (let i = 0; i < measured.length; i++) {
+      for (let j = i + 1; j < measured.length; j++) {
+        const a = measured[i], b = measured[j];
+        if (Math.abs(a.fontSize - b.fontSize) > fontSizeTolerance) continue;
+        const topDiff = Math.abs(a.glyph.top - b.glyph.top);
+        const bottomDiff = Math.abs(a.glyph.bottom - b.glyph.bottom);
+        if (topDiff <= glyphTolerance && bottomDiff <= glyphTolerance) continue;
+        out.push({
+          container: label(el),
+          a: label(a.el) + (preview(a.el) ? ' "' + preview(a.el) + '"' : ''),
+          b: label(b.el) + (preview(b.el) ? ' "' + preview(b.el) + '"' : ''),
+          topDrift: topDiff.toFixed(2),
+          bottomDrift: bottomDiff.toFixed(2),
+          fontSize: a.fontSize + 'px',
+        });
+      }
+    }
+  });
+  return out;
+}
+"""
+
+
+def _run_vertical_metric_drift(ctx: HeadlessContext) -> AuditOutcome:
+    """Load every page and collect every glyph-drift pair on row-direction flex rails."""
+    findings: list[Finding] = []
+    args = {
+        "glyphTolerance": _VMD_GLYPH_TOLERANCE,
+        "fontSizeTolerance": _VMD_FONT_SIZE_TOLERANCE,
+    }
+    for width in _WIDTHS:
+        page = ctx.browser.new_page(viewport={"width": width, "height": _HEIGHT})
+        try:
+            for name in ctx.page_names:
+                page.goto(f"{ctx.base_url}/{name}", wait_until="load")
+                page.wait_for_timeout(_SETTLE_MS)
+                for d in page.evaluate(_VMD_JS, args):
+                    findings.append(
+                        Finding(
+                            locator=f"{name} @ {width}px → {d['container']}",
+                            detail=(
+                                f"{d['a']} vs {d['b']} "
+                                f"(font {d['fontSize']}): glyph top drift "
+                                f"{d['topDrift']}px, bottom drift {d['bottomDrift']}px"
+                            ),
+                        )
+                    )
+        finally:
+            page.close()
+    status = AuditStatus.FAILED if findings else AuditStatus.PASSED
+    return AuditOutcome(
+        slug="vertical-metric-drift",
+        name="Vertical metric drift",
+        principle="VERTICAL_METRIC_DRIFT",
+        kind=AuditKind.HEADLESS,
+        status=status,
+        findings=tuple(findings),
+        remediation=_VMD_REMEDIATION,
+    )
+
+
+VERTICAL_METRIC_DRIFT_SPEC = HeadlessSpec(
+    slug="vertical-metric-drift",
+    name="Vertical metric drift",
+    principle="VERTICAL_METRIC_DRIFT",
+    run=_run_vertical_metric_drift,
+)
+
+
 HEADLESS_REGISTRY: tuple[HeadlessSpec, ...] = (
     OVERFLOW_SPEC,
     RESPONSIVE_TABLE_SPEC,
     ADAPTIVE_BEHAVIOR_SPEC,
     FIT_SPEC,
     FIRST_PAINT_SPEC,
+    VERTICAL_METRIC_DRIFT_SPEC,
 )
 
 

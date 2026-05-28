@@ -441,6 +441,10 @@
   } else {
     document.documentElement.setAttribute('data-luminance', initial);
   }
+  // Layout-transparent placeholder: matches mountLuminanceToggle's behaviour
+  // (see VERTICAL_METRIC_DRIFT) without changing the page's first-paint
+  // seeding, which the head bootstrap and this script handle together.
+  mount.style.display = 'contents';
   mount.append(render({ value: initial }));
 </script>
 </body>

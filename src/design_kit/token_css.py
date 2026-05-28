@@ -351,7 +351,7 @@ UTILITIES_LAYER = """\
   .font-sans { --mono: 0; }
   .font-casual { --casl: 0.5; }
   .font-display { font-weight: var(--font-weight-extrabold); }
-  .uppercase { text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); }
+  .uppercase { text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); text-box: trim-both cap alphabetic; }
   .text-2xs { font-size: var(--font-size-2xs); }
   .text-xs { font-size: var(--font-size-xs); }
   .text-sm { font-size: var(--font-size-sm); }

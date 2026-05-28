@@ -131,7 +131,11 @@
   import { render as renderLuminance } from './components/luminance-toggle.js';
   import { render as renderFooter } from './components/session-stats-footer.js';
 
-  document.querySelector('[data-luminance]').append(renderLuminance());
+  const luminanceMount = document.querySelector('[data-luminance]');
+  // Layout-transparent placeholder (see VERTICAL_METRIC_DRIFT): keeps the
+  // mounted toggle from sitting inside a taller line-height-inflated wrapper.
+  luminanceMount.style.display = 'contents';
+  luminanceMount.append(renderLuminance());
 
   const footerHost = document.querySelector('[data-footer]');
   const result = renderFooter({ scrollTarget: '.dk-app-shell-main' });

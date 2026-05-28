@@ -18,6 +18,11 @@
   cursor: pointer;
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease),
               border-color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
+  /* Crop the uppercase glyphs' line-box to cap-height/baseline so the
+     visible label centers in the button instead of riding high; keeps
+     this control envelope-matched with its peer-rail neighbours that
+     carry the same rule. */
+  text-box: trim-both cap alphabetic;
 }
 
 .dk-luminance-toggle-btn:hover {

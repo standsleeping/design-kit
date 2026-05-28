@@ -86,21 +86,23 @@ if(p.inspector)d.style.setProperty('--dk-rail-inspector-w',Number(p.inspector)+'
   /* AppShell-header content: count + theme/luminance controls, all monospace
      to match the rail. The dk-topbar provides height, padding, border.
 
-     The count is a bare-text peer of the toggle buttons. Without an envelope
-     match, the toggle button box (padding + transparent border for peer-edge
-     reservation, plus UA content-centering inside <button>) is taller than the
-     count's line-box, and `align-items: center` on the topbar aligns the boxes
-     while leaving the count's uppercase glyphs sitting in the upper portion of
-     its line-box — visibly higher than the buttons' centered glyphs. Mirror
-     the button's vertical envelope (xs vertical padding + thin transparent
-     border on the block axis) and use inline-flex centering so the glyphs
-     share a row with the buttons. */
+     The count is a bare-text peer of the toggle buttons. <span> inherits
+     line-height from the cascade (relaxed = 1.6); <button> uses UA
+     line-height: normal (~1.2 for the monospace face). Same font-size, same
+     padding, same border — but different inline-box heights, so the visible
+     glyphs land at different y positions even after `align-items: center`
+     centers the outer boxes. text-box: trim-both cap alphabetic anchors the
+     visible glyph rectangle to font metrics (cap-height on top, alphabetic
+     baseline on bottom) instead of line-height, so the count and the
+     toggle-button peers end up the same height regardless of the
+     line-height drift. The xs block-axis padding + thin transparent border
+     give the count the same outer envelope as the buttons' padding+border
+     so the trimmed glyph boxes line up. */
   .storybook-header-count {
-    display: inline-flex;
-    align-items: center;
     padding: var(--spacing-xs) 0; /* padding-lint: ok */
     border-block: var(--border-width-thin) solid transparent;
     color: var(--color-text-muted);
+    text-box: trim-both cap alphabetic;
   }
 
   /* Below tablet-max the header rail gets tight; drop the lowest-priority
