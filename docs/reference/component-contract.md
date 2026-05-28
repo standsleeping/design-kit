@@ -6,6 +6,47 @@ This is a reference spec; it describes the shape, not the motivation.
 
 ---
 
+## Container components: when to use which
+
+Several components in the kit are bordered containers with a header and a body. Pick by the interaction model, not the visual similarity.
+
+| Component | Use when |
+|---|---|
+| `.dk-panel` | Stable side-by-side content blocks. Header is a label/meta peer pair on one row; body is generously padded. No expand/collapse, no chevron, no click affordance. Example: comparison blocks in `pages/line-height-units.html`. |
+| `.dk-expandable-card` | Interactive list rows that open. Header carries an icon column, a title, and an optional count badge; body collapses on click. Example: progressively disclosed sections in nav-like surfaces. |
+| `.dk-title-block` | Document identity blocks (standards-manual style). Header is a grid of label/value pairs (title, ID, revision, date) separated by hairline rules. For the eyebrow at the top of a page, prefer `.dk-page-header`. |
+| `.dk-page-header` | Plain page title plus optional one-line subtitle. Borderless, gap-driven. No bordered card semantics. |
+
+If your container is purely visual structure with no header/body distinction, you do not need any of these — a sibling spacer and a `border` declaration suffice.
+
+---
+
+## Public surface: CSS classes
+
+The kit's components ship at two layers, and **the CSS class layer is the public surface** for consuming pages.
+
+| Layer | What it is | Who uses it |
+|---|---|---|
+| **CSS classes** (canonical) | `.dk-button`, `.dk-text-input`, `.dk-tab-bar-tab`, etc., declared in `components/<name>.css` | Pages, audits, downstream projects. Apply the class directly to your markup |
+| **JS factory** (internal) | `metadata` / `propTypes` / `variants` / `render` exports in `components/<name>.js` | The storybook (`storybook.html`) and the test harnesses (`responsive-fit-tests.html`, `responsive-adaptive-tests.html`, `contract-tests.html`) that need to render every variant in isolation |
+
+Consumer pages do **not** call the factory's `render(props)` directly and do not register components via `data-component`. They write the classed markup themselves:
+
+```html
+<!-- The way pages consume components -->
+<button class="dk-button">Action</button>
+<input class="dk-text-input dk-text-input-sm" type="text" placeholder="Search">
+<header class="dk-page-header">
+  <div class="dk-page-header-title">Page Title</div>
+</header>
+```
+
+The factory layer exists so the storybook and the responsive-* test harnesses can instantiate any component from a registry without knowing its markup; it is not a runtime mounting framework. A factory's `render(props)` returns markup that uses the same CSS classes you would write by hand, so the two layers stay in sync.
+
+When you migrate a page to the kit, you adopt the CSS classes; you do not adopt the factory.
+
+---
+
 ## Module shape
 
 ```js

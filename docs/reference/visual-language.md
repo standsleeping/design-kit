@@ -2,7 +2,7 @@
 
 This document describes the aesthetic principles and specific choices that define design-kit's visual identity. The principles below govern all projects that use this design system.
 
-For shared vocabulary (inset, flush, rule, chrome, gutter, full-bleed, padding roles), see `glossary.md`.
+For shared vocabulary (inset, flush, rule, chrome, gutter, full-bleed, padding roles), see `glossary.md`. For component consumption (CSS classes are canonical; the JS factory layer is internal storybook/test scaffolding), see `component-contract.md` § "Public surface: CSS classes".
 
 ## Identity
 
