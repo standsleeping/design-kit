@@ -460,8 +460,8 @@ async function main() {
     footerSize: document.querySelector('[data-storybook-footer-size]'),
     propsForm: document.querySelector('[data-storybook-props-form]'),
     propsReset: document.querySelector('[data-storybook-props-reset]'),
-    luminanceMount: document.querySelector('[data-storybook-luminance]'),
-    colorThemeMount: document.querySelector('[data-storybook-color-theme]'),
+    luminanceMount: /** @type {HTMLElement | null} */ (document.querySelector('[data-storybook-luminance]')),
+    colorThemeMount: /** @type {HTMLElement | null} */ (document.querySelector('[data-storybook-color-theme]')),
   };
 
   const [, , sidebars] = await Promise.all([

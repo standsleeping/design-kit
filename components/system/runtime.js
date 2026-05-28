@@ -38,7 +38,7 @@ export function ensureStylesheet(href, marker) {
 }
 
 /**
- * @param {Element | null} mountEl
+ * @param {HTMLElement | null} mountEl
  * @returns {Promise<void>}
  */
 export async function mountLuminanceToggle(mountEl) {
@@ -71,7 +71,7 @@ export async function mountLuminanceToggle(mountEl) {
 }
 
 /**
- * @param {Element | null} mountEl
+ * @param {HTMLElement | null} mountEl
  * @returns {Promise<void>}
  */
 export async function mountColorThemeToggle(mountEl) {
