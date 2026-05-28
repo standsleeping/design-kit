@@ -42,3 +42,19 @@
   background: var(--color-purple-700);
   border-color: var(--color-purple-700);
 }
+
+.dk-button-sm {
+  min-width: 0;
+  min-height: 0;
+  padding: var(--spacing-xs);
+  font-family: var(--typography-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  background: transparent;
+  border-color: transparent;
+}
+
+.dk-button-sm:hover {
+  background: var(--color-hover-bg);
+  border-color: var(--color-border);
+}
