@@ -294,6 +294,20 @@ Both inset and rhythm belong to the container. `padding` owns the inset (square,
 
 This collapses the older split (`padding: 0 X` on the container, `padding: X 0` on the child) into one property per concern at the container level. Both elements have square padding; the asymmetric flow-rhythm concern has moved into `gap`, where it is named.
 
+### Chrome with structural asymmetry
+
+A small, named set of chrome components keep asymmetric padding because the asymmetry is *structural*: it is a load-bearing visual property of the component, not a compensation for short labels or vertical rhythm. Square padding would make these components actively wrong, not merely inconvenient. The exception is narrow and exhaustively listed; new chrome joins the roster by review, not by adding a `padding-lint: ok` comment.
+
+| Component | Padding | Structural property |
+|-----------|---------|---------------------|
+| `.dk-tab-bar-tab` | `xs 0` | The bottom-border indicator is the visual edge of the active tab and aligns under the text. Horizontal padding would push the indicator inward of the label, breaking that alignment. |
+| `.dk-segmented-toggle-button` | `sm lg` | Buttons share a continuous left/right border across siblings; horizontal padding carries the visual segmentation. Vertical padding cannot substitute. |
+| `.dk-scroll-list-item` | `sm lg` | A full-bleed `border-bottom` separates rows; horizontal padding is the row's only inset because the bottom border owns the bottom edge. |
+
+Components that happen to be close to square (e.g., `.dk-menu-item` at `md` square, `.dk-bottom-tab-bar-tab` at `sm md`) are *not* on this roster. They are individual cleanup candidates against `SQUARE_PADDING_DEFAULT`, not tier-by-design.
+
+The `control-audit` page (`pages/control-audit.html`) excludes the structural-chrome roster from its square-padding pass/fail tally; the rows still render with their measurements, but the Square? column is marked warn rather than fail. The `padding-lint: ok` comment on each chrome rule is the build-level expression of the same exemption.
+
 ### Scroll containers
 
 One scroll-container configuration applies to every overflow region in the system: the container scrolls, but the bar is never painted. This is the contract codified in `SCROLLBAR_HIDDEN_BY_DEFAULT`.

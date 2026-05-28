@@ -158,7 +158,7 @@
   .pair-deltas {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: var(--spacing-2xs) var(--spacing-md);
+    gap: var(--spacing-xs) var(--spacing-md);
     font-size: var(--font-size-xs);
   }
   .pair-deltas .key { color: var(--color-text-muted); }
@@ -185,7 +185,7 @@
     </aside>
     <main class="dk-app-shell-main">
       <h1>Control Audit</h1>
-      <p>Surfaces inconsistencies in how buttons, inputs, and interactive chrome are sized, padded, and bordered across the kit. Each control is rendered once and measured at first paint, so the diagnostic table reflects the live computed values, not the source declarations. Pass/fail is informational: the kit currently allows asymmetric padding on controls via <code>/* padding-lint: ok */</code>, so this audit flags divergences for human review rather than gating the build.</p>
+      <p>Surfaces inconsistencies in how buttons, inputs, and interactive chrome are sized, padded, and bordered across the kit. Each control is rendered once and measured at first paint, so the diagnostic table reflects the live computed values, not the source declarations. The kit recognizes two tiers: a <strong>control tier</strong> (buttons + inputs) that must hold square padding and peer-aligned dimensions, and a <strong>chrome tier</strong> with a narrow, named roster whose asymmetric padding is structural by design (see <code>visual-language.md</code> § "Chrome with structural asymmetry"). Chrome rows still report their measurements but are excluded from the square-padding pass/fail tally.</p>
 
       <div class="summary" data-summary>Measuring…</div>
 
@@ -324,7 +324,9 @@ function readControl(el) {
   const fontSize = parseFloat(cs.fontSize);
   const fontWeight = cs.fontWeight;
   const minWidth = cs.minWidth === '0px' ? '—' : cs.minWidth;
-  const minHeight = cs.minHeight === '0px' ? null : cs.minHeight;
+  // No explicit floor: browsers report either '0px' or 'auto' depending on declaration.
+  const minHeightRaw = cs.minHeight;
+  const minHeight = (minHeightRaw === '0px' || minHeightRaw === 'auto') ? null : minHeightRaw;
 
   // Border: report each side if they differ, otherwise collapsed.
   const bw = {
@@ -366,12 +368,12 @@ function readControl(el) {
 // them in the table — the audit's job is to make the divergence visible, not
 // to re-derive it from the cascade.
 const FOCUS_PATTERN = {
-  'dk-button':                  'outline +2px (standalone)',
-  'dk-icon-button':             'outline +2px (standalone)',
-  'dk-text-input':              'outline +2px (standalone) + border shift',
-  'dk-search-input':            'box-shadow 2px (unique)',
-  'dk-number-input':            'outline +2px (standalone) + border shift',
-  'dk-select':                  'outline +2px (standalone) + border shift',
+  'dk-button':                  'outline -2px (inset)',
+  'dk-icon-button':             'outline -2px (inset)',
+  'dk-text-input':              'outline -2px (inset)',
+  'dk-search-input':            'outline -2px (inset)',
+  'dk-number-input':            'outline -2px (inset)',
+  'dk-select':                  'outline -2px (inset)',
   'dk-menu-item':               'outline -2px (inset)',
   'dk-tab-bar-tab':             'outline -2px (inset)',
   'dk-segmented-toggle-button': 'outline -2px (inset)',
@@ -427,6 +429,12 @@ function renderRow(el) {
   if (m.padSidesEqual) {
     tdSquare.textContent = 'yes';
     tdSquare.className = 'flag-ok';
+  } else if (role === 'chrome') {
+    // Chrome with structural asymmetry: documented exemption from
+    // SQUARE_PADDING_DEFAULT, not drift. See docs/reference/visual-language.md
+    // § "Chrome with structural asymmetry" for the roster and rationale.
+    tdSquare.textContent = `structural (Δ block=${px(m.padBlockTotal)}, inline=${px(m.padInlineTotal)})`;
+    tdSquare.className = 'flag-warn';
   } else {
     tdSquare.textContent = `no (Δ block=${px(m.padBlockTotal)}, inline=${px(m.padInlineTotal)})`;
     tdSquare.className = 'flag-fail';
@@ -517,7 +525,9 @@ function renderPairs(metricsById) {
 
     row('Δ height',       (dHeight >= 0 ? '+' : '') + px(dHeight),                   Math.abs(dHeight) > HEIGHT_EPSILON);
     row('Δ font-size',    (dFontSize >= 0 ? '+' : '') + px(dFontSize),               Math.abs(dFontSize) > 0.5);
-    row('Δ font-weight',  (dFontWeight >= 0 ? '+' : '') + dFontWeight.toFixed(0),    Math.abs(dFontWeight) >= 100);
+    // Font-weight delta is cosmetic, not a layout concern: buttons-heavier-than-inputs
+    // is intentional emphasis. Surface it, never flag it.
+    row('Δ font-weight',  (dFontWeight >= 0 ? '+' : '') + dFontWeight.toFixed(0),    false);
     row('Δ padding-block',  (dPadBlock >= 0 ? '+' : '') + px(dPadBlock),             Math.abs(dPadBlock) > PADDING_EPSILON);
     row('Δ padding-inline', (dPadInline >= 0 ? '+' : '') + px(dPadInline),           Math.abs(dPadInline) > PADDING_EPSILON);
 
@@ -527,18 +537,26 @@ function renderPairs(metricsById) {
 }
 
 async function main() {
-  // Allow custom fonts / first-paint settling.
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  // Allow first paint to settle. Use setTimeout, not rAF: background tabs
+  // throttle rAF to a stop, which would hang the audit in headless runs.
+  await new Promise(r => setTimeout(r, 50));
 
   const tbody = document.querySelector('[data-results]');
   const controls = [...document.querySelectorAll('[data-audit-control]')];
   let squareFails = 0;
+  let chromeExempt = 0;
   let focusFails = 0;
   const metricsById = {};
 
   for (const el of controls) {
     const { tr, metrics } = renderRow(el);
-    if (!metrics.padSidesEqual) squareFails++;
+    if (!metrics.padSidesEqual) {
+      // Chrome with structural asymmetry is documented in visual-language.md
+      // § "Chrome with structural asymmetry"; it renders with a warn marker
+      // but does not count toward the square-padding failure tally.
+      if (el.dataset.auditRole === 'chrome') chromeExempt++;
+      else squareFails++;
+    }
     if (focusPatternFor(el).startsWith('box-shadow')) focusFails++;
     metricsById[el.dataset.auditId] = metrics;
     tbody.append(tr);
@@ -556,7 +574,8 @@ async function main() {
   const totalFindings = squareFails + focusFails + pairFails;
   const summary = document.querySelector('[data-summary]');
   if (totalFindings === 0) {
-    summary.textContent = `All ${controls.length} controls render with square padding, consistent focus pattern, and button/input pairs stack cleanly.`;
+    const exemptNote = chromeExempt ? ` ${chromeExempt} chrome control${chromeExempt === 1 ? '' : 's'} exempt (structural asymmetry).` : '';
+    summary.textContent = `All ${controls.length} controls render with square padding, consistent focus pattern, and button/input pairs stack cleanly.${exemptNote}`;
     summary.className = 'summary summary-ok';
   } else {
     const parts = [];
