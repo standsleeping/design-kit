@@ -16,6 +16,8 @@
 <link rel="stylesheet" href="components/search-input.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/number-input.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/select.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/textarea.css?{{CACHE_BUST}}">
+<link rel="stylesheet" href="components/responsive-table.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/checkbox.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/menu-item.css?{{CACHE_BUST}}">
 <link rel="stylesheet" href="components/tab-bar.css?{{CACHE_BUST}}">
@@ -118,10 +120,6 @@
     border-bottom-color: var(--color-text-muted);
   }
   td.role { color: var(--color-text-muted); }
-  td.flag-ok { color: var(--color-success); }
-  td.flag-warn { color: var(--color-warning, var(--color-text-muted)); }
-  td.flag-fail { color: var(--color-danger); }
-  td.numeric { font-variant-numeric: tabular-nums; }
 
   /* Pairs comparison */
   .pairs {
@@ -198,6 +196,7 @@
             <button class="dk-button" data-audit-control data-audit-id="btn" data-audit-role="button">Action</button>
             <button class="dk-button dk-button-primary" data-audit-control data-audit-id="btn-primary" data-audit-role="button">Primary</button>
             <button class="dk-button" disabled>Disabled</button>
+            <button class="dk-button dk-button-sm" data-audit-control data-audit-id="btn-sm" data-audit-role="button-sm">Reset</button>
           </div>
 
           <span class="gallery-label">Icon button</span>
@@ -210,16 +209,19 @@
           <span class="gallery-label">Text input</span>
           <div class="gallery-row">
             <input class="dk-text-input" type="text" placeholder="Text" data-audit-control data-audit-id="text-input" data-audit-role="input">
+            <input class="dk-text-input dk-text-input-sm" type="text" placeholder="Text" style="width: 16ch;" data-audit-control data-audit-id="text-input-sm" data-audit-role="input-sm">
           </div>
 
           <span class="gallery-label">Search input</span>
           <div class="gallery-row">
             <input class="dk-search-input" type="search" placeholder="Search" data-audit-control data-audit-id="search-input" data-audit-role="input">
+            <input class="dk-search-input dk-search-input-sm" type="search" placeholder="Search" style="width: 16ch;" data-audit-control data-audit-id="search-input-sm" data-audit-role="input-sm">
           </div>
 
           <span class="gallery-label">Number input</span>
           <div class="gallery-row">
             <input class="dk-number-input" type="number" value="42" data-audit-control data-audit-id="number-input" data-audit-role="input">
+            <input class="dk-number-input dk-number-input-sm" type="number" value="42" style="width: 6ch;" data-audit-control data-audit-id="number-input-sm" data-audit-role="input-sm">
           </div>
 
           <span class="gallery-label">Select</span>
@@ -228,6 +230,28 @@
               <option>Option A</option>
               <option>Option B</option>
             </select>
+            <select class="dk-select dk-select-sm" style="width: 12ch;" data-audit-control data-audit-id="select-sm" data-audit-role="input-sm">
+              <option>A</option>
+              <option>B</option>
+            </select>
+          </div>
+
+          <span class="gallery-label">Range</span>
+          <div class="gallery-row">
+            <div class="dk-range">
+              <input class="dk-range-input" type="range" min="0" max="100" value="42">
+              <span class="dk-range-value">42</span>
+            </div>
+            <div class="dk-range dk-range-sm" style="min-width: 12ch;">
+              <input class="dk-range-input" type="range" min="0" max="100" value="42">
+              <span class="dk-range-value">42</span>
+            </div>
+          </div>
+
+          <span class="gallery-label">Textarea</span>
+          <div class="gallery-row">
+            <textarea class="dk-textarea" rows="3" placeholder="Multi-line input" style="width: 30ch;" data-audit-control data-audit-id="textarea" data-audit-role="input"></textarea>
+            <textarea class="dk-textarea dk-textarea-sm" rows="3" placeholder="Compact" style="width: 30ch;" data-audit-control data-audit-id="textarea-sm" data-audit-role="input-sm"></textarea>
           </div>
 
           <span class="gallery-label">Menu item</span>
@@ -241,6 +265,11 @@
               <button class="dk-tab-bar-tab dk-tab-bar-tab-active" data-audit-control data-audit-id="tab-bar-tab" data-audit-role="chrome">Overview</button>
               <span class="dk-tab-bar-separator" aria-hidden="true">·</span>
               <button class="dk-tab-bar-tab">API</button>
+            </div>
+            <div class="dk-tab-bar">
+              <button class="dk-tab-bar-tab dk-tab-bar-tab-sm dk-tab-bar-tab-active" data-audit-control data-audit-id="tab-bar-tab-sm" data-audit-role="chrome">Props</button>
+              <span class="dk-tab-bar-separator" aria-hidden="true">·</span>
+              <button class="dk-tab-bar-tab dk-tab-bar-tab-sm">Axes</button>
             </div>
           </div>
 
@@ -301,7 +330,7 @@ const PADDING_EPSILON = 0.5;
 // that differ by less than this stack cleanly visually.
 const HEIGHT_EPSILON = 1.0;
 
-const ROLE_LABEL = { button: 'button', input: 'input', chrome: 'chrome' };
+const ROLE_LABEL = { button: 'button', 'button-sm': 'button (sm)', input: 'input', 'input-sm': 'input (sm)', chrome: 'chrome' };
 
 function px(v) { return `${v.toFixed(1)}px`; }
 
@@ -374,6 +403,7 @@ const FOCUS_PATTERN = {
   'dk-search-input':            'outline -2px (inset)',
   'dk-number-input':            'outline -2px (inset)',
   'dk-select':                  'outline -2px (inset)',
+  'dk-textarea':                'outline -2px (inset)',
   'dk-menu-item':               'outline -2px (inset)',
   'dk-tab-bar-tab':             'outline -2px (inset)',
   'dk-segmented-toggle-button': 'outline -2px (inset)',
@@ -411,45 +441,45 @@ function renderRow(el) {
   tdRole.className = 'role';
   tdRole.textContent = ROLE_LABEL[role];
   const tdPad = document.createElement('td');
-  tdPad.className = 'numeric';
+  tdPad.className = 'dk-numeric';
   tdPad.textContent = `${m.padBlock} / ${m.padInline}`;
   const tdHeight = document.createElement('td');
-  tdHeight.className = 'numeric';
+  tdHeight.className = 'dk-numeric';
   tdHeight.textContent = px(m.height);
   const tdFont = document.createElement('td');
-  tdFont.className = 'numeric';
+  tdFont.className = 'dk-numeric';
   tdFont.textContent = `${px(m.fontSize)} / ${m.fontWeight}`;
   const tdMinW = document.createElement('td');
-  tdMinW.className = 'numeric';
+  tdMinW.className = 'dk-numeric';
   tdMinW.textContent = m.minWidth;
   const tdBorder = document.createElement('td');
-  tdBorder.className = 'numeric';
+  tdBorder.className = 'dk-numeric';
   tdBorder.textContent = m.border;
   const tdSquare = document.createElement('td');
   if (m.padSidesEqual) {
     tdSquare.textContent = 'yes';
-    tdSquare.className = 'flag-ok';
+    tdSquare.className = 'dk-flag-ok';
   } else if (role === 'chrome') {
     // Chrome with structural asymmetry: documented exemption from
     // SQUARE_PADDING_DEFAULT, not drift. See docs/reference/visual-language.md
     // § "Chrome with structural asymmetry" for the roster and rationale.
     tdSquare.textContent = `structural (Δ block=${px(m.padBlockTotal)}, inline=${px(m.padInlineTotal)})`;
-    tdSquare.className = 'flag-warn';
+    tdSquare.className = 'dk-flag-warn';
   } else {
     tdSquare.textContent = `no (Δ block=${px(m.padBlockTotal)}, inline=${px(m.padInlineTotal)})`;
-    tdSquare.className = 'flag-fail';
+    tdSquare.className = 'dk-flag-fail';
   }
   const tdFloor = document.createElement('td');
   tdFloor.textContent = m.minHeight ? `explicit ${m.minHeight}` : 'content-driven';
-  tdFloor.className = m.minHeight ? 'flag-ok' : 'flag-warn';
+  tdFloor.className = m.minHeight ? 'dk-flag-ok' : 'dk-flag-warn';
   const tdFocus = document.createElement('td');
   tdFocus.textContent = focusPatternFor(el);
   if (tdFocus.textContent.startsWith('outline -2px')) {
-    tdFocus.className = 'flag-ok';
+    tdFocus.className = 'dk-flag-ok';
   } else if (tdFocus.textContent.startsWith('box-shadow')) {
-    tdFocus.className = 'flag-fail';
+    tdFocus.className = 'dk-flag-fail';
   } else {
-    tdFocus.className = 'flag-warn';
+    tdFocus.className = 'dk-flag-warn';
   }
 
   tr.append(tdName, tdRole, tdPad, tdHeight, tdFont, tdMinW, tdBorder, tdSquare, tdFloor, tdFocus);
@@ -483,6 +513,15 @@ const PAIRS = [
     demoHtml: `
       <select class="dk-select"><option>Option A</option></select>
       <button class="dk-button">Apply</button>
+    `,
+  },
+  {
+    title: 'Compact button + Compact text input',
+    leftId: 'btn-sm',
+    rightId: 'text-input-sm',
+    demoHtml: `
+      <input class="dk-text-input dk-text-input-sm" type="text" placeholder="Filter">
+      <button class="dk-button dk-button-sm">Apply</button>
     `,
   },
 ];
