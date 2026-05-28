@@ -72,12 +72,66 @@ function defaultSelectHandler(e) {
  */
 
 /**
+ * @param {HTMLElement} navRoot
+ * @returns {void}
+ */
+function hydrateNavStack(navRoot) {
+  // Click delegation on the SSR'd nav: dispatch the same nav-stack:select
+  // event the JS-rendered path emits, so the auto-mount's defaultSelectHandler
+  // (or any caller-supplied onSelect) keeps working unchanged.
+  navRoot.addEventListener('click', (e) => {
+    const target = /** @type {Element | null} */ (e.target);
+    if (!target) return;
+    const btn = /** @type {HTMLElement | null} */ (
+      target.closest('.dk-nav-stack-item')
+    );
+    if (!btn || !navRoot.contains(btn)) return;
+    const id = btn.dataset.itemId;
+    if (!id) return;
+    // Move the selection highlight in place to mirror setSelected in nav-stack.js.
+    for (const prev of Array.from(
+      navRoot.querySelectorAll('.dk-nav-stack-item-selected'),
+    )) {
+      prev.classList.remove('dk-nav-stack-item-selected');
+    }
+    btn.classList.add('dk-nav-stack-item-selected');
+    const labelEl = btn.querySelector('.dk-nav-stack-label');
+    navRoot.dispatchEvent(
+      new CustomEvent('nav-stack:select', {
+        bubbles: true,
+        detail: {
+          id,
+          label: labelEl?.textContent ?? '',
+          kind: btn.dataset.kind ?? '',
+        },
+      }),
+    );
+  });
+}
+
+/**
  * @param {MountSystemSidebarOpts} [opts]
  * @returns {Promise<HTMLElement | null>}
  */
 export async function mountSystemSidebar(opts = {}) {
   const host = opts.host ?? document.querySelector('[data-system-nav]');
   if (!host) return null;
+
+  // Hydration path: the build SSRs the canonical nav into [data-system-nav].
+  // When that markup is already present and the caller hasn't supplied custom
+  // levels (storybook does, to splice in a component sub-level), attach the
+  // click delegation and skip rebuilding the DOM (HYDRATION_RESERVES_GEOMETRY).
+  const existingNav = /** @type {HTMLElement | null} */ (
+    host.querySelector(':scope > nav.dk-nav-stack')
+  );
+  if (existingNav && !opts.levels) {
+    hydrateNavStack(existingNav);
+    existingNav.addEventListener(
+      'nav-stack:select',
+      /** @type {EventListener} */ (opts.onSelect ?? defaultSelectHandler),
+    );
+    return existingNav;
+  }
 
   const navStackMod = await import('../nav-stack.js');
   const levels = applySelection(opts.levels ?? LEVELS, opts.current);
