@@ -278,7 +278,7 @@ def _build_tokens_layer(
 RESET_LAYER = """\
 @layer reset {
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-variation-settings: 'MONO' var(--mono), 'CASL' var(--casl), 'CRSV' var(--crsv), 'slnt' var(--slnt); }
-  html { -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: var(--font-line-height-base); }
+  html { text-size-adjust: 100%; line-height: var(--font-line-height-base); }
   ul, ol { list-style: none; padding-inline-start: 0; }
   h1, h2, h3, h4, h5, h6 { font-weight: var(--font-weight-semibold); text-wrap: balance; }
   p { text-wrap: pretty; }

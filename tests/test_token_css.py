@@ -147,6 +147,15 @@ def test_form_control_reset_uses_standard_appearance() -> None:
     )
 
 
+def test_reset_uses_standard_text_size_adjust_without_font_smoothing() -> None:
+    """Avoid non-standard browser-specific text rendering knobs in the reset."""
+    css = generate_token_css(TOKENS_PATH)
+
+    assert "-webkit-text-size-adjust" not in css
+    assert "font-smoothing" not in css
+    assert "html { text-size-adjust: 100%;" in css
+
+
 def test_validation_rejects_theme_missing_luminance(tmp_path: Path) -> None:
     """A theme without luminance.light.color raises a pointed ValueError."""
     tokens = {
