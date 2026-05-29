@@ -6,13 +6,13 @@ and position offsets must reference ``var(--*)`` tokens rather than raw
 ``px``/``em``/``rem``/``ch`` literals. Hardcoded dimensions are silent drift
 surface. Change the token, the literal sites stay frozen.
 
-Properties scanned: ``width`` / ``min-width`` / ``max-width``,
-``height`` / ``min-height`` / ``max-height``, ``gap`` / ``row-gap`` /
-``column-gap``, ``font-size``, ``flex-basis``, ``top`` / ``right`` /
-``bottom`` / ``left`` / ``inset``, ``scroll-margin-(side)`` /
-``scroll-padding-(side)``. Properties already owned by another lint
-(``padding``, ``margin``, ``border``/``border-width``, ``border-radius``,
-color) are out of scope and handled by their respective lints.
+Properties scanned: physical and logical sizes (``width`` / ``inline-size``,
+``height`` / ``block-size``, min/max variants), ``gap`` / ``row-gap`` /
+``column-gap``, ``font-size``, ``flex-basis``, physical and logical offsets
+(``top`` / ``inset-block-start`` and peers), and scroll margin/padding offsets.
+Properties already owned by another lint (``padding``, ``margin``,
+``border``/``border-width``, ``border-radius``, color) are out of scope and
+handled by their respective lints.
 
 Permitted literal values (do not flag):
 
@@ -69,9 +69,15 @@ _PROPERTIES = (
     "width",
     "min-width",
     "max-width",
+    "inline-size",
+    "min-inline-size",
+    "max-inline-size",
     "height",
     "min-height",
     "max-height",
+    "block-size",
+    "min-block-size",
+    "max-block-size",
     "gap",
     "row-gap",
     "column-gap",
@@ -82,14 +88,32 @@ _PROPERTIES = (
     "bottom",
     "left",
     "inset",
+    "inset-block",
+    "inset-block-start",
+    "inset-block-end",
+    "inset-inline",
+    "inset-inline-start",
+    "inset-inline-end",
     "scroll-margin-top",
     "scroll-margin-right",
     "scroll-margin-bottom",
     "scroll-margin-left",
+    "scroll-margin-block",
+    "scroll-margin-block-start",
+    "scroll-margin-block-end",
+    "scroll-margin-inline",
+    "scroll-margin-inline-start",
+    "scroll-margin-inline-end",
     "scroll-padding-top",
     "scroll-padding-right",
     "scroll-padding-bottom",
     "scroll-padding-left",
+    "scroll-padding-block",
+    "scroll-padding-block-start",
+    "scroll-padding-block-end",
+    "scroll-padding-inline",
+    "scroll-padding-inline-start",
+    "scroll-padding-inline-end",
 )
 # Match a dimension declaration. Captures the property name in group 1 and
 # the value (up to ; or end-of-rule) in group 2. The negative lookbehind
