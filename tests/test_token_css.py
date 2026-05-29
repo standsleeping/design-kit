@@ -86,6 +86,16 @@ def test_multi_theme_emits_root_and_override_blocks(tmp_path: Path) -> None:
     assert "color-scheme" not in beta_block
 
 
+def test_declares_full_cascade_contract() -> None:
+    """tokens.css declares every public layer slot, including build-wrapped CSS."""
+    css = generate_token_css(TOKENS_PATH)
+
+    assert (
+        "@layer reset, tokens, defaults, utilities, components, pages, overrides;"
+        in css
+    )
+
+
 def test_emits_font_faces_and_split_family_tokens() -> None:
     """tokens.css declares the self-hosted Recursive face plus two metric-matched fallback
     faces, and splits the family token into mono (UI/headings) and prose (body) so the

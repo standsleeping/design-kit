@@ -98,6 +98,9 @@ def _validate_tokens_shape(data: dict[str, object]) -> None:
 #   Inputs: Recursive upm 1000, ascent 950, descent -250, lineGap 0;
 #   xWidthAvg MONO 1 = 600, MONO 0 = 510. Arial upm 2048 xWidthAvg 913;
 #   Courier New upm 2048 xWidthAvg 1229.
+CSS_LAYER_ORDER = "reset, tokens, defaults, utilities, components, pages, overrides"
+
+
 FONT_FACE = """\
 @font-face {
   font-family: "Recursive";
@@ -381,8 +384,10 @@ def generate_token_css(
 ) -> str:
     """Read design-tokens.json and return a complete CSS string.
 
-    The output uses @layer for specificity management:
-    reset → tokens → defaults → utilities
+    The output uses @layer for specificity management. tokens.css owns
+    reset/tokens/defaults/utilities and declares later slots for component,
+    page-local, and override CSS emitted by the build:
+    reset → tokens → defaults → utilities → components → pages → overrides
 
     ``breakpoints`` is used to substitute ``$bp-<name>`` references inside
     static CSS strings (notably ``DEFAULTS_LAYER``). If ``None`` (default),
@@ -415,7 +420,7 @@ def generate_token_css(
     sections = [
         FONT_FACE,
         "",
-        "@layer reset, tokens, defaults, utilities;",
+        f"@layer {CSS_LAYER_ORDER};",
         "",
         RESET_LAYER,
         "",

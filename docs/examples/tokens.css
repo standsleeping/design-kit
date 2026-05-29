@@ -25,7 +25,7 @@
   line-gap-override: 0%;
 }
 
-@layer reset, tokens, defaults, utilities;
+@layer reset, tokens, defaults, utilities, components, pages, overrides;
 
 @layer reset {
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-variation-settings: 'MONO' var(--mono), 'CASL' var(--casl), 'CRSV' var(--crsv), 'slnt' var(--slnt); }
