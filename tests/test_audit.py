@@ -28,6 +28,7 @@ from design_kit.audit.registry import REGISTRY
 EXPECTED_SLUGS = {
     "contrast",
     "token-leak",
+    "token-reference",
     "focus-ring",
     "interactive-state",
     "peer-edge",
@@ -70,9 +71,10 @@ def test_clean_scope_passes_every_static_audit(tmp_path: Path) -> None:
     scope = _scope(tmp_path, ".a {\n  color: var(--color-text);\n}\n")
     outcomes = run_audits(scope, static_specs())
     assert not any_failed(outcomes)
-    # Contrast is the only SKIP (no built tokens.css under the scope); the rest pass.
+    # Token-driven audits that need built tokens.css SKIP; source-only lints pass.
     statuses = {o.slug: o.status for o in outcomes}
     assert statuses["contrast"] is AuditStatus.SKIPPED
+    assert statuses["token-reference"] is AuditStatus.SKIPPED
     assert statuses["token-leak"] is AuditStatus.PASSED
 
 
@@ -86,6 +88,27 @@ def test_raw_color_literal_fails_the_token_leak_audit(tmp_path: Path) -> None:
     assert "#ff0000" in leak.findings[0].detail
     # A failure carries its remediation so the report can show how to fix it.
     assert "TOKEN_DRIVEN_DESIGN" in leak.remediation
+
+
+def test_unknown_token_reference_fails_the_token_reference_audit(
+    tmp_path: Path,
+) -> None:
+    scope = _scope(tmp_path, ".a {\n  color: var(--color-typo);\n}\n")
+    (tmp_path / "dist").mkdir()
+    (tmp_path / "dist" / "tokens.css").write_text(
+        ":root { --color-text: #111; }\n",
+        encoding="utf-8",
+    )
+    outcomes = run_audits(
+        scope, [s for s in static_specs() if s.slug == "token-reference"]
+    )
+
+    assert any_failed(outcomes)
+    ref = next(o for o in outcomes if o.slug == "token-reference")
+    assert ref.status is AuditStatus.FAILED
+    assert ref.findings
+    assert "--color-typo" in ref.findings[0].detail
+    assert "TOKEN_DRIVEN_DESIGN" in ref.remediation
 
 
 def test_missing_directories_skip_rather_than_pass(tmp_path: Path) -> None:

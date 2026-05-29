@@ -1,6 +1,6 @@
 """Uniform result model for the audit set.
 
-Every audit (the thirteen static audits today, the headless audits later) normalizes
+Every audit (the fourteen static audits today, the headless audits later) normalizes
 its native result into an :class:`AuditOutcome` so one runner can collect them and one
 report can present them. The per-audit variation (which inputs it reads, how a violation
 reads as a line, what the remediation says) lives in the registry rows, not here.

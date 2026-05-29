@@ -31,6 +31,7 @@ from design_kit.radius_lint import run_radius_lint
 from design_kit.scroll_axis_lint import run_scroll_axis_lint
 from design_kit.scrollbar_hidden_lint import run_scrollbar_hidden_lint
 from design_kit.token_leak_lint import run_token_leak_lint
+from design_kit.token_reference_lint import run_token_reference_lint
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -147,7 +148,7 @@ _CONTRAST_SPEC = LintSpec(
 )
 
 
-# --- the twelve source-scanning lints, as registry rows ---
+# --- the thirteen source-scanning lints, as registry rows ---
 
 REGISTRY: tuple[LintSpec, ...] = (
     _CONTRAST_SPEC,
@@ -166,6 +167,27 @@ REGISTRY: tuple[LintSpec, ...] = (
         remediation=(
             "see TOKEN_DRIVEN_DESIGN: every surface consumes colors via var(--color-*). "
             "Mark documented exceptions with /* token-leak: ok */"
+        ),
+    ),
+    _static_spec(
+        slug="token-reference",
+        name="Token reference",
+        principle="TOKEN_DRIVEN_DESIGN",
+        primary=lambda s: s.tokens_css,
+        runner=lambda s: run_token_reference_lint(
+            s.tokens_css,
+            s.components_dir,
+            pages_dir=s.pages_dir,
+            extra_files=list(s.extra_files),
+        ),
+        to_findings=lambda r: (
+            Finding(f"{v.file}:{v.line}", f"{v.token}: {v.snippet}")
+            for v in r.violations
+        ),
+        remediation=(
+            "see TOKEN_DRIVEN_DESIGN: public token references must resolve in "
+            "tokens.css. Add the token, use an existing token, or mark documented "
+            "external references with /* token-reference: ok */"
         ),
     ),
     _static_spec(
@@ -224,9 +246,7 @@ REGISTRY: tuple[LintSpec, ...] = (
         primary=lambda s: s.components_dir,
         runner=lambda s: run_scrollbar_hidden_lint(s.components_dir),
         to_findings=lambda r: (
-            Finding(
-                f"{v.file}:{v.line}", f"{v.selector} → {v.kind.value}: {v.snippet}"
-            )
+            Finding(f"{v.file}:{v.line}", f"{v.selector} → {v.kind.value}: {v.snippet}")
             for v in r.violations
         ),
         remediation=(
