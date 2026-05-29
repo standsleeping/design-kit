@@ -174,7 +174,7 @@
     --font-size-3xl: 2rem;
     --font-size-4xl: 2.5rem;
     --font-size-5xl: 3rem;
-    --font-size-display: clamp(3rem, 8vw, 8rem);
+    --font-size-display: clamp(3rem, 8dvi, 8rem);
     --font-weight-light: 300;
     --font-weight-regular: 400;
     --font-weight-medium: 500;

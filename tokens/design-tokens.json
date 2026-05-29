@@ -166,7 +166,7 @@
         "3xl": "2rem",
         "4xl": "2.5rem",
         "5xl": "3rem",
-        "display": "clamp(3rem, 8vw, 8rem)"
+        "display": "clamp(3rem, 8dvi, 8rem)"
       },
       "weight": {
         "light": 300,
