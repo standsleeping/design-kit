@@ -26,7 +26,7 @@ All three meet in the semantic tokens. Components, written against roles, are th
 
 ## Cascade layers keep order predictable
 
-The generated `tokens.css` is organized into explicit cascade layers, declared in order: `reset`, `tokens`, `defaults`, `utilities`. Layer order, not selector specificity or source position, decides who wins. A reset cannot accidentally override a utility; a token definition cannot be outranked by a stray default. This is the same `@layer` discipline the component styling model uses, so application CSS composes with the token sheet predictably.
+The generated `tokens.css` declares the full public cascade order: `reset`, `tokens`, `defaults`, `utilities`, `components`, `pages`, `overrides`. The token sheet itself owns the first four layers; `design-kit build` wraps copied component CSS into `components` and page-local `<style>` blocks into `pages`. Layer order, not selector specificity or source position, decides who wins. A reset cannot accidentally override a utility; component styles preserve the pre-build order by landing after utilities; and page-local CSS can customize a screen without escaping into the unlayered cascade. Consumers that need a deliberate final escape hatch can use the `overrides` layer, or ordinary unlayered CSS when they truly want to outrank the framework.
 
 ## Distribution: vendor, don't copy-paste
 

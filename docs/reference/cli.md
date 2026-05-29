@@ -27,10 +27,10 @@ Writes into the output directory:
 
 | Artifact | What it is |
 |---|---|
-| `tokens.css` | Layered CSS (reset, tokens, defaults, utilities) with a version header |
+| `tokens.css` | Layered CSS (reset, tokens, defaults, utilities, components, pages, overrides) with a version header |
 | `tokens.manifest.json` | `{name, version, generated_at, artifacts}`, written *after* the contrast audit passes, so it only stamps validated tokens |
 | `index.html` | The landing page (foundations + navigation) |
-| `*.html`, `components/` | The static pages and component modules |
+| `*.html`, `components/` | The static pages and component modules; built component CSS is wrapped in the `components` layer, and page-local `<style>` blocks are wrapped in the `pages` layer |
 
 `build` runs the thirteen static audits (token-pair contrast, token leak, focus ring, padding, radius, margin, and the rest) and fails with a locator report on any violation. The audit set is defined once in the audit registry that `audit` also runs, so the two cannot drift. See the README's "Build-time audits" for the full audit table.
 
