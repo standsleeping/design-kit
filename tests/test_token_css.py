@@ -123,6 +123,17 @@ def test_emits_font_faces_and_split_family_tokens() -> None:
     assert "--typography-mono: var(--font-family-mono);" in css
 
 
+def test_visually_hidden_uses_modern_clipping() -> None:
+    """The accessibility utility should avoid the deprecated clip: rect() recipe."""
+    css = generate_token_css(TOKENS_PATH)
+
+    assert "clip: rect(" not in css
+    assert ".visually-hidden { position: absolute; inline-size: 1px;" in css
+    assert "overflow: clip; clip-path: inset(50%);" in css
+    assert ".visually-hidden:focus-visible" in css
+    assert "clip-path: none;" in css
+
+
 def test_validation_rejects_theme_missing_luminance(tmp_path: Path) -> None:
     """A theme without luminance.light.color raises a pointed ValueError."""
     tokens = {
