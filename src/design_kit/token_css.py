@@ -294,7 +294,7 @@ DEFAULTS_LAYER = """\
   :focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
   :focus:not(:focus-visible) { outline: none; }
   ::marker { color: var(--color-text-muted); }
-  dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+  dialog::backdrop { background: var(--color-overlay); }
   :-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px var(--color-bg) inset; -webkit-text-fill-color: var(--color-text); caret-color: var(--color-link); }
   input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
   input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { appearance: none; -webkit-appearance: none; margin: 0; }

@@ -241,6 +241,7 @@
     --color-hover-bg: light-dark(var(--color-gray-100), var(--color-gray-650));
     --color-active-bg: light-dark(var(--color-gray-200), var(--color-gray-500));
     --color-selected-bg: light-dark(var(--color-gray-100), var(--color-gray-650));
+    --color-overlay: light-dark(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.55));
     --color-syntax-keyword: light-dark(var(--color-purple-500), var(--color-purple-300));
     --color-syntax-string: light-dark(var(--color-gray-700), var(--color-gray-100));
     --color-syntax-comment: light-dark(var(--color-gray-500), var(--color-gray-300));
@@ -275,6 +276,7 @@
     --color-hover-bg: light-dark(var(--color-gray-100), var(--color-gray-650));
     --color-active-bg: light-dark(var(--color-gray-200), var(--color-gray-500));
     --color-selected-bg: light-dark(var(--color-gray-100), var(--color-gray-650));
+    --color-overlay: light-dark(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.55));
     --color-syntax-keyword: light-dark(var(--color-gray-700), var(--color-gray-100));
     --color-syntax-string: light-dark(var(--color-gray-700), var(--color-gray-100));
     --color-syntax-comment: light-dark(var(--color-gray-400), var(--color-gray-300));
@@ -301,6 +303,7 @@
     --color-hover-bg: light-dark(var(--color-solarized-base2), var(--color-solarized-base02));
     --color-active-bg: light-dark(var(--color-solarized-base1), var(--color-solarized-base01));
     --color-selected-bg: light-dark(var(--color-solarized-base2), var(--color-solarized-base02));
+    --color-overlay: light-dark(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.55));
     --color-syntax-keyword: light-dark(var(--color-solarized-green), var(--color-solarized-green));
     --color-syntax-string: light-dark(var(--color-solarized-cyan), var(--color-solarized-cyan));
     --color-syntax-comment: light-dark(var(--color-solarized-base1), var(--color-solarized-base01));
@@ -324,7 +327,7 @@
   :focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
   :focus:not(:focus-visible) { outline: none; }
   ::marker { color: var(--color-text-muted); }
-  dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+  dialog::backdrop { background: var(--color-overlay); }
   :-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px var(--color-bg) inset; -webkit-text-fill-color: var(--color-text); caret-color: var(--color-link); }
   input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
   input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { appearance: none; -webkit-appearance: none; margin: 0; }
