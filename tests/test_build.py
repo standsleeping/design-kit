@@ -8,9 +8,7 @@ from design_kit.font_preload import PRELOAD_MARKER
 from design_kit.head_bootstrap import BOOTSTRAP_MARKER
 
 TOKENS_PATH = Path(__file__).parent.parent / "tokens" / "design-tokens.json"
-EXAMPLE_TOKENS_PATH = (
-    Path(__file__).parent.parent / "docs" / "examples" / "tokens.css"
-)
+EXAMPLE_TOKENS_PATH = Path(__file__).parent.parent / "docs" / "examples" / "tokens.css"
 
 
 def test_build_creates_output_files(tmp_path: Path) -> None:
@@ -69,7 +67,9 @@ def test_build_drops_google_fonts(tmp_path: Path) -> None:
 
     for page in tmp_path.glob("*.html"):
         text = page.read_text(encoding="utf-8")
-        assert "fonts.googleapis.com" not in text, f"{page.name} still links Google Fonts"
+        assert "fonts.googleapis.com" not in text, (
+            f"{page.name} still links Google Fonts"
+        )
         assert "fonts.gstatic.com" not in text, f"{page.name} still preconnects gstatic"
 
 
@@ -119,6 +119,24 @@ def test_build_copies_components(tmp_path: Path) -> None:
     assert components_dir.is_dir()
     assert (components_dir / "storybook.js").exists()
     assert (components_dir / "storybook.config.json").exists()
+
+
+def test_build_wraps_component_css_in_components_layer(tmp_path: Path) -> None:
+    """Built component CSS participates in the cascade contract declared by tokens.css."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    css = (tmp_path / "components" / "button.css").read_text(encoding="utf-8")
+    assert css.startswith("@layer components {")
+    assert ".dk-button" in css
+
+
+def test_build_wraps_page_styles_in_pages_layer(tmp_path: Path) -> None:
+    """Built page-local styles outrank component CSS without becoming unlayered."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    html = (tmp_path / "storybook.html").read_text(encoding="utf-8")
+    assert "<style>\n@layer pages {" in html
+    assert ".storybook-main-wrap" in html
 
 
 def test_build_emits_component_manifest(tmp_path: Path) -> None:

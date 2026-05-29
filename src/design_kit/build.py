@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 import shutil
 import time
 from datetime import UTC, datetime
@@ -38,6 +39,14 @@ FONTS_DIR = Path("fonts")
 NON_COMPONENT_TOP_LEVEL_JS = {"storybook.js"}
 
 PACKAGE_NAME = "design-kit"
+COMPONENTS_LAYER = "components"
+PAGES_LAYER = "pages"
+STYLE_BLOCK_RE = re.compile(
+    r"(<style\b[^>]*>)(.*?)(</style>)", re.IGNORECASE | re.DOTALL
+)
+PROPERTY_RULE_RE = re.compile(
+    r"(?ms)^[ \t]*@property\s+--[-_a-zA-Z0-9]+\s*\{[^{}]*\}\s*"
+)
 
 
 class ArtifactInfo(TypedDict):
@@ -76,6 +85,44 @@ def tokens_css_artifact(tokens_path: Path) -> str:
     return header + generate_token_css(tokens_path, breakpoints=breakpoints)
 
 
+def _indent_css(text: str) -> str:
+    return "\n".join(f"  {line}" if line else "" for line in text.splitlines())
+
+
+def _wrap_css_in_layer(css: str, layer: str) -> str:
+    """Wrap author CSS in a named cascade layer for distribution.
+
+    Component source files stay plain for authoring and linting, but built CSS
+    participates in the public cascade contract declared by tokens.css. Top-level
+    @property registrations are kept outside the layer: they register syntax and
+    inheritance for the whole stylesheet rather than style an element.
+    """
+    if not css.strip() or f"@layer {layer}" in css:
+        return css
+
+    property_rules = [
+        match.group(0).rstrip() for match in PROPERTY_RULE_RE.finditer(css)
+    ]
+    body = PROPERTY_RULE_RE.sub("", css).strip()
+    if not body:
+        return "\n\n".join(property_rules) + ("\n" if property_rules else "")
+
+    layered = f"@layer {layer} {{\n{_indent_css(body)}\n}}\n"
+    if not property_rules:
+        return layered
+    return "\n\n".join(property_rules) + "\n\n" + layered
+
+
+def _wrap_style_blocks_in_layer(html: str, layer: str) -> str:
+    """Place page-local <style> blocks in the page cascade layer."""
+
+    def repl(match: re.Match[str]) -> str:
+        open_tag, css, close_tag = match.groups()
+        return f"{open_tag}\n{_wrap_css_in_layer(css, layer)}{close_tag}"
+
+    return STYLE_BLOCK_RE.sub(repl, html)
+
+
 def _copy_components_with_substitution(
     src_dir: Path, dest_dir: Path, breakpoints: dict[str, str]
 ) -> None:
@@ -92,7 +139,9 @@ def _copy_components_with_substitution(
             dst.mkdir(parents=True, exist_ok=True)
         elif src.suffix == ".css":
             text = src.read_text(encoding="utf-8")
-            dst.write_text(substitute_breakpoints(text, breakpoints), encoding="utf-8")
+            text = substitute_breakpoints(text, breakpoints)
+            text = _wrap_css_in_layer(text, COMPONENTS_LAYER)
+            dst.write_text(text, encoding="utf-8")
         else:
             shutil.copy2(src, dst)
 
@@ -169,7 +218,12 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             head_failures.append(f"{name}: {violation}")
 
     html = inject_system_nav(
-        _inject_head(substitute_breakpoints(generate_preview_html(), breakpoints))
+        _inject_head(
+            _wrap_style_blocks_in_layer(
+                substitute_breakpoints(generate_preview_html(), breakpoints),
+                PAGES_LAYER,
+            )
+        )
     )
     html_path = output_dir / "index.html"
     html_path.write_text(html, encoding="utf-8")
@@ -183,6 +237,7 @@ def build(tokens_path: Path, output_dir: Path) -> None:
             text = page.read_text(encoding="utf-8")
             text = text.replace("{{CACHE_BUST}}", cache_bust)
             text = substitute_breakpoints(text, breakpoints)
+            text = _wrap_style_blocks_in_layer(text, PAGES_LAYER)
             text = _inject_head(text)
             text = inject_system_nav(text)
             dest.write_text(text, encoding="utf-8")
