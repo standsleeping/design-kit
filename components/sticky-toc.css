@@ -81,19 +81,19 @@
   display: flex;
   flex-direction: column;
   background: var(--dk-sticky-toc-bg);
-  max-height: 0;
+  max-block-size: 0;
   visibility: hidden;
   overflow: hidden;
   transition:
-    max-height var(--motion-duration-normal) var(--motion-easing-default, ease),
+    max-block-size var(--motion-duration-normal) var(--motion-easing-default, ease),
     visibility 0s linear var(--motion-duration-normal);
 }
 
 .dk-sticky-toc[data-state="expanded"] .dk-sticky-toc-panel {
-  max-height: 70vh;
+  max-block-size: 70dvb;
   visibility: visible;
   transition:
-    max-height var(--motion-duration-normal) var(--motion-easing-default, ease),
+    max-block-size var(--motion-duration-normal) var(--motion-easing-default, ease),
     visibility 0s linear 0s;
 }
 
@@ -235,7 +235,7 @@
   }
 
   .dk-sticky-toc-responsive .dk-sticky-toc-panel {
-    max-height: none;
+    max-block-size: none;
     visibility: visible;
     overflow: visible;
     background: transparent;

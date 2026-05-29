@@ -78,7 +78,7 @@ export function render(props = {}) {
   root.className = `dk-modal dk-modal-${position}`;
   root.setAttribute('role', 'dialog');
   root.setAttribute('aria-labelledby', titleId);
-  root.style.width = `${width}px`;
+  root.style.inlineSize = `${width}px`;
   root.hidden = !open;
 
   const header = document.createElement('div');

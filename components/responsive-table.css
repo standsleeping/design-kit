@@ -336,11 +336,10 @@
 
 .dk-sn-popup {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset-inline: 0;
+  inset-block-end: 0;
   z-index: 100;
-  max-height: 70vh;
+  max-block-size: 70dvb;
   overflow-y: auto;
   scrollbar-width: none;
   background: var(--color-bg);
