@@ -104,7 +104,7 @@ uv run pytest tests/test_tsc.py   # same check, inside the pytest suite
 | Radius | `radius_lint.py` (`components/*.css`) | Non-zero `border-radius`: corners are square by design; `/* radius-lint: ok */` |
 | Margin | `margin_lint.py` (`components/*.css`, `pages/*.html`) | Margins carrying layout intent: `NEVER_MARGIN`; `/* margin-lint: ok */` |
 | Border width | `border_width_lint.py` (`components/*.css`, `pages/*.html`) | Raw border-width literals instead of `var(--border-width-*)`: `TOKEN_DRIVEN_DESIGN`; `/* token-leak: ok */` |
-| Dimension | `dimension_lint.py` (`components/*.css`, `pages/*.html`) | Raw layout-dimension literals: `TOKEN_DRIVEN_DESIGN` / `JUSTIFY_EVERY_DIMENSION`; `/* dimension-lint: ok */` |
+| Dimension | `dimension_lint.py` (`components/*.css`, `pages/*.html`) | Raw physical or logical layout-dimension literals: `TOKEN_DRIVEN_DESIGN` / `JUSTIFY_EVERY_DIMENSION`; `/* dimension-lint: ok */` |
 | Page contract | `page_lint.py` (`pages/*.html`) | Pages missing the shell scaffold, system-sidebar slot, viewport lock, or required stylesheets: `docs/reference/page-contract.md` |
 
 ## The audit command
