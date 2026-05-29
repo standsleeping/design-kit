@@ -88,12 +88,13 @@ uv run pytest tests/test_tsc.py   # same check, inside the pytest suite
 
 ## Build-time audits
 
-`design-kit build` runs thirteen static audits (Python, no browser) before exiting: twelve source-scanning lints plus the token-pair contrast check. Each fails the build with a locator report and names the principle it enforces; most carry a `/* <name>: ok */` allowlist comment for documented exceptions. The audit modules live under `src/design_kit/`; the set is defined once in the audit registry (`src/design_kit/audit/registry.py`), which both `design-kit build` and `design-kit audit` run, so the two cannot drift.
+`design-kit build` runs fourteen static audits (Python, no browser) before exiting: thirteen source-scanning lints plus the token-pair contrast check. Each fails the build with a locator report and names the principle it enforces; most carry a `/* <name>: ok */` allowlist comment for documented exceptions. The audit modules live under `src/design_kit/`; the set is defined once in the audit registry (`src/design_kit/audit/registry.py`), which both `design-kit build` and `design-kit audit` run, so the two cannot drift.
 
 | Audit | Implementation | Catches |
 |---|---|---|
 | Token-pair contrast | `contrast_self_test.py` (parses `tokens.css`) | Foreground/background pairs that fail WCAG ratios across themes: `TOKEN_PAIR_CONTRAST` |
 | Token leak | `token_leak_lint.py` (`components/*.css`, `pages/*.html`) | Raw color literals instead of `var(--color-*)`: `TOKEN_DRIVEN_DESIGN`; `/* token-leak: ok */` |
+| Token reference | `token_reference_lint.py` (`tokens.css`, `components/*.css`, `pages/*.html`) | Public `var(--*)` references that do not resolve in `tokens.css`: `TOKEN_DRIVEN_DESIGN`; `/* token-reference: ok */` |
 | Focus ring | `focus_ring_lint.py` (`components/*.css`) | Focus indicators drawn outside the focusable element: `FOCUS_RING_INSIDE_CLIPPED_CONTAINER`; `/* focus-ring: standalone */` |
 | Interactive state | `interactive_state_lint.py` (`components/*.css`) | `:hover`/`:active` on non-focusable selectors: `STATE_BELONGS_TO_INTERACTIVE`; `/* state-lint: ok */` |
 | Peer edge | `peer_edge_lint.py` (`components/*.css`) | Selection/edge accents not reserved on every peer: `PEER_EDGE_RESERVATION`; `/* peer-edge: ok */` |
@@ -108,7 +109,7 @@ uv run pytest tests/test_tsc.py   # same check, inside the pytest suite
 
 ## The audit command
 
-`design-kit audit` runs the same thirteen static audits on demand and prints one unified report; it exits non-zero if any audit fails. Run it for fast feedback without a full build. With `--headless` it also runs the rendered-page audits (below) and folds them into the same report.
+`design-kit audit` runs the same fourteen static audits on demand and prints one unified report; it exits non-zero if any audit fails. Run it for fast feedback without a full build. With `--headless` it also runs the rendered-page audits (below) and folds them into the same report.
 
 ```bash
 design-kit audit                 # static audits of the design-kit repo, text report

@@ -32,7 +32,7 @@ Writes into the output directory:
 | `index.html` | The landing page (foundations + navigation) |
 | `*.html`, `components/` | The static pages and component modules; built component CSS is wrapped in the `components` layer, and page-local `<style>` blocks are wrapped in the `pages` layer |
 
-`build` runs the thirteen static audits (token-pair contrast, token leak, focus ring, padding, radius, margin, and the rest) and fails with a locator report on any violation. The audit set is defined once in the audit registry that `audit` also runs, so the two cannot drift. See the README's "Build-time audits" for the full audit table.
+`build` runs the fourteen static audits (token-pair contrast, token leak, token reference, focus ring, padding, radius, margin, and the rest) and fails with a locator report on any violation. The audit set is defined once in the audit registry that `audit` also runs, so the two cannot drift. See the README's "Build-time audits" for the full audit table.
 
 ---
 

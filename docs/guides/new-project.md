@@ -62,7 +62,7 @@ Each reusable component is a `.js` module with four named exports (`metadata`, `
 Conventions that keep the audits green:
 
 - Namespace every class with a project prefix (`.myapp-button`), one prefix per pool.
-- Reference semantic tokens only (`var(--color-text)`, `var(--spacing-md)`); never raw color or dimension literals.
+- Reference semantic tokens only (`var(--color-text)`, `var(--spacing-md)`); never raw color or dimension literals, and keep public token references resolvable in your vendored `tokens.css`.
 - Square corners, square padding, no `margin` for layout, thin borders via `var(--border-width-*)`. The [visual language reference](../reference/visual-language.md) is the full ruleset; the audits enforce its checkable subset.
 
 ---
@@ -83,7 +83,7 @@ design-kit audit \
 design-kit audit --scope /path/to/my-app --headless   # add rendered-page checks
 ```
 
-Two things to know about coverage. First, the static lints scan `components/*.css` and `pages/*.html`, one level deep. Inline `<style>` in your entry `index.html` is **not** linted, so keep substantive CSS in component sibling files (or point `--components-dir` at wherever it lives). Second, a *missing* input reports `SKIP`, but an *empty* `components/` passes vacuously: "13 passed" over an empty tree means nothing was checked, not that everything was validated.
+Two things to know about coverage. First, the static lints scan `components/*.css` and `pages/*.html`, one level deep. Inline `<style>` in your entry `index.html` is **not** linted, so keep substantive CSS in component sibling files (or point `--components-dir` at wherever it lives). Second, a *missing* input reports `SKIP`, but an *empty* `components/` passes vacuously: "14 passed" over an empty tree means nothing was checked, not that everything was validated.
 
 Wire `design-kit audit` into your project's pre-commit or CI exactly as design-kit wires it into its own build. Full flag reference: the [CLI reference](../reference/cli.md).
 

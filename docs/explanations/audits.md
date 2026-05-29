@@ -10,7 +10,7 @@ Each audit names the principle it enforces and, where exceptions are legitimate,
 
 ## Two kinds of check
 
-**Static audits** need no browser and are fast. Twelve are *lints*: text-scanning regex checks over CSS and HTML (raw-literal leaks, asymmetric padding, non-zero radius, layout margins, focus-ring placement, scroll-axis misuse, the page contract, and the rest). The thirteenth is the token-pair contrast check, a token-graph check over the generated `tokens.css` rather than a text lint. These run on every `design-kit build` and on demand via `design-kit audit`.
+**Static audits** need no browser and are fast. Thirteen are *lints*: text-scanning regex checks over CSS and HTML (raw-literal leaks, undefined public token references, asymmetric padding, non-zero radius, layout margins, focus-ring placement, scroll-axis misuse, the page contract, and the rest). The fourteenth is the token-pair contrast check, a token-graph check over the generated `tokens.css` rather than a text lint. These run on every `design-kit build` and on demand via `design-kit audit`.
 
 **Headless audits** measure things that only exist in a rendered page: horizontal overflow at several widths, the responsive components' behavior across their modes (table, adaptive, fits-its-own-box), and the **load trajectory** (first-paint state and cumulative layout shift, the window static and settle-then-measure checks cannot see). These run in headless Chromium, added with `design-kit audit --headless`. When the browser or the served site is unavailable they report `SKIP`, never a false failure, so a token-only environment still completes.
 

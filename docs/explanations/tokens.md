@@ -4,7 +4,7 @@ This page explains how design-kit's tokens are organized and why. For exact name
 
 ## Tokens are the single source of design truth
 
-Every design decision (a color, a spacing step, a font axis, a border width) is a CSS custom property, defined once and referenced everywhere. Components never hardcode a value. Change the token and the change propagates to every element that references it. The audit set enforces this: a raw color or dimension literal in component CSS is a lint failure.
+Every design decision (a color, a spacing step, a font axis, a border width) is a CSS custom property, defined once and referenced everywhere. Components never hardcode a value. Change the token and the change propagates to every element that references it. The audit set enforces this: a raw color or dimension literal in component CSS is a lint failure, and so is a public token reference that does not resolve in `tokens.css`.
 
 ## Two tiers: primitive and semantic
 
