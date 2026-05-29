@@ -134,6 +134,19 @@ def test_visually_hidden_uses_modern_clipping() -> None:
     assert "clip-path: none;" in css
 
 
+def test_form_control_reset_uses_standard_appearance() -> None:
+    """Use the standardized appearance property, not legacy prefixed duplicates."""
+    css = generate_token_css(TOKENS_PATH)
+
+    assert "-webkit-appearance" not in css
+    assert "-moz-appearance" not in css
+    assert 'input[type="number"] { appearance: textfield;' in css
+    assert (
+        'input[type="search"]::-webkit-search-cancel-button { appearance: none; }'
+        in css
+    )
+
+
 def test_validation_rejects_theme_missing_luminance(tmp_path: Path) -> None:
     """A theme without luminance.light.color raises a pointed ValueError."""
     tokens = {
