@@ -85,15 +85,15 @@
   visibility: hidden;
   overflow: hidden;
   transition:
-    max-height var(--motion-duration-base, 0.25s) var(--motion-easing-default, ease),
-    visibility 0s linear var(--motion-duration-base, 0.25s);
+    max-height var(--motion-duration-normal) var(--motion-easing-default, ease),
+    visibility 0s linear var(--motion-duration-normal);
 }
 
 .dk-sticky-toc[data-state="expanded"] .dk-sticky-toc-panel {
   max-height: 70vh;
   visibility: visible;
   transition:
-    max-height var(--motion-duration-base, 0.25s) var(--motion-easing-default, ease),
+    max-height var(--motion-duration-normal) var(--motion-easing-default, ease),
     visibility 0s linear 0s;
 }
 
@@ -173,7 +173,7 @@
   cursor: pointer;
   color: var(--color-text);
   font-family: var(--typography-mono);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-base);
   line-height: 1;
 }
 

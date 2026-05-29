@@ -235,7 +235,7 @@
 .dk-sentence {
   display: block;
   position: relative;
-  line-height: var(--font-line-height-normal, 1.5);
+  line-height: var(--font-line-height-base);
 }
 
 /* --- Sidenote references (inline superscript button) --- */
@@ -307,7 +307,7 @@
 
 .dk-sn-content {
   display: block;
-  line-height: var(--font-line-height-normal, 1.5);
+  line-height: var(--font-line-height-base);
 }
 
 .dk-sn-content :first-child { margin-top: 0; }
@@ -325,7 +325,7 @@
   position: fixed;
   inset: 0;
   z-index: 99;
-  background: var(--color-overlay, rgba(0, 0, 0, 0.35)); /* token-leak: ok, fallback awaiting --color-overlay token */
+  background: var(--color-overlay);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -391,7 +391,7 @@
 
 .dk-sn-popup-body {
   padding: var(--spacing-xl);
-  line-height: var(--font-line-height-normal, 1.5);
+  line-height: var(--font-line-height-base);
 }
 
 .dk-sn-popup-body :first-child { margin-top: 0; }
