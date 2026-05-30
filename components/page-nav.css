@@ -3,8 +3,9 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--spacing-xl);
-  padding: var(--spacing-xl) 0; /* padding-lint: ok */
-  border-top: var(--border-width-thin) solid var(--color-border);
+  padding-block: var(--spacing-xl);
+  padding-inline: 0;
+  border-block-start: var(--border-width-thin) solid var(--color-border);
 }
 
 .dk-page-nav-link {
@@ -12,8 +13,8 @@
   flex-direction: column;
   gap: var(--spacing-xs);
   text-decoration: none;
-  min-width: 0;
-  max-width: 50%;
+  min-inline-size: 0;
+  max-inline-size: 50%;
 }
 
 .dk-page-nav-link-placeholder {
@@ -21,13 +22,13 @@
 }
 
 .dk-page-nav-link-next {
-  margin-left: auto;
-  text-align: right;
+  margin-inline-start: auto;
+  text-align: end;
   align-items: flex-end;
 }
 
 .dk-page-nav-link-prev {
-  text-align: left;
+  text-align: start;
   align-items: flex-start;
 }
 

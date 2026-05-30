@@ -1,19 +1,19 @@
 /* Item, not surface (visual-language §11). Vertical selected-row indicator:
-   left border (medium, color-link) + selected-bg fill, both flush to the
+   inline-start border (medium, color-link) + selected-bg fill, both flush to the
    container edge. */
 .dk-menu-item {
-  width: 100%;
+  inline-size: 100%;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
   border: none;
-  border-left: var(--border-width-medium) solid transparent;
+  border-inline-start: var(--border-width-medium) solid transparent;
   background: transparent;
   color: var(--color-text-muted);
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
-  text-align: left;
+  text-align: start;
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
@@ -30,7 +30,7 @@
 }
 
 .dk-menu-item-selected {
-  border-left-color: var(--color-link);
+  border-inline-start-color: var(--color-link);
   color: var(--color-link);
   background: var(--color-selected-bg);
 }
@@ -42,7 +42,7 @@
 
 .dk-menu-item-icon {
   color: var(--color-text-muted);
-  width: 1.25em; /* dimension-lint: ok, em-relative icon scales with row font-size */
+  inline-size: 1.25em; /* dimension-lint: ok, em-relative icon scales with row font-size */
   text-align: center;
   flex-shrink: 0;
 }
