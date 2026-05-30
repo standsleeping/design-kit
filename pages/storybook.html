@@ -86,7 +86,7 @@ if(p.inspector)d.style.setProperty('--dk-rail-inspector-w',Number(p.inspector)+'
      `.dk-app-shell { display: flex }` that the storybook injects when it renders
      the AppShell component card — that injected sheet loads after this <style>,
      so an equal-specificity rule here would lose the cascade. */
-  @media (max-width: $bp-tablet) {
+  @media (width <= $bp-tablet) {
     body > .dk-app-shell { display: none; }
     .storybook-mobile-notice { display: flex; }
   }
@@ -116,7 +116,7 @@ if(p.inspector)d.style.setProperty('--dk-rail-inspector-w',Number(p.inspector)+'
   /* Below tablet-max the header rail gets tight; drop the lowest-priority
      item (the registered count) so the theme/luminance toggles keep room
      rather than overflowing the fixed-height rail. */
-  @media (max-width: $bp-tablet-max) {
+  @media (width <= $bp-tablet-max) {
     .storybook-header-count { display: none; }
   }
   .storybook-header-count,
