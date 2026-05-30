@@ -6,12 +6,11 @@ accent stripe on selection, a status marker on the current step), every
 peer reserves the same edge via a transparent equivalent so square
 padding stays reachable and the box does not shift on state change.
 
-The lint flags ``border-(top|right|bottom|left)`` and
-``border-(side)-color`` declarations with a non-transparent color when
-the selector contains a persistent state modifier (``-selected``,
-``-active``, ``-current``), unless the matching rest state -- the target
-class itself, or any BEM parent of it -- declares the same
-``border-(side)`` with ``transparent`` color.
+The lint flags physical or logical ``border-(side)`` and
+``border-(side)-color`` declarations with a non-transparent color when the
+selector contains a persistent state modifier (``-selected``, ``-active``,
+``-current``), unless the matching rest state -- the target class itself,
+or any BEM parent of it -- declares the same edge with ``transparent`` color.
 
 Scope: ``components/*.css`` only. The conservative heuristic limits the
 lint to persistent state modifier suffixes; compound state pseudos like
@@ -228,8 +227,12 @@ def _bem_parents(base: str) -> Iterator[str]:
         yield current
 
 
+_BORDER_SIDE = (
+    r"(?:top|right|bottom|left|block|block-start|block-end|"
+    r"inline|inline-start|inline-end)"
+)
 _BORDER_SIDE_RE = re.compile(
-    r"^[ \t]*border-(top|right|bottom|left)(-color)?[ \t]*:[ \t]*([^;}\n]+(?:\n[^;}]*)*?)[ \t]*;",
+    rf"^[ \t]*border-({_BORDER_SIDE})(-color)?[ \t]*:[ \t]*([^;}}\n]+(?:\n[^;}}]*)*?)[ \t]*;",
     re.MULTILINE,
 )
 

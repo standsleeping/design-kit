@@ -1,7 +1,7 @@
 """Static scan of CSS for raw border-width literals that should be tokens.
 
 Static-analysis corollary of TOKEN_DRIVEN_DESIGN applied to border widths:
-``border``, ``border-(top|right|bottom|left)``, ``border-width``, and the
+``border``, physical/logical border side shorthands, ``border-width``, and
 side-width longhands must reference ``var(--border-width-*)`` (thin = 1px,
 medium = 2px, thick = 3px) rather than hardcoding the pixel value. Hardcoded
 border widths are silent drift surface. Change the token, the literal sites
@@ -35,9 +35,13 @@ logger = get_logger(__name__)
 # Match a border-style declaration name (NOT border-radius).
 # Captures the declaration name in group 1 and the value (up to ; or end of
 # rule) in group 2.
+_BORDER_SIDE = (
+    r"(?:top|right|bottom|left|block|block-start|block-end|"
+    r"inline|inline-start|inline-end)"
+)
 BORDER_DECL_RE = re.compile(
-    r"\b(border(?:-(?:top|right|bottom|left))?(?:-width)?|"
-    r"border-(?:top|right|bottom|left)-width)\s*:\s*([^;}]+?)\s*(?:;|$)",
+    rf"\b(border(?:-{_BORDER_SIDE})?(?:-width)?|"
+    rf"border-{_BORDER_SIDE}-width)\s*:\s*([^;}}]+?)\s*(?:;|$)",
     re.MULTILINE,
 )
 # A numeric px/em/rem token; we'll filter zero values separately.
