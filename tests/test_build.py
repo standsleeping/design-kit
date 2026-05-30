@@ -160,6 +160,22 @@ def test_build_outputs_modern_range_breakpoint_queries(tmp_path: Path) -> None:
     assert "@container (max-width:" not in nav_row_css
 
 
+def test_build_outputs_modern_emergency_text_wrapping(tmp_path: Path) -> None:
+    """Long diagnostic text uses overflow-wrap rather than word-break hacks."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    text_assets = [
+        path
+        for pattern in ("*.html", "*.css")
+        for path in tmp_path.rglob(pattern)
+        if path.is_file()
+    ]
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in text_assets)
+
+    assert "word-break:" not in combined
+    assert "overflow-wrap: anywhere" in combined
+
+
 def test_build_emits_component_manifest(tmp_path: Path) -> None:
     """Writes a manifest.json listing every component .js (excluding runtime)."""
     build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
