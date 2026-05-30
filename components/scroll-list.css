@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  min-height: 0;
+  min-block-size: 0;
   scrollbar-width: none;
 }
 
@@ -15,21 +15,22 @@
 
 .dk-scroll-list-item {
   display: block;
-  width: 100%;
-  padding: var(--spacing-sm) var(--spacing-lg); /* padding-lint: ok */
+  inline-size: 100%;
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-lg);
   border: none;
-  border-bottom: var(--border-width-thin) solid var(--color-border);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
   background: transparent;
   color: var(--color-text);
   font-family: var(--typography-mono);
   --mono: 1;
   font-size: var(--font-size-xs);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
 .dk-scroll-list-item:last-child {
-  border-bottom: none;
+  border-block-end: none;
 }
 
 .dk-scroll-list-item:hover {

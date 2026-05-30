@@ -12,9 +12,10 @@
   text-transform: uppercase;
   letter-spacing: var(--font-letter-spacing-wide);
   color: var(--color-text-muted);
-  padding: var(--spacing-xs) var(--spacing-sm); /* padding-lint: ok */
+  padding-block: var(--spacing-xs);
+  padding-inline: var(--spacing-sm);
   background: var(--color-bg);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
 }
 
 .dk-form-layout-rows {

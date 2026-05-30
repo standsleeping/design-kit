@@ -7,9 +7,10 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: var(--spacing-sm) var(--spacing-lg); /* padding-lint: ok */
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-lg);
   background: var(--color-code-bg);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
 }
 
 .dk-panel-label {

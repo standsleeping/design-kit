@@ -6,13 +6,14 @@
 }
 
 .dk-tab-bar-tab {
-  padding: var(--spacing-xs) 0; /* padding-lint: ok */
+  padding-block: var(--spacing-xs);
+  padding-inline: 0;
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   background: transparent;
   border: none;
-  border-bottom: var(--border-width-medium) solid transparent;
+  border-block-end: var(--border-width-medium) solid transparent;
   cursor: pointer;
   white-space: nowrap;
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
@@ -30,7 +31,7 @@
 .dk-tab-bar-tab-active {
   color: var(--color-link);
   font-weight: var(--font-weight-semibold);
-  border-bottom-color: var(--color-link);
+  border-block-end-color: var(--color-link);
 }
 
 .dk-tab-bar-separator {
