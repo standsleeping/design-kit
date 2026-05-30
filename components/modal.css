@@ -18,22 +18,22 @@
 }
 
 .dk-modal-center {
-  top: 50%;
-  left: 50%;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
   transform: translate(-50%, -50%);
 }
 
 .dk-modal-top-right {
-  top: var(--spacing-2xl);
-  right: var(--spacing-2xl);
-  left: auto;
+  inset-block-start: var(--spacing-2xl);
+  inset-inline-end: var(--spacing-2xl);
+  inset-inline-start: auto;
 }
 
 .dk-modal-bottom-right {
-  bottom: var(--spacing-2xl);
-  right: var(--spacing-2xl);
-  left: auto;
-  top: auto;
+  inset-block-end: var(--spacing-2xl);
+  inset-inline-end: var(--spacing-2xl);
+  inset-inline-start: auto;
+  inset-block-start: auto;
 }
 
 .dk-modal-header {
@@ -42,7 +42,7 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
   cursor: grab;
   user-select: none;
   flex-shrink: 0;

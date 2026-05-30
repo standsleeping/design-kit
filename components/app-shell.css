@@ -14,9 +14,9 @@
 .dk-app-shell {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: 100%;
-  min-height: var(--layout-app-shell-min-height);
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: var(--layout-app-shell-min-height);
   overflow: hidden;
 }
 
@@ -27,7 +27,7 @@
 .dk-app-shell-header,
 .dk-app-shell-footer {
   flex-shrink: 0;
-  min-width: 0;
+  min-inline-size: 0;
 }
 
 /* Empty rails collapse so an unused slot leaves no visual residue
@@ -53,7 +53,7 @@
   position: relative;
   display: flex;
   flex: 1;
-  min-height: 0;
+  min-block-size: 0;
   overflow: hidden;
   --chrome-bar-rows: 1;
 }
@@ -73,7 +73,7 @@
 
 .dk-app-shell-main {
   flex: 1;
-  min-width: 0;
+  min-inline-size: 0;
   /* Vertical scroll only. The center is a layout container, so per
      SCROLL_CONTAINMENT it must never scroll horizontally. Horizontal scroll
      belongs to leaf elements inside it (wide tables, code blocks), at their own

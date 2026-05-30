@@ -2,8 +2,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-width: 0;
+  block-size: 100%;
+  min-inline-size: 0;
   font-family: var(--typography-mono);
   --mono: 1;
   font-size: var(--font-size-xs);
@@ -18,8 +18,8 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0;
-  min-width: 0;
+  min-block-size: 0;
+  min-inline-size: 0;
 }
 
 /* Drill animation: the root clips while two levels slide past each other.
@@ -67,10 +67,10 @@
    inside the same height. */
 .dk-nav-stack-header {
   flex-shrink: 0;
-  border-bottom: var(--border-width-thin) solid var(--color-border);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
   display: flex;
   align-items: stretch;
-  min-height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
+  min-block-size: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
   /* PEER_RAIL: join the chrome rail; audit verifies computed height. */
   --peer-rail: chrome;
 }
@@ -87,28 +87,28 @@
   /* Reserve the same accent-stripe channel that items carry, so the title's
      content edge aligns with their labels (PEER_EDGE_RESERVATION). */
   padding: var(--spacing-md);
-  border-left: var(--border-width-medium) solid transparent;
+  border-inline-start: var(--border-width-medium) solid transparent;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 /* Back is the first row of the level. Same padding and transparent
-   left-border channel as items so the icon aligns vertically with item content. */
+   inline-start border channel as items so the icon aligns vertically with item content. */
 .dk-nav-stack-back {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  width: 100%;
+  inline-size: 100%;
   padding: var(--spacing-md);
   border: none;
-  border-left: var(--border-width-medium) solid transparent;
+  border-inline-start: var(--border-width-medium) solid transparent;
   background: transparent;
   cursor: pointer;
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text);
-  text-align: left;
+  text-align: start;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
@@ -123,7 +123,7 @@
 
 .dk-nav-stack-back-icon {
   flex-shrink: 0;
-  width: 1.25rem; /* dimension-lint: ok, fixed icon column, independent of local font-size */
+  inline-size: 1.25rem; /* dimension-lint: ok, fixed icon column, independent of local font-size */
   text-align: center;
   font-size: var(--font-size-base);
   color: var(--color-text-muted);
@@ -142,7 +142,7 @@
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  min-height: 0;
+  min-block-size: 0;
   scrollbar-width: none;
 }
 
@@ -157,15 +157,15 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  width: 100%;
+  inline-size: 100%;
   padding: var(--spacing-md);
   border: none;
-  border-left: var(--border-width-medium) solid transparent;
+  border-inline-start: var(--border-width-medium) solid transparent;
   background: transparent;
   color: var(--color-text-muted);
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -181,7 +181,7 @@
 }
 
 .dk-nav-stack-item-selected {
-  border-left-color: var(--color-link);
+  border-inline-start-color: var(--color-link);
   color: var(--color-text);
   background: var(--color-selected-bg);
 }
@@ -199,7 +199,7 @@
 .dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-icon {
   display: inline-block;
   flex-shrink: 0;
-  width: 1.25rem; /* dimension-lint: ok, fixed icon column, independent of local font-size */
+  inline-size: 1.25rem; /* dimension-lint: ok, fixed icon column, independent of local font-size */
   text-align: center;
   font-weight: var(--font-weight-semibold);
   letter-spacing: var(--font-letter-spacing-normal);
@@ -233,7 +233,7 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: var(--font-letter-spacing-wide);
-  border-left: var(--border-width-medium) solid transparent;
+  border-inline-start: var(--border-width-medium) solid transparent;
 }
 
 /* Structural spacer pseudo (NEVER_MARGIN): non-first section headers carry
@@ -242,7 +242,7 @@
 .dk-nav-stack-section-header:not(:first-child)::before {
   content: "";
   display: block;
-  height: var(--spacing-sm);
+  block-size: var(--spacing-sm);
 }
 
 .dk-nav-stack[data-state="icon"] .dk-nav-stack-section-item .dk-nav-stack-icon,
@@ -276,7 +276,7 @@
 
 .dk-nav-stack[data-state="icon"] .dk-nav-stack-back,
 .dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-back {
-  width: auto;
+  inline-size: auto;
   justify-content: center;
   padding: var(--spacing-sm);
 }
@@ -285,7 +285,7 @@
 .dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-item {
   justify-content: center;
   padding: var(--spacing-sm);
-  /* Active-indicator (border-left) stays. Flush at the container edge per DK convention. */
+  /* Active-indicator (inline-start border) stays. Flush at the container edge per DK convention. */
 }
 
 /* Icon state: section-header collapses to a 1px divider rule. The rhythm
@@ -294,8 +294,8 @@
 .dk-nav-stack[data-state="icon"] .dk-nav-stack-section-header,
 .dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-section-header {
   padding: 0;
-  border-top: var(--border-width-thin) solid var(--color-border);
-  border-left: none;
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+  border-inline-start: none;
   font-size: 0;
 }
 
@@ -303,5 +303,5 @@
 .dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-section-header::after {
   content: "";
   display: block;
-  height: var(--spacing-sm);
+  block-size: var(--spacing-sm);
 }

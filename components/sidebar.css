@@ -1,8 +1,8 @@
-/* Register the width properties as typed lengths so transitions on
-   `width: var(--dk-sidebar-width)` interpolate when the var is updated at
-   runtime (drag-resize). Without @property registration, Chrome treats the
-   var change as not animatable and the resolved width does not update while
-   a `transition: width` declaration is active. */
+/* Register the inline-size properties as typed lengths so transitions on
+   `inline-size: var(--dk-sidebar-width)` interpolate when the var is updated
+   at runtime (drag-resize). Without @property registration, Chrome treats the
+   var change as not animatable and the resolved inline-size does not update
+   while a `transition: inline-size` declaration is active. */
 @property --dk-sidebar-width {
   syntax: '<length>';
   inherits: false;
@@ -21,10 +21,10 @@
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
-  height: 100%;
-  min-width: 0;
-  transition: width 0.2s ease-out, transform 0.2s ease-out;
-  border-right: var(--border-width-thin) solid var(--color-border);
+  block-size: 100%;
+  min-inline-size: 0;
+  transition: inline-size 0.2s ease-out, transform 0.2s ease-out;
+  border-inline-end: var(--border-width-thin) solid var(--color-border);
   /* Expanded-state width. Consumers set this per-instance; CSS reads it
      and state-conditional rules below pick the icon and hidden widths.
      Writing the value here (not on `width`) avoids fighting inline styles
@@ -37,46 +37,45 @@
 }
 
 .dk-sidebar-right {
-  border-right: none;
-  border-left: var(--border-width-thin) solid var(--color-border);
+  border-inline-end: none;
+  border-inline-start: var(--border-width-thin) solid var(--color-border);
 }
 
-/* Inline mode rules. Width is the expanded width by default; state-conditional
+/* Inline mode rules. Inline-size is the expanded size by default; state-conditional
    rules below shrink to icon or zero. */
 .dk-sidebar-mode-inline {
-  width: var(--dk-sidebar-width);
+  inline-size: var(--dk-sidebar-width);
 }
 
 .dk-sidebar-mode-inline[data-state="icon"] {
-  width: var(--dk-sidebar-icon-width);
-  transition: width 0.15s ease-in;
+  inline-size: var(--dk-sidebar-icon-width);
+  transition: inline-size 0.15s ease-in;
 }
 
 .dk-sidebar-mode-inline[data-state="hidden"] {
-  width: 0;
+  inline-size: 0;
   /* Clear the side border so a collapsed sidebar leaves no visible 1px line
      where its edge used to be. Overlay mode keeps the border (it slides off
      via transform, so the border travels with it). */
-  border-right: none;
-  border-left: none;
-  transition: width 0.15s ease-in;
+  border-inline-end: none;
+  border-inline-start: none;
+  transition: inline-size 0.15s ease-in;
 }
 
-/* Overlay mode rules. Width is fixed (the expanded width); state controls
+/* Overlay mode rules. Inline-size is fixed (the expanded size); state controls
    transform. The slide is GPU-accelerated and doesn't reflow content. */
 .dk-sidebar-mode-overlay {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
+  inset-block: 0;
+  inset-inline-start: 0;
   z-index: var(--z-overlay, 1000);
-  width: var(--dk-sidebar-width);
+  inline-size: var(--dk-sidebar-width);
   transform: translateX(0);
 }
 
 .dk-sidebar-mode-overlay.dk-sidebar-right {
-  left: auto;
-  right: 0;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
 }
 
 .dk-sidebar-mode-overlay[data-state="hidden"] {
@@ -100,9 +99,9 @@
   display: block;
 }
 
-/* Drop the width transition for collapsible sidebars. Their width changes two
+/* Drop the inline-size transition for collapsible sidebars. Their size changes two
    ways at runtime: drag-resize (the --dk-sidebar-width value) and collapse
-   (the expanded → icon rule swap). Chrome can't interpolate `width` across a
+   (the expanded -> icon rule swap). Chrome can't interpolate `inline-size` across a
    cascade-source swap whose value is a var() — it freezes at the from-value
    (the same quirk the @property block above documents, but unfixable here
    because the *source rule* changes, not just the var). Without the
@@ -130,7 +129,7 @@
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  min-height: 0;
+  min-block-size: 0;
   scrollbar-width: none;
 }
 
@@ -138,19 +137,18 @@
 
 .dk-sidebar-resizer {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: var(--resizer-handle-width);
+  inset-block: 0;
+  inline-size: var(--resizer-handle-width);
   cursor: ew-resize;
   z-index: 2;
 }
 
 .dk-sidebar-left .dk-sidebar-resizer {
-  right: calc(var(--resizer-handle-width) / -2);
+  inset-inline-end: calc(var(--resizer-handle-width) / -2);
 }
 
 .dk-sidebar-right .dk-sidebar-resizer {
-  left: calc(var(--resizer-handle-width) / -2);
+  inset-inline-start: calc(var(--resizer-handle-width) / -2);
 }
 
 .dk-sidebar-resizer:hover { /* state-lint: ok, drag-only handle; mouse-driven resize */

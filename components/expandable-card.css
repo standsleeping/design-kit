@@ -5,23 +5,24 @@
 }
 
 .dk-expandable-card-header {
-  width: 100%;
+  inline-size: 100%;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--spacing-sm);
   border: none;
-  border-bottom: var(--border-width-thin) solid transparent;
+  border-block-end: var(--border-width-thin) solid transparent;
   background: transparent;
   color: var(--color-text);
-  padding: var(--spacing-sm) var(--spacing-md); /* padding-lint: ok */
-  text-align: left;
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-md);
+  text-align: start;
   cursor: pointer;
   font-family: var(--typography-mono);
 }
 
 .dk-expandable-card-expanded .dk-expandable-card-header {
-  border-bottom-color: var(--color-border);
+  border-block-end-color: var(--color-border);
 }
 
 .dk-expandable-card-header:hover {
@@ -43,7 +44,7 @@
 
 .dk-expandable-card-icon {
   color: var(--color-text-muted);
-  width: 1.2em; /* dimension-lint: ok, em-relative icon scales with row font-size */
+  inline-size: 1.2em; /* dimension-lint: ok, em-relative icon scales with row font-size */
   text-align: center;
 }
 
@@ -61,13 +62,15 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   border: var(--border-width-thin) solid var(--color-border);
-  padding: 0 var(--spacing-sm); /* padding-lint: ok */
-  min-width: 1.8em; /* dimension-lint: ok, em-relative floor sized for 2-3 digit counts */
+  padding-block: 0;
+  padding-inline: var(--spacing-sm);
+  min-inline-size: 1.8em; /* dimension-lint: ok, em-relative floor sized for 2-3 digit counts */
   text-align: center;
 }
 
 .dk-expandable-card-content {
-  padding: var(--spacing-sm) var(--spacing-md); /* padding-lint: ok */
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-md);
 }
 
 .dk-expandable-card-content[hidden] {
