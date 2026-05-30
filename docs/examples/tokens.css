@@ -354,7 +354,7 @@
   .content-table { border-collapse: separate; border-spacing: 0; }
   .content-table th { position: sticky; top: 0; background: var(--color-bg); z-index: var(--z-sticky); }
   .data-table { overflow-x: auto; }
-  @media (max-width: 600px) { th, td { padding: var(--spacing-xs); font-size: var(--font-size-xs); } }
+  @media (width <= 600px) { th, td { padding: var(--spacing-xs); font-size: var(--font-size-xs); } }
   .heading-anchor { color: inherit; text-decoration: none; font-weight: inherit; }
   .heading-anchor:hover { text-decoration: none; }
   .heading-anchor::after { content: " #"; color: transparent; font-weight: var(--font-weight-regular); transition: color 0.15s ease; }

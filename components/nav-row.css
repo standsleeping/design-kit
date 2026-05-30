@@ -24,7 +24,7 @@
   color: var(--color-text-muted);
 }
 
-@container (max-width: $bp-container-narrow) {
+@container (inline-size <= $bp-container-narrow) {
   .dk-nav-row-trailing {
     width: 100%;
     margin-left: 0;

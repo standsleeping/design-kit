@@ -218,7 +218,7 @@
 /* Responsive layout: at wide viewports, instances marked
    .dk-sticky-toc-responsive switch from a sticky top bar to a fixed
    left rail. Same DOM, same items, same active-tracking. */
-@media (min-width: $bp-wide) {
+@media (width >= $bp-wide) {
   .dk-sticky-toc-responsive {
     position: fixed;
     top: var(--dk-sticky-toc-rail-top, var(--spacing-3xl));
