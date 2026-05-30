@@ -41,9 +41,9 @@ Scope notes:
   flagged: the leading hyphen fails the property regex's negative
   lookbehind. Token consumers parameterizing a component are out of scope;
   the lint targets value-side magic numbers.
-* ``@media (max-width: 600px)`` and ``@container (max-width: 200px)``
+* ``@media (width <= 600px)`` and ``@container (inline-size <= 200px)``
   preludes are stripped before scanning so the breakpoint literal does
-  not false-positive as a ``max-width`` declaration. Breakpoints belong
+  not false-positive as a width declaration. Breakpoints belong
   at a separate token layer (CSS variables don't resolve inside media
   queries) and are tracked elsewhere.
 """
@@ -190,8 +190,8 @@ def _strip_at_rule_preludes(text: str) -> str:
     """Blank the ``@media (...)``/``@container (...)`` prelude up to ``{``.
 
     The opening brace is preserved so block structure is intact; only the
-    prelude contents (which contain property-looking ``max-width: 600px``
-    syntax) are blanked.
+    prelude contents (which can contain property-looking width checks) are
+    blanked.
     """
     return AT_RULE_PRELUDE_RE.sub(
         lambda m: _blank_preserving_newlines(m.group(0)),

@@ -8,13 +8,13 @@ build time via the ``$bp-<name>`` dialect.
 
 Example source:
 
-    @media (max-width: $bp-tablet) { ... }
-    @container (max-width: $bp-container-narrow) { ... }
+    @media (width <= $bp-tablet) { ... }
+    @container (inline-size <= $bp-container-narrow) { ... }
 
 After substitution:
 
-    @media (max-width: 600px) { ... }
-    @container (max-width: 200px) { ... }
+    @media (width <= 600px) { ... }
+    @container (inline-size <= 200px) { ... }
 
 Unknown breakpoint names raise ``ValueError`` so typos fail loudly at
 build time rather than silently disabling a responsive rule.
