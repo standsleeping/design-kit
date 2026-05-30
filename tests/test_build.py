@@ -139,6 +139,27 @@ def test_build_wraps_page_styles_in_pages_layer(tmp_path: Path) -> None:
     assert ".storybook-main-wrap" in html
 
 
+def test_build_outputs_modern_range_breakpoint_queries(tmp_path: Path) -> None:
+    """Responsive CSS uses range queries and logical container size checks."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    tokens_css = (tmp_path / "tokens.css").read_text(encoding="utf-8")
+    nav_row_css = (tmp_path / "components" / "nav-row.css").read_text(encoding="utf-8")
+    storybook_html = (tmp_path / "storybook.html").read_text(encoding="utf-8")
+    sticky_toc_css = (tmp_path / "components" / "sticky-toc.css").read_text(
+        encoding="utf-8"
+    )
+
+    combined = "\n".join([tokens_css, nav_row_css, storybook_html, sticky_toc_css])
+    assert "@media (width <= 600px)" in combined
+    assert "@media (width <= 899px)" in combined
+    assert "@media (width >= 1100px)" in combined
+    assert "@container (inline-size <= 200px)" in nav_row_css
+    assert "@media (max-width:" not in combined
+    assert "@media (min-width:" not in combined
+    assert "@container (max-width:" not in nav_row_css
+
+
 def test_build_emits_component_manifest(tmp_path: Path) -> None:
     """Writes a manifest.json listing every component .js (excluding runtime)."""
     build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
