@@ -6,15 +6,16 @@
 .dk-collapsible-section-header {
   display: flex;
   align-items: center;
-  width: 100%;
-  padding: var(--spacing-md) var(--spacing-lg); /* padding-lint: ok */
+  inline-size: 100%;
+  padding-block: var(--spacing-md);
+  padding-inline: var(--spacing-lg);
   border: none;
   background: var(--color-bg);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
   cursor: pointer;
   user-select: none;
   position: sticky;
-  top: 0;
+  inset-block-start: 0;
   z-index: 1;
   transition: background-color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
 }
@@ -29,7 +30,7 @@
 }
 
 .dk-collapsible-section-icon {
-  width: var(--spacing-2xl);
+  inline-size: var(--spacing-2xl);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   flex-shrink: 0;
@@ -37,7 +38,7 @@
 
 .dk-collapsible-section-title {
   flex: 1;
-  text-align: left;
+  text-align: start;
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);

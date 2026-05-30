@@ -10,28 +10,28 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  height: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
+  block-size: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
   /* PEER_RAIL: join the chrome rail, so the audit can verify this strip's
      computed height matches the formula above. See components/app-shell.css
      for the --peer-rail registration. */
   --peer-rail: chrome;
   padding: var(--spacing-md);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
   box-sizing: border-box;
-  min-width: 0;
+  min-inline-size: 0;
   /* Cap to the host's width so the bar is responsive against its OWN box, not
      just when a host (AppShell header) hands it an explicit width. Without this,
      flex-shrink:0 lets the strip size to its content and overflow in any
      content-sized context (e.g. a width-controlled preview); the cap forces the
      title/subtitle to ellipsize instead. See ELASTIC_CONTENT_NEEDS_GIVE. */
-  max-width: 100%;
+  max-inline-size: 100%;
 }
 
 /* Bottom variant: rail at the bottom of a column. Border switches sides so
    it separates the strip from the content above. */
 .dk-topbar-bottom {
-  border-bottom: none;
-  border-top: var(--border-width-thin) solid var(--color-border);
+  border-block-end: none;
+  border-block-start: var(--border-width-thin) solid var(--color-border);
 }
 
 /* Title takes the remaining horizontal space, pushing any siblings that
@@ -42,7 +42,7 @@
      widths — the subtitle (high flex-shrink below) yields first, keeping the
      title visible longest (RESPONSIVE_COMPONENTS: identity is highest priority). */
   flex: 1 1 auto;
-  min-width: 0;
+  min-inline-size: 0;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   overflow: hidden;
@@ -67,7 +67,7 @@
   /* Yield before the title: a high shrink factor makes the subtitle absorb the
      negative space first, so it ellipsizes away while the title is still legible. */
   flex: 0 100 auto;
-  min-width: 0;
+  min-inline-size: 0;
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   overflow: hidden;
@@ -79,5 +79,5 @@
    pushed apart. Append a spacer span. */
 .dk-topbar-spacer {
   flex: 1;
-  min-width: 0;
+  min-inline-size: 0;
 }

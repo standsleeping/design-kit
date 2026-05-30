@@ -1,17 +1,17 @@
 .dk-field-row {
-  min-height: var(--control-touch-target-md);
+  min-block-size: var(--control-touch-target-md);
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, auto);
   align-items: center;
   gap: var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-md); /* padding-lint: ok */
-  border-bottom: var(--dk-field-row-border, var(--border-width-thin) solid var(--color-border));
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-md);
+  border-block-end: var(--dk-field-row-border, var(--border-width-thin) solid var(--color-border));
 }
 
 .dk-field-row-compact {
-  min-height: var(--control-touch-target-sm);
-  padding-top: var(--spacing-xs); /* padding-lint: ok */
-  padding-bottom: var(--spacing-xs);
+  min-block-size: var(--control-touch-target-sm);
+  padding-block: var(--spacing-xs);
 }
 
 .dk-field-row-disabled {
@@ -31,7 +31,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  min-width: 0; /* let the control shrink to its grid cell so a floored control
-                   (e.g. Range) relaxes its min-width instead of overflowing */
-  max-width: var(--layout-content-track-width);
+  min-inline-size: 0; /* let the control shrink to its grid cell so a floored control
+                         (e.g. Range) relaxes its min-width instead of overflowing */
+  max-inline-size: var(--layout-content-track-width);
 }
