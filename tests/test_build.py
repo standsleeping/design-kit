@@ -192,6 +192,127 @@ def test_build_outputs_logical_navigation_primitives(tmp_path: Path) -> None:
     assert "border-block-start: var(--border-width-thin)" in nav_css
 
 
+def test_build_outputs_logical_chrome_primitives(tmp_path: Path) -> None:
+    """Chrome/header row primitives use logical block/inline geometry."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    component_dir = tmp_path / "components"
+    chrome_css = "\n".join(
+        (component_dir / name).read_text(encoding="utf-8")
+        for name in (
+            "topbar.css",
+            "collapsible-section.css",
+            "field-row.css",
+            "bottom-tab-bar.css",
+        )
+    )
+
+    for physical in (
+        "height:",
+        "width: 100%;",
+        "min-height:",
+        "min-width:",
+        "max-width:",
+        "border-top:",
+        "border-bottom:",
+        "border-top-color:",
+        "padding-top:",
+        "padding-bottom:",
+        "top: 0;",
+        "text-align: left",
+    ):
+        assert physical not in chrome_css
+
+    assert "block-size: calc(var(--layout-chrome-bar-h)" in chrome_css
+    assert "inline-size: 100%;" in chrome_css
+    assert "min-block-size: var(--control-touch-target-md)" in chrome_css
+    assert "min-inline-size: 0;" in chrome_css
+    assert "max-inline-size: 100%;" in chrome_css
+    assert "border-block-start: var(--border-width-thin)" in chrome_css
+    assert "border-block-end: var(--border-width-thin)" in chrome_css
+    assert "padding-block-end: env(safe-area-inset-bottom, 0)" in chrome_css
+    assert "inset-block-start: 0;" in chrome_css
+    assert "text-align: start;" in chrome_css
+
+
+def test_build_outputs_logical_panel_list_primitives(tmp_path: Path) -> None:
+    """Panel/list/tab primitives use logical block and inline geometry."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    component_dir = tmp_path / "components"
+    primitive_css = "\n".join(
+        (component_dir / name).read_text(encoding="utf-8")
+        for name in (
+            "panel.css",
+            "tab-bar.css",
+            "scroll-list.css",
+            "form-layout.css",
+            "adaptive-metrics-list.css",
+            "code-block.css",
+        )
+    )
+
+    for physical in (
+        "border-bottom:",
+        "border-bottom-color:",
+        "padding-bottom:",
+        "text-align: left",
+        "text-align: right",
+        "width: 100%;",
+        "min-width:",
+        "margin-left:",
+    ):
+        assert physical not in primitive_css
+
+    assert "border-block-end: var(--border-width-thin)" in primitive_css
+    assert "border-block-end-color: var(--color-link)" in primitive_css
+    assert "padding-block: var(--spacing-sm)" in primitive_css
+    assert "padding-inline: var(--spacing-md)" in primitive_css
+    assert "text-align: start;" in primitive_css
+    assert "text-align: end;" in primitive_css
+    assert "inline-size: 100%;" in primitive_css
+    assert "min-inline-size: 0;" in primitive_css
+    assert "margin-inline-start: auto;" in primitive_css
+
+
+def test_build_outputs_logical_form_control_primitives(tmp_path: Path) -> None:
+    """Form/control primitives use logical sizing and inline-end borders."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    component_dir = tmp_path / "components"
+    control_css = "\n".join(
+        (component_dir / name).read_text(encoding="utf-8")
+        for name in (
+            "button.css",
+            "text-input.css",
+            "search-input.css",
+            "select.css",
+            "textarea.css",
+            "range.css",
+            "segmented-toggle.css",
+            "container.css",
+        )
+    )
+
+    for physical in (
+        "width: 100%;",
+        "min-width:",
+        "max-width:",
+        "min-height:",
+        "border-right:",
+        "text-align: right",
+    ):
+        assert physical not in control_css
+
+    assert "inline-size: 100%;" in control_css
+    assert "min-inline-size: var(--control-min-width-md)" in control_css
+    assert "min-inline-size: min(var(--control-input-width-md), 100%)" in control_css
+    assert "min-block-size: var(--control-min-height-lg)" in control_css
+    assert "max-inline-size: 100%;" in control_css
+    assert "border-inline-end: var(--border-width-thin)" in control_css
+    assert "text-align: end;" in control_css
+
+
 def test_build_outputs_modern_emergency_text_wrapping(tmp_path: Path) -> None:
     """Long diagnostic text uses overflow-wrap rather than word-break hacks."""
     build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
