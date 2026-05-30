@@ -156,6 +156,26 @@ def test_reset_uses_standard_text_size_adjust_without_font_smoothing() -> None:
     assert "html { text-size-adjust: 100%;" in css
 
 
+def test_defaults_and_utilities_use_logical_box_properties() -> None:
+    """Generated defaults should adapt to writing mode and direction."""
+    css = generate_token_css(TOKENS_PATH)
+
+    assert "overflow-x:" not in css
+    assert "border-left:" not in css
+    assert "border-bottom:" not in css
+    assert "text-align: left" not in css
+    assert "padding-bottom:" not in css
+    assert "top: 0;" not in css
+    assert "width: 100%;" not in css
+
+    assert "overflow-inline: auto;" in css
+    assert "border-inline-start: var(--border-width-thick)" in css
+    assert "border-block-end: var(--border-width-thin)" in css
+    assert "text-align: start;" in css
+    assert ".w-full { inline-size: 100%; }" in css
+    assert ".sticky { position: sticky; inset-block-start: 0;" in css
+
+
 def test_validation_rejects_theme_missing_luminance(tmp_path: Path) -> None:
     """A theme without luminance.light.color raises a pointed ValueError."""
     tokens = {
