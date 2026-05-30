@@ -160,6 +160,38 @@ def test_build_outputs_modern_range_breakpoint_queries(tmp_path: Path) -> None:
     assert "@container (max-width:" not in nav_row_css
 
 
+def test_build_outputs_logical_navigation_primitives(tmp_path: Path) -> None:
+    """Navigation/menu primitives use flow-relative start/end geometry."""
+    build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
+
+    component_dir = tmp_path / "components"
+    nav_css = "\n".join(
+        (component_dir / name).read_text(encoding="utf-8")
+        for name in ("menu-item.css", "nav-row.css", "page-nav.css", "toc.css")
+    )
+
+    for physical in (
+        "border-left:",
+        "border-left-color:",
+        "padding-left:",
+        "margin-left:",
+        "text-align: left",
+        "text-align: right",
+        "width: 100%;",
+        "border-top:",
+    ):
+        assert physical not in nav_css
+
+    assert "border-inline-start: var(--border-width-medium)" in nav_css
+    assert "border-inline-start-color: var(--color-link)" in nav_css
+    assert "padding-inline-start: var(--spacing-md)" in nav_css
+    assert "margin-inline-start: auto;" in nav_css
+    assert "text-align: start;" in nav_css
+    assert "text-align: end;" in nav_css
+    assert "inline-size: 100%;" in nav_css
+    assert "border-block-start: var(--border-width-thin)" in nav_css
+
+
 def test_build_outputs_modern_emergency_text_wrapping(tmp_path: Path) -> None:
     """Long diagnostic text uses overflow-wrap rather than word-break hacks."""
     build(tokens_path=TOKENS_PATH, output_dir=tmp_path)
