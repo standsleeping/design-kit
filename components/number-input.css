@@ -1,6 +1,6 @@
 .dk-number-input {
-  width: var(--control-input-width-xs);
-  min-height: var(--control-min-height-lg);
+  inline-size: var(--control-input-width-xs);
+  min-block-size: var(--control-min-height-lg);
   font-family: var(--typography-mono);
   font-size: var(--font-size-sm);
   line-height: var(--font-line-height-base);
@@ -27,7 +27,7 @@
 }
 
 .dk-number-input-sm {
-  min-height: var(--control-min-height-sm);
+  min-block-size: var(--control-min-height-sm);
   font-size: var(--font-size-xs);
   padding: var(--spacing-xs);
 }

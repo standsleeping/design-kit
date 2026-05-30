@@ -1,7 +1,7 @@
 .dk-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  inline-size: 100%;
 }
 
 .dk-container-standard {
@@ -17,7 +17,8 @@
   display: grid;
   grid-template-columns: minmax(0, var(--layout-content-max-width, 680px));
   justify-content: center;
-  padding: var(--spacing-2xl) var(--spacing-xl); /* padding-lint: ok */
+  padding-block: var(--spacing-2xl);
+  padding-inline: var(--spacing-xl);
   gap: 1lh;
 }
 

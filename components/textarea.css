@@ -1,6 +1,6 @@
 .dk-textarea {
-  width: 100%;
-  min-height: 4lh;
+  inline-size: 100%;
+  min-block-size: 4lh;
   font-family: var(--typography-mono);
   font-size: var(--font-size-sm);
   line-height: var(--font-line-height-base);

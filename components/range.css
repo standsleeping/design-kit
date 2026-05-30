@@ -2,29 +2,29 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  min-width: min(var(--control-input-width-lg), 100%);
+  min-inline-size: min(var(--control-input-width-lg), 100%);
 }
 
 .dk-range-input {
   flex: 1;
-  min-width: min(var(--control-input-width-sm), 100%);
+  min-inline-size: min(var(--control-input-width-sm), 100%);
 }
 
 .dk-range-value {
-  min-width: 3ch; /* dimension-lint: ok, character-relative width for digit alignment */
-  text-align: right;
+  min-inline-size: 3ch; /* dimension-lint: ok, character-relative width for digit alignment */
+  text-align: end;
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
 }
 
 .dk-range-sm {
-  min-width: 0;
+  min-inline-size: 0;
   gap: var(--spacing-xs);
 }
 
 .dk-range-sm .dk-range-input {
-  min-width: 0;
+  min-inline-size: 0;
 }
 
 .dk-range-sm .dk-range-value {

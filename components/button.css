@@ -4,8 +4,8 @@
   justify-content: center;
   gap: var(--spacing-sm);
   padding: var(--control-padding);
-  min-width: var(--control-min-width-md);
-  min-height: var(--control-min-height-lg);
+  min-inline-size: var(--control-min-width-md);
+  min-block-size: var(--control-min-height-lg);
   font-family: var(--typography-body);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -44,8 +44,8 @@
 }
 
 .dk-button-sm {
-  min-width: 0;
-  min-height: 0;
+  min-inline-size: 0;
+  min-block-size: 0;
   padding: var(--spacing-xs);
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);

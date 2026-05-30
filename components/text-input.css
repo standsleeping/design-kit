@@ -1,7 +1,7 @@
 .dk-text-input {
-  width: 100%;
-  min-width: min(var(--control-input-width-md), 100%);
-  min-height: var(--control-min-height-lg);
+  inline-size: 100%;
+  min-inline-size: min(var(--control-input-width-md), 100%);
+  min-block-size: var(--control-min-height-lg);
   font-family: var(--typography-mono);
   font-size: var(--font-size-sm);
   line-height: var(--font-line-height-base);
@@ -28,8 +28,8 @@
 }
 
 .dk-text-input-sm {
-  min-width: 0;
-  min-height: var(--control-min-height-sm);
+  min-inline-size: 0;
+  min-block-size: var(--control-min-height-sm);
   font-size: var(--font-size-xs);
   padding: var(--spacing-xs);
 }
