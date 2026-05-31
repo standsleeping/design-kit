@@ -43,30 +43,25 @@ export const variants = [
 
 /**
  * @param {{ title?: string, count?: number, expanded?: boolean, disabled?: boolean }} [props]
- * @returns {HTMLDivElement}
+ * @returns {HTMLDetailsElement}
  */
 export function render(props = {}) {
   const title = props.title ?? propTypes.title.default;
   const count = props.count ?? propTypes.count.default;
-  let expanded = props.expanded ?? propTypes.expanded.default;
+  const expanded = props.expanded ?? propTypes.expanded.default;
   const disabled = props.disabled ?? propTypes.disabled.default;
 
-  const root = document.createElement('div');
-  const classes = ['dk-expandable-card'];
-  if (expanded) classes.push('dk-expandable-card-expanded');
-  if (disabled) classes.push('dk-expandable-card-disabled');
-  root.className = classes.join(' ');
+  const root = document.createElement('details');
+  root.className = disabled ? 'dk-expandable-card dk-expandable-card-disabled' : 'dk-expandable-card';
+  root.open = expanded;
 
-  const header = document.createElement('button');
-  header.type = 'button';
+  const header = document.createElement('summary');
   header.className = 'dk-expandable-card-header';
-  header.setAttribute('aria-expanded', String(expanded));
-  header.disabled = disabled;
 
   const icon = document.createElement('span');
   icon.className = 'dk-expandable-card-icon';
   icon.setAttribute('aria-hidden', 'true');
-  icon.textContent = disabled ? '\u2014' : expanded ? '\u25BE' : '\u25B8';
+  if (disabled) icon.textContent = '—';
 
   const titleEl = document.createElement('span');
   titleEl.className = 'dk-expandable-card-title';
@@ -81,22 +76,11 @@ export function render(props = {}) {
   const content = document.createElement('div');
   content.className = 'dk-expandable-card-content';
   content.dataset.slot = 'content';
-  if (!expanded) content.hidden = true;
 
   root.append(header, content);
 
-  header.addEventListener('click', () => {
-    if (disabled) return;
-    expanded = !expanded;
-    root.classList.toggle('dk-expandable-card-expanded', expanded);
-    icon.textContent = expanded ? '\u25BE' : '\u25B8';
-    header.setAttribute('aria-expanded', String(expanded));
-    content.hidden = !expanded;
-    root.dispatchEvent(new CustomEvent('expandable-card:toggle', {
-      bubbles: true,
-      detail: { expanded },
-    }));
-  });
+  // <details> has no native disabled state; cancel the summary toggle when disabled.
+  if (disabled) header.addEventListener('click', (event) => event.preventDefault());
 
   return root;
 }

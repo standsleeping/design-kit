@@ -42,25 +42,23 @@ export const variants = [
 
 /**
  * @param {{ title?: string, count?: number, expanded?: boolean }} [props]
- * @returns {HTMLDivElement}
+ * @returns {HTMLDetailsElement}
  */
 export function render(props = {}) {
   const title = props.title ?? propTypes.title.default;
   const count = props.count ?? propTypes.count.default;
-  let expanded = props.expanded ?? propTypes.expanded.default;
+  const expanded = props.expanded ?? propTypes.expanded.default;
 
-  const root = document.createElement('div');
-  root.className = `dk-collapsible-section${expanded ? ' dk-collapsible-section-expanded' : ''}`;
+  const root = document.createElement('details');
+  root.className = 'dk-collapsible-section';
+  root.open = expanded;
 
-  const header = document.createElement('button');
-  header.type = 'button';
+  const header = document.createElement('summary');
   header.className = 'dk-collapsible-section-header';
-  header.setAttribute('aria-expanded', String(expanded));
 
   const icon = document.createElement('span');
   icon.className = 'dk-collapsible-section-icon';
   icon.setAttribute('aria-hidden', 'true');
-  icon.textContent = expanded ? '\u25BC' : '\u25B6';
 
   const titleEl = document.createElement('span');
   titleEl.className = 'dk-collapsible-section-title';
@@ -78,21 +76,8 @@ export function render(props = {}) {
   const content = document.createElement('div');
   content.className = 'dk-collapsible-section-content';
   content.dataset.slot = 'content';
-  if (!expanded) content.hidden = true;
 
   root.append(header, content);
-
-  header.addEventListener('click', () => {
-    expanded = !expanded;
-    root.classList.toggle('dk-collapsible-section-expanded', expanded);
-    header.setAttribute('aria-expanded', String(expanded));
-    icon.textContent = expanded ? '\u25BC' : '\u25B6';
-    content.hidden = !expanded;
-    root.dispatchEvent(new CustomEvent('collapsible-section:toggle', {
-      bubbles: true,
-      detail: { expanded },
-    }));
-  });
 
   return root;
 }

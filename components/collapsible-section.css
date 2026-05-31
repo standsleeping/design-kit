@@ -14,10 +14,15 @@
   border-block-end: var(--border-width-thin) solid var(--color-border);
   cursor: pointer;
   user-select: none;
+  list-style: none;
   position: sticky;
   inset-block-start: 0;
   z-index: 1;
   transition: background-color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
+}
+
+.dk-collapsible-section-header::-webkit-details-marker {
+  display: none;
 }
 
 .dk-collapsible-section-header:hover {
@@ -36,6 +41,14 @@
   flex-shrink: 0;
 }
 
+.dk-collapsible-section-icon::before {
+  content: '\25B6';
+}
+
+.dk-collapsible-section[open] .dk-collapsible-section-icon::before {
+  content: '\25BC';
+}
+
 .dk-collapsible-section-title {
   flex: 1;
   text-align: start;
@@ -51,8 +64,4 @@
   font-family: var(--typography-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
-}
-
-.dk-collapsible-section-content[hidden] {
-  display: none;
 }
