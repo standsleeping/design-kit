@@ -9,7 +9,10 @@ export const propTypes = {
   placeholder: { type: 'string', default: '' },
   rows: { type: 'number', default: 4 },
   size: { type: 'string', default: 'default' },
-  invalid: { type: 'boolean', default: false },
+  required: { type: 'boolean', default: false },
+  pattern: { type: 'string', default: '' },
+  minlength: { type: 'number', default: 0 },
+  maxlength: { type: 'number', default: 0 },
   disabled: { type: 'boolean', default: false },
 };
 
@@ -30,9 +33,9 @@ export const variants = [
     props: { placeholder: 'Compact', size: 'sm', rows: 3 },
   },
   {
-    name: 'invalid',
-    description: 'Invalid state (danger border)',
-    props: { value: '{ malformed', invalid: true, rows: 4 },
+    name: 'required',
+    description: 'Required field (native :user-invalid when empty)',
+    props: { placeholder: 'Required', required: true, rows: 4 },
   },
   {
     name: 'disabled',
@@ -42,7 +45,7 @@ export const variants = [
 ];
 
 /**
- * @param {{ value?: string, placeholder?: string, rows?: number, size?: string, invalid?: boolean, disabled?: boolean }} [props]
+ * @param {{ value?: string, placeholder?: string, rows?: number, size?: string, required?: boolean, pattern?: string, minlength?: number, maxlength?: number, disabled?: boolean }} [props]
  * @returns {HTMLTextAreaElement}
  */
 export function render(props = {}) {
@@ -50,16 +53,22 @@ export function render(props = {}) {
   const placeholder = props.placeholder ?? propTypes.placeholder.default;
   const rows = props.rows ?? propTypes.rows.default;
   const size = props.size ?? propTypes.size.default;
-  const invalid = props.invalid ?? propTypes.invalid.default;
+  const required = props.required ?? propTypes.required.default;
+  const pattern = props.pattern ?? propTypes.pattern.default;
+  const minlength = props.minlength ?? propTypes.minlength.default;
+  const maxlength = props.maxlength ?? propTypes.maxlength.default;
   const disabled = props.disabled ?? propTypes.disabled.default;
 
   const ta = document.createElement('textarea');
   ta.className = 'dk-textarea';
   if (size === 'sm') ta.classList.add('dk-textarea-sm');
-  if (invalid) ta.classList.add('dk-textarea-invalid');
   ta.rows = rows;
   if (placeholder) ta.placeholder = placeholder;
   if (value) ta.value = value;
+  if (required) ta.required = true;
+  if (pattern) ta.setAttribute('pattern', pattern);
+  if (minlength > 0) ta.minLength = minlength;
+  if (maxlength > 0) ta.maxLength = maxlength;
   if (disabled) ta.disabled = true;
   return ta;
 }

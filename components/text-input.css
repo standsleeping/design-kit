@@ -27,6 +27,10 @@
   background: var(--color-code-bg);
 }
 
+.dk-text-input:user-invalid {
+  border-color: var(--color-danger);
+}
+
 .dk-text-input-sm {
   min-inline-size: 0;
   min-block-size: var(--control-min-height-sm);

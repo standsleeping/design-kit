@@ -31,6 +31,10 @@
   background: var(--color-code-bg);
 }
 
+.dk-search-input:user-invalid {
+  border-color: var(--color-danger);
+}
+
 .dk-search-input-sm {
   min-inline-size: 0;
   min-block-size: var(--control-min-height-sm);

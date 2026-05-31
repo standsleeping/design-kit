@@ -733,10 +733,10 @@ async function main() {
       textarea.addEventListener('input', () => {
         try {
           const parsed = JSON.parse(textarea.value);
-          textarea.classList.remove('dk-textarea-invalid');
+          textarea.setCustomValidity('');
           onChange(parsed);
         } catch {
-          textarea.classList.add('dk-textarea-invalid');
+          textarea.setCustomValidity('Invalid JSON');
         }
       });
       row.append(textarea);

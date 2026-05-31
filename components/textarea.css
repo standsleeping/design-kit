@@ -1,6 +1,8 @@
 .dk-textarea {
   inline-size: 100%;
   min-block-size: 4lh;
+  max-block-size: 24lh;
+  field-sizing: content;
   font-family: var(--typography-mono);
   font-size: var(--font-size-sm);
   line-height: var(--font-line-height-base);
@@ -27,7 +29,7 @@
   background: var(--color-code-bg);
 }
 
-.dk-textarea-invalid {
+.dk-textarea:user-invalid {
   border-color: var(--color-danger);
 }
 

@@ -10,6 +10,7 @@ export const propTypes = {
   max: { type: 'number', default: 100 },
   step: { type: 'number', default: 1 },
   placeholder: { type: 'string', default: '' },
+  required: { type: 'boolean', default: false },
   disabled: { type: 'boolean', default: false },
 };
 
@@ -17,11 +18,12 @@ export const variants = [
   { name: 'default', description: 'Zero-initialized, 0–100', props: {} },
   { name: 'bounded', description: 'Custom range and step', props: { value: 42, min: 0, max: 50, step: 2 } },
   { name: 'placeholder', description: 'Empty with placeholder', props: { value: NaN, placeholder: '— —' } },
+  { name: 'required', description: 'Required field (native :user-invalid when empty)', props: { value: NaN, placeholder: 'Required', required: true } },
   { name: 'disabled', description: 'Disabled state', props: { value: 7, disabled: true } },
 ];
 
 /**
- * @param {{ value?: number, min?: number, max?: number, step?: number, placeholder?: string, disabled?: boolean }} [props]
+ * @param {{ value?: number, min?: number, max?: number, step?: number, placeholder?: string, required?: boolean, disabled?: boolean }} [props]
  * @returns {HTMLInputElement}
  */
 export function render(props = {}) {
@@ -31,6 +33,7 @@ export function render(props = {}) {
   const max = props.max ?? propTypes.max.default;
   const step = props.step ?? propTypes.step.default;
   const placeholder = props.placeholder ?? propTypes.placeholder.default;
+  const required = props.required ?? propTypes.required.default;
   const disabled = props.disabled ?? propTypes.disabled.default;
 
   const root = document.createElement('input');
@@ -41,6 +44,7 @@ export function render(props = {}) {
   root.step = String(step);
   root.placeholder = placeholder;
   root.disabled = disabled;
+  if (required) root.required = true;
   if (Number.isFinite(rawValue)) root.value = String(rawValue);
 
   root.addEventListener('input', (event) => {

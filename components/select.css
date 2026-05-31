@@ -27,9 +27,53 @@
   background: var(--color-code-bg);
 }
 
+.dk-select:user-invalid {
+  border-color: var(--color-danger);
+}
+
 .dk-select-sm {
   min-inline-size: 0;
   min-block-size: var(--control-min-height-sm);
   font-size: var(--font-size-xs);
   padding: var(--spacing-xs);
+}
+
+.dk-select-auto {
+  field-sizing: content;
+  inline-size: auto;
+  min-inline-size: min(var(--control-input-width-sm), 100%);
+}
+
+@supports (appearance: base-select) {
+  .dk-select {
+    appearance: base-select;
+  }
+
+  .dk-select::picker(select) {
+    background: var(--color-bg);
+    border: var(--border-width-thin) solid var(--color-border);
+  }
+
+  .dk-select::picker-icon {
+    color: var(--color-text-muted);
+  }
+
+  .dk-select option {
+    color: var(--color-text);
+    background: var(--color-bg);
+    padding: var(--control-padding);
+  }
+
+  .dk-select option:hover { /* state-lint: ok, <option> is UA-rendered and focus lives on the parent <select>; the option is not separately focusable */
+    background: var(--color-code-bg);
+  }
+
+  .dk-select option:checked {
+    color: var(--color-focus-ring);
+    background: var(--color-code-bg);
+  }
+
+  .dk-select option::checkmark {
+    color: var(--color-focus-ring);
+  }
 }
