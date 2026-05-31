@@ -132,6 +132,33 @@ FONT_FACE = """\
 FONT_WOFF2_HREF = "fonts/Recursive_VF.woff2"
 
 
+# Order the four variable-font axes are registered in. Matches the order the
+# `--mono`/`--casl`/`--slnt`/`--crsv` defaults are emitted on :root.
+_FONT_AXES: tuple[str, str, str, str] = ("mono", "casl", "slnt", "crsv")
+
+
+def _emit_axis_property_rules(axis: dict[str, object]) -> list[str]:
+    """Emit one top-level @property block per variable-font axis.
+
+    Registering --mono/--casl/--slnt/--crsv as <number> custom properties lets
+    them animate/transition and gives each a typed initial value. Each rule is a
+    single-line block so build.py's PROPERTY_RULE_RE hoists it outside the
+    cascade layers. Initial values are pulled from primitive.font.axis (not
+    hardcoded) and are additive to the existing :root --mono/... declarations.
+
+    A trailing empty string keeps a blank line before the following @layer
+    statement, matching the spacing of the surrounding sections.
+    """
+    lines = [
+        f'@property --{name} {{ syntax: "<number>"; inherits: true;'
+        f" initial-value: {axis[name]}; }}"
+        for name in _FONT_AXES
+        if name in axis
+    ]
+    lines.append("")
+    return lines
+
+
 def _flatten_primitives(
     obj: dict[str, object], prefix: str = ""
 ) -> list[tuple[str, str]]:
@@ -157,6 +184,27 @@ def _resolve_ref(ref: str) -> str:
     return f"var(--{css_name})"
 
 
+def _resolve_value(value: str) -> str:
+    """Resolve a semantic value: a {token.ref} becomes var(--...), else verbatim."""
+    if value.startswith("{") and value.endswith("}"):
+        return _resolve_ref(value)
+    return value
+
+
+def _is_light_dark_pair(value: object) -> bool:
+    """True when a semantic leaf is a theme-independent {light, dark} luminance pair.
+
+    Such a pair is emitted once as a light-dark() declaration on :root rather
+    than recursed into, so the token (e.g. --color-overlay) is declared a single
+    time and resolves per luminance at use time.
+    """
+    return (
+        isinstance(value, dict)
+        and set(value.keys()) == {"light", "dark"}
+        and all(isinstance(v, str) for v in value.values())
+    )
+
+
 def _flatten_semantics(
     obj: dict[str, object], prefix: str = ""
 ) -> list[tuple[str, str]]:
@@ -168,7 +216,11 @@ def _flatten_semantics(
     pairs: list[tuple[str, str]] = []
     for key, value in obj.items():
         name = f"{prefix}-{key}" if prefix else key
-        if isinstance(value, dict):
+        if _is_light_dark_pair(value):
+            light = _resolve_value(str(value["light"]))  # type: ignore[index]
+            dark = _resolve_value(str(value["dark"]))  # type: ignore[index]
+            pairs.append((name, f"light-dark({light}, {dark})"))
+        elif isinstance(value, dict):
             pairs.extend(_flatten_semantics(value, name))
         elif isinstance(value, str) and value.startswith("{") and value.endswith("}"):
             pairs.append((name, _resolve_ref(value)))
@@ -279,8 +331,8 @@ RESET_LAYER = """\
 @layer reset {
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-variation-settings: 'MONO' var(--mono), 'CASL' var(--casl), 'CRSV' var(--crsv), 'slnt' var(--slnt); }
   html { text-size-adjust: 100%; line-height: var(--font-line-height-base); }
-  ul, ol { list-style: none; padding-inline-start: 0; }
-  h1, h2, h3, h4, h5, h6 { font-weight: var(--font-weight-semibold); text-wrap: balance; }
+  :where(ul, ol) { list-style: none; padding-inline-start: 0; }
+  :where(h1, h2, h3, h4, h5, h6) { font-weight: var(--font-weight-semibold); text-wrap: balance; }
   p { text-wrap: pretty; }
   button, input, textarea, select { font-family: inherit; font-size: inherit; }
 }"""
@@ -303,25 +355,25 @@ DEFAULTS_LAYER = """\
   summary::-webkit-details-marker { display: none; }
 
   body { font-family: var(--typography-body); --mono: 0; color: var(--color-text); background: var(--color-bg); line-height: var(--font-line-height-relaxed); }
-  h1, h2, h3, h4, h5, h6 { font-family: var(--typography-heading); --mono: 1; line-height: var(--font-line-height-tight); text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); }
-  h1 { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); }
-  h2 { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
-  h3 { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); }
+  :where(h1, h2, h3, h4, h5, h6) { font-family: var(--typography-heading); --mono: 1; line-height: var(--font-line-height-tight); text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); }
+  :where(h1) { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); }
+  :where(h2) { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
+  :where(h3) { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); }
   a { color: var(--color-link); font-weight: var(--font-weight-semibold); text-decoration: none; }
   a:hover { text-decoration: underline; }
   a:focus { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
-  code { font-family: var(--typography-mono); --mono: 1; --casl: 0; font-size: 0.875em; background: var(--color-code-bg); padding-block: 0.15em; padding-inline: 0.3em; }
-  pre { background: var(--color-code-bg); padding: var(--spacing-xl); overflow-inline: auto; line-height: var(--font-line-height-base); }
+  :where(code) { font-family: var(--typography-mono); --mono: 1; --casl: 0; font-size: 0.875em; background: var(--color-code-bg); padding-block: 0.15em; padding-inline: 0.3em; }
+  :where(pre) { background: var(--color-code-bg); padding: var(--spacing-xl); overflow-inline: auto; line-height: var(--font-line-height-base); }
   pre code { background: none; padding: 0; }
-  blockquote { padding: var(--spacing-xl); border-inline-start: var(--border-width-thick) solid var(--color-gray-400); background: var(--color-code-bg); font-style: italic; }
-  table { border-collapse: collapse; inline-size: 100%; font-size: var(--font-size-xs); }
-  th, td { padding: var(--spacing-sm) var(--spacing-lg); text-align: start; border-block-end: var(--border-width-thin) solid var(--color-border); }
-  th { font-family: var(--typography-mono); --mono: 1; font-weight: var(--font-weight-semibold); font-size: var(--font-size-xs); border-block-end-width: var(--border-width-medium); border-block-end-color: var(--color-gray-400); }
-  caption { font-family: var(--typography-mono); --mono: 1; font-size: var(--font-size-xs); color: var(--color-text-muted); text-align: start; padding-block-end: var(--spacing-md); text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); text-box: trim-both cap alphabetic; }
+  :where(blockquote) { padding: var(--spacing-xl); border-inline-start: var(--border-width-thick) solid var(--color-gray-400); background: var(--color-code-bg); font-style: italic; }
+  :where(table) { border-collapse: collapse; inline-size: 100%; font-size: var(--font-size-xs); }
+  :where(th, td) { padding: var(--spacing-sm) var(--spacing-lg); text-align: start; border-block-end: var(--border-width-thin) solid var(--color-border); }
+  :where(th) { font-family: var(--typography-mono); --mono: 1; font-weight: var(--font-weight-semibold); font-size: var(--font-size-xs); border-block-end-width: var(--border-width-medium); border-block-end-color: var(--color-gray-400); }
+  :where(caption) { font-family: var(--typography-mono); --mono: 1; font-size: var(--font-size-xs); color: var(--color-text-muted); text-align: start; padding-block-end: var(--spacing-md); text-transform: uppercase; letter-spacing: var(--font-letter-spacing-wide); text-box: trim-both cap alphabetic; }
   .content-table { border-collapse: separate; border-spacing: 0; }
   .content-table th { position: sticky; inset-block-start: 0; background: var(--color-bg); z-index: var(--z-sticky); }
   .data-table { overflow-inline: auto; }
-  @media (width <= $bp-tablet) { th, td { padding: var(--spacing-xs); font-size: var(--font-size-xs); } }
+  @media (width <= $bp-tablet) { :where(th, td) { padding: var(--spacing-xs); font-size: var(--font-size-xs); } }
   .heading-anchor { color: inherit; text-decoration: none; font-weight: inherit; }
   .heading-anchor:hover { text-decoration: none; }
   .heading-anchor::after { content: " #"; color: transparent; font-weight: var(--font-weight-regular); transition: color 0.15s ease; }
@@ -420,6 +472,9 @@ def generate_token_css(
     sections = [
         FONT_FACE,
         "",
+        *_emit_axis_property_rules(
+            data.get("primitive", {}).get("font", {}).get("axis", {})
+        ),
         f"@layer {CSS_LAYER_ORDER};",
         "",
         RESET_LAYER,

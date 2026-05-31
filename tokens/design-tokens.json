@@ -221,6 +221,12 @@
   },
   "semantic": {
     "default-theme": "mono-purple",
+    "color": {
+      "overlay": {
+        "light": "rgb(0 0 0 / 0.35)",
+        "dark": "rgb(0 0 0 / 0.55)"
+      }
+    },
     "typography": {
       "body": "{font.family-prose}",
       "heading": "{font.family-mono}",
@@ -255,7 +261,6 @@
               "hover-bg": "{color.gray.100}",
               "active-bg": "{color.gray.200}",
               "selected-bg": "{color.gray.100}",
-              "overlay": "rgb(0 0 0 / 0.35)",
               "syntax-keyword": "{color.purple.500}",
               "syntax-string": "{color.gray.700}",
               "syntax-comment": "{color.gray.500}",
@@ -282,7 +287,6 @@
               "hover-bg": "{color.gray.650}",
               "active-bg": "{color.gray.500}",
               "selected-bg": "{color.gray.650}",
-              "overlay": "rgb(0 0 0 / 0.55)",
               "syntax-keyword": "{color.purple.300}",
               "syntax-string": "{color.gray.100}",
               "syntax-comment": "{color.gray.300}",
@@ -313,7 +317,6 @@
               "hover-bg": "{color.gray.100}",
               "active-bg": "{color.gray.200}",
               "selected-bg": "{color.gray.100}",
-              "overlay": "rgb(0 0 0 / 0.35)",
               "syntax-keyword": "{color.gray.700}",
               "syntax-string": "{color.gray.700}",
               "syntax-comment": "{color.gray.400}",
@@ -340,7 +343,6 @@
               "hover-bg": "{color.gray.650}",
               "active-bg": "{color.gray.500}",
               "selected-bg": "{color.gray.650}",
-              "overlay": "rgb(0 0 0 / 0.55)",
               "syntax-keyword": "{color.gray.100}",
               "syntax-string": "{color.gray.100}",
               "syntax-comment": "{color.gray.300}",
@@ -371,7 +373,6 @@
               "hover-bg": "{color.solarized.base2}",
               "active-bg": "{color.solarized.base1}",
               "selected-bg": "{color.solarized.base2}",
-              "overlay": "rgb(0 0 0 / 0.35)",
               "syntax-keyword": "{color.solarized.green}",
               "syntax-string": "{color.solarized.cyan}",
               "syntax-comment": "{color.solarized.base1}",
@@ -398,7 +399,6 @@
               "hover-bg": "{color.solarized.base02}",
               "active-bg": "{color.solarized.base01}",
               "selected-bg": "{color.solarized.base02}",
-              "overlay": "rgb(0 0 0 / 0.55)",
               "syntax-keyword": "{color.solarized.green}",
               "syntax-string": "{color.solarized.cyan}",
               "syntax-comment": "{color.solarized.base01}",
