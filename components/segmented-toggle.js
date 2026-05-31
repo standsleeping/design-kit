@@ -50,6 +50,8 @@ export const variants = [
   },
 ];
 
+let groupCounter = 0;
+
 /**
  * @typedef {{ id: string, label?: string }} SegmentedOption
  * @param {{ options?: SegmentedOption[], active?: string }} [props]
@@ -57,42 +59,28 @@ export const variants = [
  */
 export function render(props = {}) {
   const options = props.options ?? propTypes.options.default;
-  const initialActive = props.active ?? propTypes.active.default;
-  let active = initialActive;
+  const active = props.active ?? propTypes.active.default;
+  const group = `dk-segmented-toggle-${groupCounter++}`;
 
   const root = document.createElement('div');
   root.className = 'dk-segmented-toggle';
   root.setAttribute('role', 'radiogroup');
 
-  /** @type {{ el: HTMLButtonElement, id: string }[]} */
-  const buttons = options.map((opt) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'dk-segmented-toggle-button';
-    btn.dataset.option = opt.id;
-    btn.setAttribute('role', 'radio');
-    btn.textContent = opt.label ?? opt.id;
-    /** @param {boolean} isActive */
-    const setActive = (isActive) => {
-      btn.classList.toggle('dk-segmented-toggle-button-active', isActive);
-      btn.setAttribute('aria-checked', String(isActive));
-    };
-    setActive(opt.id === active);
-    btn.addEventListener('click', () => {
-      if (active === opt.id) return;
-      active = opt.id;
-      buttons.forEach(({ el, id }) => {
-        const isActive = id === active;
-        el.classList.toggle('dk-segmented-toggle-button-active', isActive);
-        el.setAttribute('aria-checked', String(isActive));
-      });
-      root.dispatchEvent(new CustomEvent('segmented-toggle:change', {
-        bubbles: true,
-        detail: { option: active },
-      }));
-    });
-    root.append(btn);
-    return { el: btn, id: opt.id };
+  options.forEach((opt, i) => {
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = group;
+    input.id = `${group}-${i}`;
+    input.className = 'dk-segmented-toggle-input';
+    input.value = opt.id;
+    input.checked = opt.id === active;
+
+    const label = document.createElement('label');
+    label.className = 'dk-segmented-toggle-button';
+    label.htmlFor = input.id;
+    label.textContent = opt.label ?? opt.id;
+
+    root.append(input, label);
   });
 
   return root;

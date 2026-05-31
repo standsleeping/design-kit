@@ -5,6 +5,15 @@
   flex-wrap: wrap;
 }
 
+.dk-tab-bar-input {
+  position: absolute;
+  inline-size: var(--border-width-thin);
+  block-size: var(--border-width-thin);
+  overflow: clip;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .dk-tab-bar-tab {
   padding-block: var(--spacing-xs);
   padding-inline: 0;
@@ -17,31 +26,34 @@
   cursor: pointer;
   white-space: nowrap;
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
+
+  &-sm {
+    font-size: var(--font-size-2xs);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-wide);
+  }
 }
 
-.dk-tab-bar-tab:hover {
+/* The .dk-tab-bar-tab is a <label> whose focusable control is the adjacent
+   radio; its focus indicator is .dk-tab-bar-input:focus-visible +
+   .dk-tab-bar-tab, so hover here is an honest affordance. */
+.dk-tab-bar-tab:hover { /* state-lint: ok, label-over-radio; focus shown via the adjacent .dk-tab-bar-input */
   color: var(--color-text);
 }
 
-.dk-tab-bar-tab:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: -2px;
-}
-
-.dk-tab-bar-tab-active {
+.dk-tab-bar-input:checked + .dk-tab-bar-tab {
   color: var(--color-link);
   font-weight: var(--font-weight-semibold);
   border-block-end-color: var(--color-link);
+}
+
+.dk-tab-bar-input:focus-visible + .dk-tab-bar-tab {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
 }
 
 .dk-tab-bar-separator {
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
   user-select: none;
-}
-
-.dk-tab-bar-tab-sm {
-  font-size: var(--font-size-2xs);
-  text-transform: uppercase;
-  letter-spacing: var(--font-letter-spacing-wide);
 }

@@ -653,8 +653,8 @@ def _section_tables() -> str:
             <thead><tr><th>Component</th><th>Category</th><th>Props</th><th>Events</th><th>Composition</th></tr></thead>
             <tbody>
               <tr><td>Button</td><td>Actions</td><td>variant, disabled, type</td><td>button:click</td><td>standalone</td></tr>
-              <tr><td>TabBar</td><td>Navigation</td><td>active, tabs</td><td>tab-bar:change</td><td>standalone</td></tr>
-              <tr><td>SegmentedToggle</td><td>Controls</td><td>active, options</td><td>segmented-toggle:change</td><td>standalone</td></tr>
+              <tr><td>TabBar</td><td>Navigation</td><td>active, tabs</td><td>change</td><td>standalone</td></tr>
+              <tr><td>SegmentedToggle</td><td>Controls</td><td>active, options</td><td>change</td><td>standalone</td></tr>
               <tr><td>CollapsibleSection</td><td>Layout</td><td>title, expanded, count</td><td>collapsible-section:toggle</td><td>slot-based</td></tr>
             </tbody>
           </table>

@@ -70,6 +70,8 @@ export const variants = [
   },
 ];
 
+let groupCounter = 0;
+
 /**
  * @typedef {{ id: string, label: string }} LangEntry
  * @typedef {{ code?: string, sources?: Record<string, string>, languages?: Array<{ id: string, label?: string }>, activeLanguage?: string }} CodeBlockProps
@@ -107,7 +109,7 @@ function pickCode(activeLanguage, props) {
  */
 export function render(props = {}) {
   const languages = resolveLanguages(props);
-  let activeLanguage = props.activeLanguage ?? languages[0]?.id ?? '';
+  const activeLanguage = props.activeLanguage ?? languages[0]?.id ?? '';
 
   const root = document.createElement('div');
   root.className = 'dk-code-block';
@@ -115,43 +117,39 @@ export function render(props = {}) {
   const header = document.createElement('div');
   header.className = 'dk-code-block-header';
 
-  /** @type {HTMLButtonElement[]} */
-  let tabButtons = [];
   if (languages.length > 1) {
+    const group = `dk-code-block-${groupCounter++}`;
     const tabs = document.createElement('div');
     tabs.className = 'dk-code-block-tabs';
-    tabs.setAttribute('role', 'tablist');
+    tabs.setAttribute('role', 'radiogroup');
     languages.forEach((lang, i) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = `dk-code-block-tab${lang.id === activeLanguage ? ' dk-code-block-tab-active' : ''}`;
-      btn.dataset.lang = lang.id;
-      btn.setAttribute('role', 'tab');
-      btn.setAttribute('aria-selected', String(lang.id === activeLanguage));
-      btn.textContent = lang.label;
-      btn.addEventListener('click', () => {
-        if (lang.id === activeLanguage) return;
-        activeLanguage = lang.id;
-        for (const b of tabButtons) {
-          const isActive = b.dataset.lang === activeLanguage;
-          b.classList.toggle('dk-code-block-tab-active', isActive);
-          b.setAttribute('aria-selected', String(isActive));
-        }
-        codeEl.textContent = pickCode(activeLanguage, props);
-        root.dispatchEvent(new CustomEvent('code-block:language-change', {
-          bubbles: true,
-          detail: { language: activeLanguage },
-        }));
-      });
-      tabButtons.push(btn);
-      tabs.append(btn);
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = group;
+      input.id = `${group}-${i}`;
+      input.className = 'dk-code-block-input';
+      input.value = lang.id;
+      input.checked = lang.id === activeLanguage;
+
+      const label = document.createElement('label');
+      label.className = 'dk-code-block-tab';
+      label.htmlFor = input.id;
+      label.textContent = lang.label;
+
+      tabs.append(input, label);
+
       if (i < languages.length - 1) {
         const sep = document.createElement('span');
         sep.className = 'dk-code-block-separator';
         sep.setAttribute('aria-hidden', 'true');
-        sep.textContent = '\u00B7';
+        sep.textContent = '·';
         tabs.append(sep);
       }
+    });
+    tabs.addEventListener('change', (e) => {
+      const target = e.target;
+      if (!(target instanceof HTMLInputElement)) return;
+      codeEl.textContent = pickCode(target.value, props);
     });
     header.append(tabs);
   }

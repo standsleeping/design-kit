@@ -4,9 +4,18 @@
   min-inline-size: 0;
   overflow-x: auto;
   scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
 }
 
-.dk-segmented-toggle::-webkit-scrollbar { display: none; }
+.dk-segmented-toggle-input {
+  position: absolute;
+  inline-size: var(--border-width-thin);
+  block-size: var(--border-width-thin);
+  overflow: clip;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 .dk-segmented-toggle-button {
   flex: 0 0 auto;
@@ -21,33 +30,30 @@
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
   white-space: nowrap;
+
+  &:last-of-type {
+    border-inline-end: var(--border-width-thin) solid var(--color-border);
+  }
 }
 
-.dk-segmented-toggle-button:last-child {
-  border-inline-end: var(--border-width-thin) solid var(--color-border);
-}
-
-.dk-segmented-toggle-button:first-child {
-}
-
-.dk-segmented-toggle-button:last-child {
-}
-
-.dk-segmented-toggle-button:hover {
-  background: var(--color-hover-bg);
-}
-
-.dk-segmented-toggle-button-active {
+.dk-segmented-toggle-input:checked + .dk-segmented-toggle-button {
   background: var(--color-accent-bg);
   color: var(--color-link);
   font-weight: var(--font-weight-medium);
 }
 
-.dk-segmented-toggle-button-active:hover {
+/* The .dk-segmented-toggle-button is a <label> whose focusable control is the
+   adjacent radio; its focus indicator is .dk-segmented-toggle-input:focus-visible
+   + .dk-segmented-toggle-button, so hover here is an honest affordance. */
+.dk-segmented-toggle-button:hover { /* state-lint: ok, label-over-radio; focus shown via the adjacent .dk-segmented-toggle-input */
+  background: var(--color-hover-bg);
+}
+
+.dk-segmented-toggle-input:checked + .dk-segmented-toggle-button:hover { /* state-lint: ok, checked-state hover on the same label-over-radio affordance */
   background: var(--color-accent-bg-hover);
 }
 
-.dk-segmented-toggle-button:focus-visible {
+.dk-segmented-toggle-input:focus-visible + .dk-segmented-toggle-button {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: -2px;
   z-index: 1;

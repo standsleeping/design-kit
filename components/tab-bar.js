@@ -49,6 +49,8 @@ export const variants = [
   },
 ];
 
+let groupCounter = 0;
+
 /**
  * @typedef {{ id: string, label?: string }} Tab
  * @param {{ tabs?: Tab[], active?: string }} [props]
@@ -56,43 +58,34 @@ export const variants = [
  */
 export function render(props = {}) {
   const tabs = props.tabs ?? propTypes.tabs.default;
-  let active = props.active ?? propTypes.active.default;
+  const active = props.active ?? propTypes.active.default;
+  const group = `dk-tab-bar-${groupCounter++}`;
 
   const root = document.createElement('div');
   root.className = 'dk-tab-bar';
-  root.setAttribute('role', 'tablist');
+  root.setAttribute('role', 'radiogroup');
 
-  /** @type {HTMLButtonElement[]} */
-  const buttons = [];
   tabs.forEach((tab, i) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `dk-tab-bar-tab${tab.id === active ? ' dk-tab-bar-tab-active' : ''}`;
-    btn.dataset.tab = tab.id;
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-selected', String(tab.id === active));
-    btn.textContent = tab.label ?? tab.id;
-    btn.addEventListener('click', () => {
-      if (tab.id === active) return;
-      active = tab.id;
-      for (const b of buttons) {
-        const isActive = b.dataset.tab === active;
-        b.classList.toggle('dk-tab-bar-tab-active', isActive);
-        b.setAttribute('aria-selected', String(isActive));
-      }
-      root.dispatchEvent(new CustomEvent('tab-bar:change', {
-        bubbles: true,
-        detail: { tab: active },
-      }));
-    });
-    buttons.push(btn);
-    root.append(btn);
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = group;
+    input.id = `${group}-${i}`;
+    input.className = 'dk-tab-bar-input';
+    input.value = tab.id;
+    input.checked = tab.id === active;
+
+    const label = document.createElement('label');
+    label.className = 'dk-tab-bar-tab';
+    label.htmlFor = input.id;
+    label.textContent = tab.label ?? tab.id;
+
+    root.append(input, label);
 
     if (i < tabs.length - 1) {
       const sep = document.createElement('span');
       sep.className = 'dk-tab-bar-separator';
       sep.setAttribute('aria-hidden', 'true');
-      sep.textContent = '\u00B7';
+      sep.textContent = '·';
       root.append(sep);
     }
   });

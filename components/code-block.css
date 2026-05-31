@@ -21,9 +21,18 @@
   min-inline-size: 0;
   overflow-x: auto;
   scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
 }
 
-.dk-code-block-tabs::-webkit-scrollbar { display: none; }
+.dk-code-block-input {
+  position: absolute;
+  inline-size: var(--border-width-thin);
+  block-size: var(--border-width-thin);
+  overflow: clip;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 .dk-code-block-tab {
   padding: var(--spacing-xs);
@@ -38,19 +47,22 @@
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
 }
 
-.dk-code-block-tab:hover {
+/* The .dk-code-block-tab is a <label> whose focusable control is the adjacent
+   radio; its focus indicator is .dk-code-block-input:focus-visible +
+   .dk-code-block-tab, so hover here is an honest affordance. */
+.dk-code-block-tab:hover { /* state-lint: ok, label-over-radio; focus shown via the adjacent .dk-code-block-input */
   color: var(--color-text);
 }
 
-.dk-code-block-tab:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: -2px;
-}
-
-.dk-code-block-tab-active {
+.dk-code-block-input:checked + .dk-code-block-tab {
   color: var(--color-link);
   font-weight: var(--font-weight-semibold);
   border-block-end-color: var(--color-link);
+}
+
+.dk-code-block-input:focus-visible + .dk-code-block-tab {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
 }
 
 .dk-code-block-separator {
@@ -79,6 +91,11 @@
   white-space: nowrap;
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease),
               border-color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
+
+  &.dk-code-block-copy-copied {
+    color: var(--color-success);
+    border-color: var(--color-success);
+  }
 }
 
 .dk-code-block-copy:hover {
@@ -91,11 +108,6 @@
   outline-offset: -2px;
 }
 
-.dk-code-block-copy-copied {
-  color: var(--color-success);
-  border-color: var(--color-success);
-}
-
 .dk-code-block-pre {
   margin: 0;
   padding: var(--spacing-xl);
@@ -105,9 +117,9 @@
   font-size: var(--font-size-xs);
   line-height: var(--font-line-height-relaxed);
   color: var(--color-text);
-}
 
-.dk-code-block-pre::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar { display: none; }
+}
 
 .dk-code-block-code {
   font-family: inherit;

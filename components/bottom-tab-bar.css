@@ -7,6 +7,15 @@
   padding-block-end: env(safe-area-inset-bottom, 0);
 }
 
+.dk-bottom-tab-bar-input {
+  position: absolute;
+  inline-size: var(--border-width-thin);
+  block-size: var(--border-width-thin);
+  overflow: clip;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .dk-bottom-tab-bar-tab {
   flex: 1;
   min-inline-size: 0;
@@ -27,11 +36,6 @@
   transition: color var(--motion-duration-fast, 0.15s) var(--motion-easing-default, ease);
 }
 
-.dk-bottom-tab-bar-tab:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: -2px;
-}
-
 .dk-bottom-tab-bar-label {
   min-inline-size: 0;
   overflow: hidden;
@@ -39,8 +43,13 @@
   white-space: nowrap;
 }
 
-.dk-bottom-tab-bar-tab-active {
+.dk-bottom-tab-bar-input:checked + .dk-bottom-tab-bar-tab {
   color: var(--color-link);
   border-block-start-color: var(--color-link);
   font-weight: var(--font-weight-semibold);
+}
+
+.dk-bottom-tab-bar-input:focus-visible + .dk-bottom-tab-bar-tab {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
 }

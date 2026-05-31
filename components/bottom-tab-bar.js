@@ -51,6 +51,8 @@ export const variants = [
   },
 ];
 
+let groupCounter = 0;
+
 /**
  * @typedef {{ id: string, label?: string }} BottomTab
  * @param {{ tabs?: BottomTab[], active?: string }} [props]
@@ -58,39 +60,33 @@ export const variants = [
  */
 export function render(props = {}) {
   const tabs = props.tabs ?? propTypes.tabs.default;
-  let active = props.active ?? propTypes.active.default;
+  const active = props.active ?? propTypes.active.default;
+  const group = `dk-bottom-tab-bar-${groupCounter++}`;
 
   const root = document.createElement('nav');
   root.className = 'dk-bottom-tab-bar';
-  root.setAttribute('role', 'tablist');
+  root.setAttribute('role', 'radiogroup');
 
-  const buttons = tabs.map((tab) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `dk-bottom-tab-bar-tab${tab.id === active ? ' dk-bottom-tab-bar-tab-active' : ''}`;
-    btn.dataset.tab = tab.id;
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-selected', String(tab.id === active));
+  tabs.forEach((tab, i) => {
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = group;
+    input.id = `${group}-${i}`;
+    input.className = 'dk-bottom-tab-bar-input';
+    input.value = tab.id;
+    input.checked = tab.id === active;
+
+    const label = document.createElement('label');
+    label.className = 'dk-bottom-tab-bar-tab';
+    label.htmlFor = input.id;
+
     const labelSpan = document.createElement('span');
     labelSpan.className = 'dk-bottom-tab-bar-label';
     labelSpan.textContent = tab.label ?? tab.id;
-    btn.append(labelSpan);
-    btn.addEventListener('click', () => {
-      if (tab.id === active) return;
-      active = tab.id;
-      for (const b of buttons) {
-        const isActive = b.dataset.tab === active;
-        b.classList.toggle('dk-bottom-tab-bar-tab-active', isActive);
-        b.setAttribute('aria-selected', String(isActive));
-      }
-      root.dispatchEvent(new CustomEvent('bottom-tab-bar:change', {
-        bubbles: true,
-        detail: { tab: active },
-      }));
-    });
-    return btn;
+    label.append(labelSpan);
+
+    root.append(input, label);
   });
 
-  for (const btn of buttons) root.append(btn);
   return root;
 }
