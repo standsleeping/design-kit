@@ -1,20 +1,31 @@
-/* .dk-modal is position: absolute. Requires a positioned ancestor.
-   For viewport-covering use, wrap in an AppShell or a full-viewport container
-   with position: relative. */
+/* .dk-modal is a native <dialog> opened via showModal(): it promotes to the top
+   layer and centers on the viewport, so it is position: fixed (not absolute) and
+   needs no positioned ancestor. The inset/padding/margin resets below clear the
+   UA <dialog> defaults (these zeros are UA-default resets, not layout margin). */
 .dk-modal {
-  position: absolute;
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
   z-index: var(--z-overlay, 1000);
   max-block-size: 80dvb;
   max-inline-size: calc(100% - 2 * var(--spacing-2xl));
   background: var(--color-bg);
   border: var(--border-width-medium) solid var(--color-gray-400);
-  display: flex;
+  color: var(--color-text);
+  display: none;
   flex-direction: column;
   overflow: hidden;
 }
 
-.dk-modal[hidden] {
-  display: none;
+.dk-modal[open] {
+  display: flex;
+}
+
+/* The defaults layer already tints the generic dialog::backdrop; this component
+   rule documents the modal's intent against the overlay token. */
+.dk-modal::backdrop {
+  background: var(--color-overlay);
 }
 
 .dk-modal-center {

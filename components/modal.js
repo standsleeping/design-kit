@@ -65,7 +65,7 @@ export const variants = [
 
 /**
  * @param {{ open?: boolean, title?: string, position?: 'center' | 'top-right' | 'bottom-right', width?: number }} [props]
- * @returns {{ node: HTMLDivElement, cleanup: () => void }}
+ * @returns {{ node: HTMLDialogElement, cleanup: () => void }}
  */
 export function render(props = {}) {
   const open = props.open ?? propTypes.open.default;
@@ -74,12 +74,13 @@ export function render(props = {}) {
   const width = props.width ?? propTypes.width.default;
   const titleId = `dk-modal-title-${nextId++}`;
 
-  const root = document.createElement('div');
+  // Native <dialog>: showModal() supplies the focus trap, background inert, and
+  // a native 'cancel' event for Escape (no manual keydown listener). The element
+  // already exposes role="dialog" implicitly, so only aria-labelledby is set.
+  const root = /** @type {HTMLDialogElement} */ (document.createElement('dialog'));
   root.className = `dk-modal dk-modal-${position}`;
-  root.setAttribute('role', 'dialog');
   root.setAttribute('aria-labelledby', titleId);
   root.style.inlineSize = `${width}px`;
-  root.hidden = !open;
 
   const header = document.createElement('div');
   header.className = 'dk-modal-header';
@@ -94,7 +95,7 @@ export function render(props = {}) {
   closeBtn.className = 'dk-modal-close';
   closeBtn.setAttribute('aria-label', 'Close');
   const closeSvg = buildIcon('cross-1');
-  if (closeSvg) closeBtn.append(closeSvg); else closeBtn.textContent = '\u2715';
+  if (closeSvg) closeBtn.append(closeSvg); else closeBtn.textContent = '✕';
 
   header.append(titleEl, closeBtn);
 
@@ -109,25 +110,24 @@ export function render(props = {}) {
   let offsetX = 0;
   let offsetY = 0;
 
-  const close = () => {
-    if (root.hidden) return;
-    root.hidden = true;
-    document.removeEventListener('keydown', onKeydown);
-    document.removeEventListener('pointermove', onPointerMove);
-    document.removeEventListener('pointerup', onPointerUp);
-    dragging = false;
-    root.classList.remove('dk-modal-dragging');
-    root.dispatchEvent(new CustomEvent('modal:close', { bubbles: true }));
-  };
-
-  const onKeydown = (/** @type {KeyboardEvent} */ e) => {
-    if (e.key === 'Escape') close();
+  // Open via showModal() (top layer + viewport centering). The storybook appends
+  // the node AFTER render() returns, and showModal() throws on a disconnected
+  // dialog, so defer the open to a microtask and guard on connectedness +
+  // current open state. Fall back to the open attribute if showModal is absent.
+  const show = () => {
+    if (!root.isConnected || root.open) return;
+    if (typeof root.showModal === 'function') {
+      root.showModal();
+    } else {
+      root.setAttribute('open', '');
+    }
+    root.dispatchEvent(new CustomEvent('modal:open', { bubbles: true }));
   };
 
   const onPointerMove = (/** @type {PointerEvent} */ e) => {
     if (!dragging) return;
-    root.style.left = `${e.clientX - offsetX}px`;
-    root.style.top = `${e.clientY - offsetY}px`;
+    root.style.insetInlineStart = `${e.clientX - offsetX}px`;
+    root.style.insetBlockStart = `${e.clientY - offsetY}px`;
   };
 
   const onPointerUp = () => {
@@ -137,7 +137,21 @@ export function render(props = {}) {
     document.removeEventListener('pointerup', onPointerUp);
   };
 
-  closeBtn.addEventListener('click', close);
+  closeBtn.addEventListener('click', () => {
+    root.close();
+  });
+
+  // Single teardown point. The native 'close' event fires for the close button
+  // (via root.close()), for the native 'cancel' event (Escape), and for any
+  // programmatic close. modal:close is dispatched here, once, with the same
+  // drag-listener cleanup the old hand-rolled close() performed.
+  root.addEventListener('close', () => {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    dragging = false;
+    root.classList.remove('dk-modal-dragging');
+    root.dispatchEvent(new CustomEvent('modal:close', { bubbles: true }));
+  });
 
   header.addEventListener('pointerdown', (e) => {
     const target = /** @type {Element | null} */ (e.target);
@@ -148,10 +162,10 @@ export function render(props = {}) {
     offsetY = e.clientY - rect.top;
 
     if (!hasBeenDragged) {
-      root.style.top = `${rect.top}px`;
-      root.style.left = `${rect.left}px`;
-      root.style.right = 'auto';
-      root.style.bottom = 'auto';
+      root.style.insetBlockStart = `${rect.top}px`;
+      root.style.insetInlineStart = `${rect.left}px`;
+      root.style.insetInlineEnd = 'auto';
+      root.style.insetBlockEnd = 'auto';
       root.style.transform = 'none';
       hasBeenDragged = true;
     }
@@ -164,12 +178,10 @@ export function render(props = {}) {
   });
 
   if (open) {
-    document.addEventListener('keydown', onKeydown);
-    root.dispatchEvent(new CustomEvent('modal:open', { bubbles: true }));
+    queueMicrotask(show);
   }
 
   const cleanup = () => {
-    document.removeEventListener('keydown', onKeydown);
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
   };
