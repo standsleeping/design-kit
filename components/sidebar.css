@@ -45,21 +45,21 @@
    rules below shrink to icon or zero. */
 .dk-sidebar-mode-inline {
   inline-size: var(--dk-sidebar-width);
-}
 
-.dk-sidebar-mode-inline[data-state="icon"] {
-  inline-size: var(--dk-sidebar-icon-width);
-  transition: inline-size 0.15s ease-in;
-}
+  &[data-state="icon"] {
+    inline-size: var(--dk-sidebar-icon-width);
+    transition: inline-size 0.15s ease-in;
+  }
 
-.dk-sidebar-mode-inline[data-state="hidden"] {
-  inline-size: 0;
-  /* Clear the side border so a collapsed sidebar leaves no visible 1px line
-     where its edge used to be. Overlay mode keeps the border (it slides off
-     via transform, so the border travels with it). */
-  border-inline-end: none;
-  border-inline-start: none;
-  transition: inline-size 0.15s ease-in;
+  &[data-state="hidden"] {
+    inline-size: 0;
+    /* Clear the side border so a collapsed sidebar leaves no visible 1px line
+       where its edge used to be. Overlay mode keeps the border (it slides off
+       via transform, so the border travels with it). */
+    border-inline-end: none;
+    border-inline-start: none;
+    transition: inline-size 0.15s ease-in;
+  }
 }
 
 /* Overlay mode rules. Inline-size is fixed (the expanded size); state controls
@@ -71,20 +71,20 @@
   z-index: var(--z-overlay, 1000);
   inline-size: var(--dk-sidebar-width);
   transform: translateX(0);
-}
 
-.dk-sidebar-mode-overlay.dk-sidebar-right {
-  inset-inline-start: auto;
-  inset-inline-end: 0;
-}
+  &.dk-sidebar-right {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+  }
 
-.dk-sidebar-mode-overlay[data-state="hidden"] {
-  transform: translateX(-100%);
-  transition: transform 0.18s ease-in;
-}
+  &[data-state="hidden"] {
+    transform: translateX(-100%);
+    transition: transform 0.18s ease-in;
+  }
 
-.dk-sidebar-mode-overlay.dk-sidebar-right[data-state="hidden"] {
-  transform: translateX(100%);
+  &.dk-sidebar-right[data-state="hidden"] {
+    transform: translateX(100%);
+  }
 }
 
 /* Hide the resizer when not at full width. */
@@ -131,9 +131,9 @@
   overflow-y: auto;
   min-block-size: 0;
   scrollbar-width: none;
-}
 
-.dk-sidebar-main::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar { display: none; }
+}
 
 .dk-sidebar-resizer {
   position: absolute;
@@ -143,14 +143,14 @@
   z-index: 2;
 }
 
+.dk-sidebar-resizer:hover { /* state-lint: ok, drag-only handle; pointer-driven resize, intentionally not keyboard-focusable */
+  background: var(--color-focus-ring-light, var(--color-focus-ring));
+}
+
 .dk-sidebar-left .dk-sidebar-resizer {
   inset-inline-end: calc(var(--resizer-handle-width) / -2);
 }
 
 .dk-sidebar-right .dk-sidebar-resizer {
   inset-inline-start: calc(var(--resizer-handle-width) / -2);
-}
-
-.dk-sidebar-resizer:hover { /* state-lint: ok, drag-only handle; mouse-driven resize */
-  background: var(--color-focus-ring-light, var(--color-focus-ring));
 }

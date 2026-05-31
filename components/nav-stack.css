@@ -29,13 +29,15 @@
    header rail and the scroll body keep their normal sizes. */
 .dk-nav-stack[data-animating] {
   overflow: hidden;
+
+  & .dk-nav-stack-level {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.22s ease-out;
+    will-change: transform;
+  }
 }
-.dk-nav-stack[data-animating] .dk-nav-stack-level {
-  position: absolute;
-  inset: 0;
-  transition: transform 0.22s ease-out;
-  will-change: transform;
-}
+
 .dk-nav-stack-level[data-anim-state="incoming-from-right"] {
   transform: translateX(100%);
 }
@@ -73,10 +75,10 @@
   min-block-size: calc(var(--layout-chrome-bar-h) * var(--chrome-bar-rows, 1));
   /* PEER_RAIL: join the chrome rail; audit verifies computed height. */
   --peer-rail: chrome;
-}
 
-.dk-nav-stack-header:not(:has(.dk-nav-stack-back)) {
-  align-items: center;
+  &:not(:has(.dk-nav-stack-back)) {
+    align-items: center;
+  }
 }
 
 .dk-nav-stack-title {
@@ -144,9 +146,9 @@
   overflow-y: auto;
   min-block-size: 0;
   scrollbar-width: none;
-}
 
-.dk-nav-stack-body::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar { display: none; }
+}
 
 .dk-nav-stack-list {
   display: flex;
@@ -195,8 +197,7 @@
 
 /* Icon state: triggered either by nav-stack's own data-state="icon" or by an
    ancestor sidebar in icon state. Both wirings share rules. */
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-icon,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-icon {
+:is(.dk-nav-stack[data-state="icon"], .dk-sidebar[data-state="icon"] .dk-nav-stack) .dk-nav-stack-icon {
   display: inline-block;
   flex-shrink: 0;
   inline-size: 1.25rem; /* dimension-lint: ok, fixed icon column, independent of local font-size */
@@ -207,8 +208,7 @@
   color: var(--color-text-muted);
 }
 
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-item-selected .dk-nav-stack-icon,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-item-selected .dk-nav-stack-icon {
+:is(.dk-nav-stack[data-state="icon"], .dk-sidebar[data-state="icon"] .dk-nav-stack) .dk-nav-stack-item-selected .dk-nav-stack-icon {
   color: var(--color-link);
 }
 
@@ -234,19 +234,18 @@
   text-transform: uppercase;
   letter-spacing: var(--font-letter-spacing-wide);
   border-inline-start: var(--border-width-medium) solid transparent;
+
+  /* Structural spacer pseudo (NEVER_MARGIN): non-first section headers carry
+     an in-flow ::before that adds rhythm above the header without escaping
+     into a sibling-collapsing margin. */
+  &:not(:first-child)::before {
+    content: "";
+    display: block;
+    block-size: var(--spacing-sm);
+  }
 }
 
-/* Structural spacer pseudo (NEVER_MARGIN): non-first section headers carry
-   an in-flow ::before that adds rhythm above the header without escaping
-   into a sibling-collapsing margin. */
-.dk-nav-stack-section-header:not(:first-child)::before {
-  content: "";
-  display: block;
-  block-size: var(--spacing-sm);
-}
-
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-section-item .dk-nav-stack-icon,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-section-item .dk-nav-stack-icon {
+:is(.dk-nav-stack[data-state="icon"], .dk-sidebar[data-state="icon"] .dk-nav-stack) .dk-nav-stack-section-item .dk-nav-stack-icon {
   color: var(--color-link);
 }
 
@@ -254,35 +253,26 @@
   color: var(--color-text-muted);
 }
 
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-label,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-label,
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-back-label,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-back-label,
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-chevron,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-chevron {
+:is(.dk-nav-stack[data-state="icon"], .dk-sidebar[data-state="icon"] .dk-nav-stack) :is(.dk-nav-stack-label, .dk-nav-stack-back-label, .dk-nav-stack-chevron) {
   display: none;
 }
 
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-title,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-title {
+:is(.dk-nav-stack[data-state="icon"], .dk-sidebar[data-state="icon"] .dk-nav-stack) .dk-nav-stack-title {
   display: none;
 }
 
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-header,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-header {
+:is(.dk-nav-stack[data-state="icon"], .dk-sidebar[data-state="icon"] .dk-nav-stack) .dk-nav-stack-header {
   justify-content: center;
   padding: var(--spacing-sm);
 }
 
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-back,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-back {
+:is(.dk-nav-stack[data-state="icon"], .dk-sidebar[data-state="icon"] .dk-nav-stack) .dk-nav-stack-back {
   inline-size: auto;
   justify-content: center;
   padding: var(--spacing-sm);
 }
 
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-item,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-item {
+:is(.dk-nav-stack[data-state="icon"], .dk-sidebar[data-state="icon"] .dk-nav-stack) .dk-nav-stack-item {
   justify-content: center;
   padding: var(--spacing-sm);
   /* Active-indicator (inline-start border) stays. Flush at the container edge per DK convention. */
@@ -291,17 +281,15 @@
 /* Icon state: section-header collapses to a 1px divider rule. The rhythm
    above and below the rule lives in ::before / ::after structural pseudos
    so the divider doesn't escape into a margin (NEVER_MARGIN). */
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-section-header,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-section-header {
+:is(.dk-nav-stack[data-state="icon"], .dk-sidebar[data-state="icon"] .dk-nav-stack) .dk-nav-stack-section-header {
   padding: 0;
   border-block-start: var(--border-width-thin) solid var(--color-border);
   border-inline-start: none;
   font-size: 0;
-}
 
-.dk-nav-stack[data-state="icon"] .dk-nav-stack-section-header::after,
-.dk-sidebar[data-state="icon"] .dk-nav-stack .dk-nav-stack-section-header::after {
-  content: "";
-  display: block;
-  block-size: var(--spacing-sm);
+  &::after {
+    content: "";
+    display: block;
+    block-size: var(--spacing-sm);
+  }
 }
