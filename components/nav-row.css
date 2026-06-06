@@ -18,15 +18,24 @@
   color: var(--color-text-muted);
 }
 
+/* Structural spacer absorbs the row's free space so the trailing meta sits at
+   the inline-end edge. This is the NEVER_MARGIN-compliant replacement for a
+   `margin-inline-start: auto` push on the trailing element. */
+.dk-nav-row-spacer {
+  flex: 1 1 auto;
+}
+
 .dk-nav-row-trailing {
-  margin-inline-start: auto;
+  flex: 0 0 auto;
   font-size: var(--font-size-2xs);
   color: var(--color-text-muted);
 }
 
 @container (inline-size <= $bp-container-narrow) {
+  .dk-nav-row-spacer {
+    display: none;
+  }
   .dk-nav-row-trailing {
     inline-size: 100%;
-    margin-inline-start: 0;
   }
 }

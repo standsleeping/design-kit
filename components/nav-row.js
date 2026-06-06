@@ -66,6 +66,11 @@ export function render(props = {}) {
   }
 
   if (trailing) {
+    const spacerEl = document.createElement('span');
+    spacerEl.className = 'dk-nav-row-spacer';
+    spacerEl.setAttribute('aria-hidden', 'true');
+    root.append(spacerEl);
+
     const trailingEl = document.createElement('span');
     trailingEl.className = 'dk-nav-row-trailing';
     trailingEl.textContent = trailing;
