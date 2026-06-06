@@ -232,6 +232,7 @@
     --layout-content-track-width: 13.75rem;
     --layout-reading-measure-sm: 64ch;
     --layout-reading-measure-md: 72ch;
+    --layout-reading-measure-lg: 80ch;
 
     /* semantic aliases: color theme = mono-purple */
     --color-bg: light-dark(var(--color-gray-50), var(--color-gray-700));
