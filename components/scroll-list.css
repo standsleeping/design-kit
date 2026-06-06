@@ -1,17 +1,14 @@
-/* Hidden-scrollbar scroll container (SCROLLBAR_HIDDEN_BY_DEFAULT).
-   The container scrolls via every input modality, but the bar is never
-   painted. No gutter is reserved, so layout cannot shift and children
-   always paint to the column edge. */
+/* Native-scrollbar scroll container (NATIVE_SCROLLBAR). The container
+   scrolls and the platform paints its own bar, themed via color-scheme.
+   Overlay-scrollbar platforms reserve nothing, so flush layout and zero
+   shift hold; classic platforms show a native bar at the column edge. */
 
 .dk-scroll-list {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   min-block-size: 0;
-  scrollbar-width: none;
 }
-
-.dk-scroll-list::-webkit-scrollbar { display: none; }
 
 .dk-scroll-list-item {
   display: block;

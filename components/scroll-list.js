@@ -1,6 +1,6 @@
 export const metadata = {
   name: 'ScrollList',
-  description: 'Vertical list with hover/selected backgrounds inside a permanent tinted-rail scroll container',
+  description: 'Vertical list with hover/selected backgrounds inside a native-scroll container',
   category: 'navigation',
 };
 
@@ -20,12 +20,12 @@ const sample = [
 export const variants = [
   {
     name: 'default',
-    description: 'Tall list with a selected row, content overflows so the rail is in use',
+    description: 'Tall list with a selected row, content overflows so the native scrollbar appears',
     props: { items: sample, selectedIndex: 2, height: '320px' },
   },
   {
     name: 'short',
-    description: 'Content fits without overflow; rail still reserves space so layout never shifts',
+    description: 'Content fits without overflow; no scrollbar appears',
     props: { items: sample.slice(0, 4), selectedIndex: 2, height: '320px' },
   },
   {

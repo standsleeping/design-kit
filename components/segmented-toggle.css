@@ -3,9 +3,6 @@
   max-inline-size: 100%;
   min-inline-size: 0;
   overflow-x: auto;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar { display: none; }
 }
 
 .dk-segmented-toggle-input {

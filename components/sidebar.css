@@ -121,18 +121,15 @@
   flex-shrink: 0;
 }
 
-/* Hidden-scrollbar scroll container (SCROLLBAR_HIDDEN_BY_DEFAULT). The
-   sidebar hosts arbitrary content; the bar is never painted, so children
-   always paint to the column edge — including expanded sections with
-   tinted backgrounds that would otherwise break against a reserved gutter. */
+/* Native-scrollbar scroll container (NATIVE_SCROLLBAR). The sidebar hosts
+   arbitrary content; the platform paints its own bar, themed via
+   color-scheme. Overlay platforms reserve no gutter, so expanded sections
+   with tinted backgrounds still paint to the column edge. */
 .dk-sidebar-main {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
   min-block-size: 0;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar { display: none; }
 }
 
 .dk-sidebar-resizer {

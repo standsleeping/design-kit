@@ -79,10 +79,7 @@
      belongs to leaf elements inside it (wide tables, code blocks), at their own
      edge. The old `overflow: auto` (both axes) silently turned any too-wide
      child into a forbidden horizontal scrollbar on the column itself.
-     Bar is hidden per SCROLLBAR_HIDDEN_BY_DEFAULT — no gutter to reserve. */
+     Native bar per NATIVE_SCROLLBAR — themed via color-scheme. */
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: none;
 }
-
-.dk-app-shell-main::-webkit-scrollbar { display: none; }

@@ -5,17 +5,13 @@
   background: var(--color-bg);
 }
 
-/* Hidden-scrollbar scroll container (SCROLLBAR_HIDDEN_BY_DEFAULT). A wide
-   table's horizontal overflow scrolls via wheel / shift+wheel / touch /
-   keyboard without painting a bar. Discoverability for "more columns to
-   the right" lives in the mask-image fade on .dk-table-wrap, not in the
-   bar itself. */
+/* Native-scrollbar scroll container (NATIVE_SCROLLBAR). A wide table's
+   horizontal overflow scrolls via wheel / shift+wheel / touch / keyboard,
+   and the platform paints its own bar (themed via color-scheme). The
+   mask-image fade on .dk-table-wrap is a separate "more columns" cue. */
 .dk-table-scroll {
   overflow-x: auto;
-  scrollbar-width: none;
 }
-
-.dk-table-scroll::-webkit-scrollbar { display: none; }
 
 .dk-table {
   border-collapse: collapse;
@@ -340,7 +336,6 @@
   z-index: 100;
   max-block-size: 70dvb;
   overflow-y: auto;
-  scrollbar-width: none;
   background: var(--color-bg);
   color: var(--color-text);
   border-block-start: var(--border-width-thin) solid var(--color-border);
@@ -349,8 +344,6 @@
   font-family: var(--typography-body);
   font-size: var(--font-size-sm);
 }
-
-.dk-sn-popup::-webkit-scrollbar { display: none; }
 
 .dk-sn-popup.dk-sn-visible {
   transform: translateY(0);

@@ -110,10 +110,7 @@
   padding-block: var(--spacing-md);
   padding-inline: 0;
   overflow-y: auto;
-  scrollbar-width: none;
 }
-
-.dk-sticky-toc-list::-webkit-scrollbar { display: none; }
 
 /* STATE_BELONGS_TO_INTERACTIVE: active indicator and level indent both live
    on the link so they stay aligned with the focus ring also on the link. */
