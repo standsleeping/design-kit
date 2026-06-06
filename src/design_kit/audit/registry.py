@@ -29,7 +29,7 @@ from design_kit.page_lint import run_page_lint
 from design_kit.peer_edge_lint import run_peer_edge_lint
 from design_kit.radius_lint import run_radius_lint
 from design_kit.scroll_axis_lint import run_scroll_axis_lint
-from design_kit.scrollbar_hidden_lint import run_scrollbar_hidden_lint
+from design_kit.scrollbar_native_lint import run_scrollbar_native_lint
 from design_kit.token_leak_lint import run_token_leak_lint
 from design_kit.token_reference_lint import run_token_reference_lint
 
@@ -240,21 +240,21 @@ REGISTRY: tuple[LintSpec, ...] = (
         ),
     ),
     _static_spec(
-        slug="scrollbar-hidden",
-        name="Scrollbar hidden",
-        principle="SCROLLBAR_HIDDEN_BY_DEFAULT",
+        slug="scrollbar-native",
+        name="Scrollbar native",
+        principle="NATIVE_SCROLLBAR",
         primary=lambda s: s.components_dir,
-        runner=lambda s: run_scrollbar_hidden_lint(s.components_dir),
+        runner=lambda s: run_scrollbar_native_lint(s.components_dir),
         to_findings=lambda r: (
             Finding(f"{v.file}:{v.line}", f"{v.selector} → {v.kind.value}: {v.snippet}")
             for v in r.violations
         ),
         remediation=(
-            "see SCROLLBAR_HIDDEN_BY_DEFAULT: every scroll container hides its "
-            "bar with scrollbar-width: none plus ::-webkit-scrollbar { display: none }. "
-            "Use overflow-(x|y): auto, never scroll. Do not set scrollbar-gutter, "
-            "scrollbar-color, or scrollbar-width to anything other than none. "
-            "Mark documented exceptions with /* scrollbar: ok */"
+            "see NATIVE_SCROLLBAR: scroll containers use overflow-(x|y): auto and "
+            "nothing else; the platform paints its own bar, themed by color-scheme. "
+            "Never set scrollbar-width, scrollbar-color, or scrollbar-gutter, never "
+            "style ::-webkit-scrollbar, and never use overflow: scroll. Mark a "
+            "component that owns its own viewport with /* scrollbar: ok */"
         ),
     ),
     _static_spec(

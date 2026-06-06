@@ -1,66 +1,64 @@
-"""Static scan of CSS for visible-scrollbar regressions.
+"""Static scan of CSS for scrollbar overrides that fight the native bar.
 
-Static-analysis corollary of SCROLLBAR_HIDDEN_BY_DEFAULT: every scroll
-container hides its bar via the two-line recipe
-(``scrollbar-width: none`` plus ``::-webkit-scrollbar { display: none }``).
-A visible bar — full or partial — is a layout-shift and flushness risk
-that the principle forbids in the layout-CSS surface area.
+Static-analysis corollary of NATIVE_SCROLLBAR: scroll containers use
+``overflow: auto`` and nothing else. The platform paints its own bar,
+themed by ``color-scheme`` on the root. Overriding the bar — hiding it,
+tinting it, resizing it, or reserving a gutter for it — is what this lint
+forbids. On overlay-scrollbar platforms the native bar floats and reserves
+no space (flush layout and zero shift hold); on classic-scrollbar platforms
+it rides the column edge, the one place a bar does not break a flush seam.
 
 Violations the lint catches:
 
 1. ``overflow: scroll`` / ``overflow-y: scroll`` / ``overflow-x: scroll``:
-   the ``scroll`` value forces a permanent bar; use ``auto`` and hide it.
-2. A scroll container (``overflow(-x|-y)?: auto``) without
-   ``scrollbar-width: none`` in the same rule.
-3. ``scrollbar-gutter:`` anywhere: hidden bars need no gutter to reserve.
-4. ``scrollbar-color:`` anywhere: a tinted bar is a visible bar.
-5. ``scrollbar-width:`` with any value other than ``none``: ``thin`` and
-   ``auto`` paint a bar.
-6. ``::-webkit-scrollbar`` rules whose body is anything other than
-   ``display: none``: width/track/thumb declarations all paint a bar.
+   the ``scroll`` value forces a permanent bar even when nothing overflows;
+   use ``auto`` so the bar appears only when needed.
+2. ``scrollbar-width:`` with any value: ``none`` hides the bar (the old
+   contract), ``thin`` / ``auto`` resize it; the native default is to set
+   nothing at all.
+3. ``scrollbar-color:`` anywhere: a tinted bar overrides the platform bar;
+   theme via ``color-scheme`` instead.
+4. ``scrollbar-gutter:`` anywhere: reserving a gutter inserts an always-on
+   inset strip that breaks the flush, edge-to-edge seam.
+5. ``::-webkit-scrollbar`` rules of any kind: track / thumb / display
+   declarations all replace or suppress the native bar.
 
 Scope: ``components/*.css`` only.
 
-Allowlist marker: ``/* scrollbar: ok */`` on the rule's selector line
-or on the offending declaration's line. Use only where the visible bar
-is the deliberate point of the surface (e.g., a code editor or terminal
-component that owns its own viewport metaphor; see INDEPENDENT_VIEWPORT).
+Allowlist marker: ``/* scrollbar: ok */`` on the rule's selector line or on
+the offending declaration's line. Use only where a component owns its own
+viewport metaphor and deliberately styles its own bar (e.g., a code editor
+or terminal; see INDEPENDENT_VIEWPORT).
 """
 
-from __future__ import annotations
-
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 from design_kit.logging import get_logger
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-    from pathlib import Path
 
 logger = get_logger(__name__)
 
 ALLOWLIST_MARKER = "scrollbar: ok"
 
 
-class ScrollbarHiddenLintOutcome(Enum):
+class ScrollbarNativeLintOutcome(Enum):
     PASSED = "passed"
     FAILED = "failed"
 
 
 class ViolationKind(Enum):
     OVERFLOW_SCROLL = "overflow-scroll"
-    MISSING_HIDDEN_WIDTH = "missing-hidden-width"
-    SCROLLBAR_GUTTER = "scrollbar-gutter"
+    SCROLLBAR_WIDTH = "scrollbar-width"
     SCROLLBAR_COLOR = "scrollbar-color"
-    NON_NONE_WIDTH = "non-none-width"
-    WEBKIT_NON_DISPLAY_NONE = "webkit-non-display-none"
+    SCROLLBAR_GUTTER = "scrollbar-gutter"
+    WEBKIT_SCROLLBAR = "webkit-scrollbar"
 
 
 @dataclass(frozen=True)
-class ScrollbarHiddenViolation:
+class ScrollbarNativeViolation:
     file: str
     line: int
     selector: str
@@ -69,19 +67,19 @@ class ScrollbarHiddenViolation:
 
 
 @dataclass(frozen=True)
-class ScrollbarHiddenLintResult:
-    outcome: ScrollbarHiddenLintOutcome
-    violations: list[ScrollbarHiddenViolation]
+class ScrollbarNativeLintResult:
+    outcome: ScrollbarNativeLintOutcome
+    violations: list[ScrollbarNativeViolation]
 
     @classmethod
-    def passed(cls) -> ScrollbarHiddenLintResult:
-        return cls(outcome=ScrollbarHiddenLintOutcome.PASSED, violations=[])
+    def passed(cls) -> "ScrollbarNativeLintResult":
+        return cls(outcome=ScrollbarNativeLintOutcome.PASSED, violations=[])
 
     @classmethod
     def failed(
-        cls, violations: list[ScrollbarHiddenViolation]
-    ) -> ScrollbarHiddenLintResult:
-        return cls(outcome=ScrollbarHiddenLintOutcome.FAILED, violations=violations)
+        cls, violations: list[ScrollbarNativeViolation]
+    ) -> "ScrollbarNativeLintResult":
+        return cls(outcome=ScrollbarNativeLintOutcome.FAILED, violations=violations)
 
 
 _COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
@@ -185,9 +183,6 @@ _COLOR_RE = re.compile(
 _WIDTH_RE = re.compile(
     r"(?<![-\w])(scrollbar-width)\s*:\s*([^;}]+);",
 )
-_ANY_DECL_RE = re.compile(
-    r"(?<![-\w])([a-z-]+)\s*:\s*([^;}]+);",
-)
 
 
 @dataclass(frozen=True)
@@ -208,39 +203,25 @@ def _parse_decls(rule: _Rule, regex: re.Pattern[str]) -> list[_Decl]:
     return results
 
 
-def _scrolls_on_some_axis(value: str) -> bool:
-    """True iff at least one axis of the value scrolls (auto or scroll)."""
-    tokens = value.strip().lower().split()
-    return any(t in ("auto", "scroll") for t in tokens)
-
-
 def _value_is_scroll(value: str) -> bool:
     """True iff the value forces a permanent bar on at least one axis."""
     tokens = value.strip().lower().split()
     return "scroll" in tokens
 
 
-def _has_scrollbar_width_none(rule: _Rule) -> bool:
-    for decl in _parse_decls(rule, _WIDTH_RE):
-        if decl.value.strip().lower() == "none":
-            return True
-    return False
-
-
 def _is_webkit_scrollbar_selector(selector: str) -> bool:
     return "::-webkit-scrollbar" in selector
 
 
-def _webkit_body_is_display_none(body: str) -> bool:
-    decls = []
-    for m in _ANY_DECL_RE.finditer(body):
-        decls.append((m.group(1).strip().lower(), m.group(2).strip().lower()))
-    if not decls:
-        return False
-    return all(prop == "display" and value == "none" for prop, value in decls)
+# Each forbidden scrollbar property maps to the violation kind it raises.
+_FORBIDDEN_PROPERTIES = (
+    (_GUTTER_RE, ViolationKind.SCROLLBAR_GUTTER),
+    (_COLOR_RE, ViolationKind.SCROLLBAR_COLOR),
+    (_WIDTH_RE, ViolationKind.SCROLLBAR_WIDTH),
+)
 
 
-def _scan_file(path: Path) -> list[ScrollbarHiddenViolation]:
+def _scan_file(path: Path) -> list[ScrollbarNativeViolation]:
     raw = path.read_text(encoding="utf-8")
     raw_lines = raw.splitlines()
     text = _strip_css_comments(raw)
@@ -250,81 +231,49 @@ def _scan_file(path: Path) -> list[ScrollbarHiddenViolation]:
             return False
         return ALLOWLIST_MARKER in raw_lines[line - 1]
 
-    def selector_marked(rule: _Rule) -> bool:
-        return line_marked(rule.line)
-
     def snippet_at(line: int) -> str:
         if 1 <= line <= len(raw_lines):
             return raw_lines[line - 1].strip()
         return ""
 
-    violations: list[ScrollbarHiddenViolation] = []
+    violations: list[ScrollbarNativeViolation] = []
 
     for rule in _iter_leaf_rules(text):
-        if selector_marked(rule):
+        if line_marked(rule.line):
             continue
 
         if _is_webkit_scrollbar_selector(rule.selector):
-            if not _webkit_body_is_display_none(rule.body):
-                violations.append(
-                    ScrollbarHiddenViolation(
-                        file=str(path),
-                        line=rule.line,
-                        selector=rule.selector,
-                        kind=ViolationKind.WEBKIT_NON_DISPLAY_NONE,
-                        snippet=snippet_at(rule.line),
-                    )
+            violations.append(
+                ScrollbarNativeViolation(
+                    file=str(path),
+                    line=rule.line,
+                    selector=rule.selector,
+                    kind=ViolationKind.WEBKIT_SCROLLBAR,
+                    snippet=snippet_at(rule.line),
                 )
+            )
             continue
 
-        for decl in _parse_decls(rule, _GUTTER_RE):
-            if line_marked(decl.line):
-                continue
-            violations.append(
-                ScrollbarHiddenViolation(
-                    file=str(path),
-                    line=decl.line,
-                    selector=rule.selector,
-                    kind=ViolationKind.SCROLLBAR_GUTTER,
-                    snippet=snippet_at(decl.line),
-                )
-            )
-
-        for decl in _parse_decls(rule, _COLOR_RE):
-            if line_marked(decl.line):
-                continue
-            violations.append(
-                ScrollbarHiddenViolation(
-                    file=str(path),
-                    line=decl.line,
-                    selector=rule.selector,
-                    kind=ViolationKind.SCROLLBAR_COLOR,
-                    snippet=snippet_at(decl.line),
-                )
-            )
-
-        for decl in _parse_decls(rule, _WIDTH_RE):
-            if line_marked(decl.line):
-                continue
-            if decl.value.strip().lower() != "none":
+        for regex, kind in _FORBIDDEN_PROPERTIES:
+            for decl in _parse_decls(rule, regex):
+                if line_marked(decl.line):
+                    continue
                 violations.append(
-                    ScrollbarHiddenViolation(
+                    ScrollbarNativeViolation(
                         file=str(path),
                         line=decl.line,
                         selector=rule.selector,
-                        kind=ViolationKind.NON_NONE_WIDTH,
+                        kind=kind,
                         snippet=snippet_at(decl.line),
                     )
                 )
 
-        overflow_decls = _parse_decls(rule, _OVERFLOW_RE)
-        scrolls = False
-        for decl in overflow_decls:
+        for decl in _parse_decls(rule, _OVERFLOW_RE):
             if line_marked(decl.line):
                 continue
             if _value_is_scroll(decl.value):
                 violations.append(
-                    ScrollbarHiddenViolation(
+                    ScrollbarNativeViolation(
                         file=str(path),
                         line=decl.line,
                         selector=rule.selector,
@@ -332,40 +281,22 @@ def _scan_file(path: Path) -> list[ScrollbarHiddenViolation]:
                         snippet=snippet_at(decl.line),
                     )
                 )
-            if _scrolls_on_some_axis(decl.value):
-                scrolls = True
-
-        if scrolls and not _has_scrollbar_width_none(rule):
-            first_overflow = next(
-                (d for d in overflow_decls if _scrolls_on_some_axis(d.value)),
-                None,
-            )
-            line_no = first_overflow.line if first_overflow else rule.line
-            violations.append(
-                ScrollbarHiddenViolation(
-                    file=str(path),
-                    line=line_no,
-                    selector=rule.selector,
-                    kind=ViolationKind.MISSING_HIDDEN_WIDTH,
-                    snippet=snippet_at(line_no),
-                )
-            )
 
     return violations
 
 
-def run_scrollbar_hidden_lint(
+def run_scrollbar_native_lint(
     components_dir: Path,
-) -> ScrollbarHiddenLintResult:
+) -> ScrollbarNativeLintResult:
     if not components_dir.is_dir():
         logger.warning(
             f"Components directory not found: {components_dir}; "
-            "skipping scrollbar-hidden lint"
+            "skipping scrollbar-native lint"
         )
-        return ScrollbarHiddenLintResult.passed()
-    all_violations: list[ScrollbarHiddenViolation] = []
+        return ScrollbarNativeLintResult.passed()
+    all_violations: list[ScrollbarNativeViolation] = []
     for path in sorted(components_dir.glob("*.css")):
         all_violations.extend(_scan_file(path))
     if all_violations:
-        return ScrollbarHiddenLintResult.failed(all_violations)
-    return ScrollbarHiddenLintResult.passed()
+        return ScrollbarNativeLintResult.failed(all_violations)
+    return ScrollbarNativeLintResult.passed()
