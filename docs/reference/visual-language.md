@@ -95,7 +95,7 @@ In an inset layout, the field's recessed background is what makes the gutter vis
 
 **Surface / item level: the same dichotomy, one nesting down.**
 
-Within either layout mode, individual elements still divide into inset *surfaces* and flush *items*. The asymmetry is ownership: a surface owns its own boundary (four borders, square corners) and floats in its parent's gutter; an item doesn't own a boundary. The column it lives in does, via a sibling rule or the parent's border. Get the ownership right and every downstream choice (active indicator, padding role, background) follows. Scrollbars are not part of the boundary contract — they are never painted; see SCROLLBAR_HIDDEN_BY_DEFAULT.
+Within either layout mode, individual elements still divide into inset *surfaces* and flush *items*. The asymmetry is ownership: a surface owns its own boundary (four borders, square corners) and floats in its parent's gutter; an item doesn't own a boundary. The column it lives in does, via a sibling rule or the parent's border. Get the ownership right and every downstream choice (active indicator, padding role, background) follows. Scrollbars are not part of the boundary contract — the platform paints its own bar and the border, not the bar, carries the edge; see NATIVE_SCROLLBAR.
 
 | Property | Surface (inset) | Item (flush) |
 |---|---|---|
@@ -308,21 +308,35 @@ Components that happen to be close to square (e.g., `.dk-menu-item` at `md` squa
 
 The `control-audit` page (`pages/control-audit.html`) excludes the structural-chrome roster from its square-padding pass/fail tally; the rows still render with their measurements, but the Square? column is marked warn rather than fail. The `padding-lint: ok` comment on each chrome rule is the build-level expression of the same exemption.
 
-### Scroll containers
+### Reading measure
 
-One scroll-container configuration applies to every overflow region in the system: the container scrolls, but the bar is never painted. This is the contract codified in `SCROLLBAR_HIDDEN_BY_DEFAULT`.
+Running prose (paragraphs, list items, blockquotes) caps at a reading measure so lines stay scannable. `--layout-reading-measure-md` (≈72ch) is the default; `--layout-reading-measure-sm` (≈64ch) for narrower columns. Code blocks and tables are exempt — they run the full column width rather than being squeezed by the text column.
 
 ```css
+.prose :is(p, ul, ol, blockquote) {
+  max-width: var(--layout-reading-measure-md);
+}
+/* pre, table, headings: no cap — full column width */
+```
+
+Do **not** put the measure cap on headings. A `ch`-based `max-width` resolves against the element's *own* font-size, so the same `72ch` caps an `h1` (large font) at a wider pixel width than an `h3` (smaller font). When each heading right-justifies a child — a collapse marker, a trailing value, a badge — every level then lands on a *different* right edge and the markers misalign vertically, child sections drifting leftward as the font shrinks. Headings are short structural labels, not running text: leave them full-width so their right-aligned markers share one column edge.
+
+The trap generalizes beyond headings: any `ch` (or `em`) length applied across a set of differently-sized elements measures differently per element. Reach for font-relative units only when per-element scaling is the intent; for a shared edge across mixed sizes, use a font-independent length or cap a common ancestor instead.
+
+### Scroll containers
+
+Scroll containers use `overflow: auto` and nothing else. The platform paints its own scrollbar, themed by `color-scheme` on the root; the design system never hides, tints, resizes, or reserves a gutter for it. This is the contract codified in `NATIVE_SCROLLBAR`.
+
+```css
+:root {
+  color-scheme: light dark;    /* the native bar follows the theme */
+}
 .scroll-region {
   overflow-y: auto;            /* or overflow-x: auto for horizontal leaves */
-  scrollbar-width: none;       /* Firefox 64+ */
-}
-.scroll-region::-webkit-scrollbar {
-  display: none;               /* Chromium, Safari, Edge */
 }
 ```
 
-Because no bar is rendered, no gutter is ever reserved; children always paint to the column edge, and layout cannot shift between scrollable and non-scrollable states. This collapses what used to be three modes (invisible-gutter, boundary-rail, transient-thumb) into a single recipe that works regardless of layout mode, child surface tint, or platform scrollbar style.
+On overlay-scrollbar platforms (macOS default, touch) the native bar floats over the content and reserves no space, so flush edge-to-edge layout and zero layout shift hold for free. On classic-scrollbar platforms (Windows, most Linux, macOS set to always show scrollbars) the bar takes its width at the container's inline-end edge when content overflows; this is the accepted, platform-appropriate cost of keeping the native bar, which respects the user's OS scrollbar preference instead of overriding it. Setting nothing beyond `overflow` and `color-scheme` is also why this collapses the earlier three-mode taxonomy (invisible-gutter, boundary-rail, transient-thumb) into one recipe.
 
 Skip overflow declarations entirely on regions guaranteed never to overflow.
 
