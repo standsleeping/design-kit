@@ -98,6 +98,53 @@
 .dk-table-align-center { text-align: center; }
 .dk-table-nowrap { white-space: nowrap; }
 
+/* --- Sortable column headers ---
+   The header becomes a button that inherits the th's mono / uppercase / muted
+   treatment; only sortable columns get the carets and the pointer affordance
+   (HONEST_AFFORDANCES). The active direction's caret takes the purple accent;
+   the inactive pair recedes to the border gray. */
+.dk-table-th-sortable { white-space: nowrap; }
+
+.dk-table-sort {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0; /* padding-lint: ok, the th already owns the cell inset */
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Right-aligned numeric headers keep the carets on the inside, against the label. */
+.dk-table-align-right .dk-table-sort { flex-direction: row-reverse; }
+
+.dk-table-sort:hover {
+  color: var(--color-text);
+}
+
+.dk-table-sort:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+}
+
+.dk-table-sort-carets {
+  display: inline-flex;
+  flex-direction: column;
+  font-size: 0.6em; /* dimension-lint: ok, em-relative carets scale with header text */
+  line-height: 0.75;
+  color: var(--color-border);
+}
+
+.dk-table-sort[data-sort-dir="asc"] .dk-table-sort-caret-up,
+.dk-table-sort[data-sort-dir="desc"] .dk-table-sort-caret-down {
+  color: var(--color-link);
+}
+
 /* --- Static-density variant: tighter cell padding for diagnostic /
    audit tables, where each page renders 30+ rows of computed values and
    the default `sm lg` cell padding is too airy. Same monospace header

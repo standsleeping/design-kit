@@ -20,6 +20,7 @@ export const propTypes = {
   clampLines: { type: 'number', default: 0 },
   rowClickable: { type: 'boolean', default: true },
   initialMode: { type: 'enum', default: 'wide', options: ['narrow', 'medium', 'wide'] },
+  sort: { type: 'object', default: null },
 };
 
 const DEFAULT_COLUMNS = [
@@ -155,6 +156,26 @@ export const variants = [
     },
   },
   {
+    name: 'sortable',
+    description: 'Sortable columns: clicking a header cycles ascending / descending / unsorted; stacked carets show the direction and aria-sort announces it. Per-column sortType picks the comparator (text / number / date).',
+    props: {
+      caption: 'Service metrics',
+      columns: [
+        { key: 'name',   label: 'Name',   priority: 1, primary: true, nowrap: true },
+        { key: 'region', label: 'Region', priority: 2, sortable: true },
+        { key: 'rps',    label: 'RPS',    priority: 2, align: 'right', sortable: true, sortType: 'number' },
+        { key: 'added',  label: 'Added',  priority: 3, align: 'right', sortable: true, sortType: 'date', nowrap: true },
+      ],
+      rows: [
+        { id: 'a', name: 'Authentication', region: 'us-east-1',  rps: 1840, added: '2026-02-15' },
+        { id: 'b', name: 'Billing',        region: 'eu-west-1',  rps: 920,  added: '2026-05-02' },
+        { id: 'c', name: 'Ingest',         region: 'us-east-1',  rps: 1520, added: '2026-03-29' },
+        { id: 'd', name: 'Search',         region: 'ap-south-1', rps: 610,  added: '2026-04-18' },
+      ],
+      rowClickable: false,
+    },
+  },
+  {
     name: 'wide-many-columns',
     description: 'Eight columns triggering horizontal scroll with edge fades',
     props: {
@@ -206,11 +227,14 @@ export const variants = [
 ];
 
 /**
- * @typedef {{ key: string, label?: string, priority?: number, primary?: boolean, nowrap?: boolean, type?: string, categories?: Array<{ key: string, label: string }>, align?: string, width?: string, minCh?: number, hideBelow?: string }} ColumnDef
+ * @typedef {'text' | 'number' | 'date'} SortType
+ * @typedef {'none' | 'asc' | 'desc'} SortDir
+ * @typedef {{ key: string | null, dir: SortDir }} SortState
+ * @typedef {{ key: string, label?: string, priority?: number, primary?: boolean, nowrap?: boolean, type?: string, categories?: Array<{ key: string, label: string }>, align?: string, width?: string, minCh?: number, hideBelow?: string, sortable?: boolean, sortType?: SortType }} ColumnDef
  * @typedef {{ [key: string]: unknown }} RowData
  * @typedef {{ tableId: string, sidenoteIndex: number, sidenoteStore: Map<string, unknown>, clampLines: number }} RenderCtx
  * @typedef {{ kind: 'closed' } | { kind: 'inline', id: string, ref: HTMLButtonElement, panel: HTMLDivElement } | { kind: 'popup', id: string, ref: HTMLButtonElement, popup: HTMLDivElement, backdrop: HTMLDivElement }} SidenoteState
- * @typedef {{ caption?: string, columns?: ColumnDef[], rows?: RowData[], widthStrategy?: 'auto' | 'proportional' | 'floor', narrowMode?: 'hide' | 'stack', stickyHeader?: boolean, scroll?: 'affordance' | 'plain' | 'off', breakpoints?: { narrow?: number, medium?: number }, emptyMessage?: string, rowKey?: string, clampLines?: number, rowClickable?: boolean, initialMode?: 'narrow' | 'medium' | 'wide' }} RenderProps
+ * @typedef {{ caption?: string, columns?: ColumnDef[], rows?: RowData[], widthStrategy?: 'auto' | 'proportional' | 'floor', narrowMode?: 'hide' | 'stack', stickyHeader?: boolean, scroll?: 'affordance' | 'plain' | 'off', breakpoints?: { narrow?: number, medium?: number }, emptyMessage?: string, rowKey?: string, clampLines?: number, rowClickable?: boolean, initialMode?: 'narrow' | 'medium' | 'wide', sort?: { key?: string, dir?: SortDir } | null }} RenderProps
  */
 
 /**
@@ -260,6 +284,47 @@ function alignClass(align) {
   if (align === 'right') return ' dk-table-align-right';
   if (align === 'center') return ' dk-table-align-center';
   return '';
+}
+
+/**
+ * Coerce a cell value to a number for numeric sort. Strips currency / unit
+ * decoration ("1,840", "82 ms", "42%"). Unparseable values sort lowest.
+ * @param {unknown} v
+ * @returns {number}
+ */
+function toNumber(v) {
+  if (typeof v === 'number') return v;
+  const n = parseFloat(String(v ?? '').replace(/[^0-9.eE+-]/g, ''));
+  return Number.isFinite(n) ? n : Number.NEGATIVE_INFINITY;
+}
+
+/**
+ * Coerce a cell value to a timestamp for date sort. Anything Date.parse can
+ * read works (ISO is recommended); unparseable values sort lowest.
+ * @param {unknown} v
+ * @returns {number}
+ */
+function toTime(v) {
+  const t = Date.parse(String(v ?? ''));
+  return Number.isNaN(t) ? Number.NEGATIVE_INFINITY : t;
+}
+
+/**
+ * Build a comparator for a column's sort type. Returns the natural-order
+ * comparison (ascending); the caller applies direction and the stable tie-break.
+ * @param {ColumnDef} column
+ * @returns {(a: RowData, b: RowData) => number}
+ */
+function comparatorFor(column) {
+  const key = column.key;
+  const type = column.sortType ?? 'text';
+  return (a, b) => {
+    const va = a?.[key];
+    const vb = b?.[key];
+    if (type === 'number') return toNumber(va) - toNumber(vb);
+    if (type === 'date') return toTime(va) - toTime(vb);
+    return String(va ?? '').localeCompare(String(vb ?? ''));
+  };
 }
 
 /**
@@ -402,7 +467,7 @@ function renderPresenceContent(td, column, value) {
 let tableInstanceCounter = 0;
 
 /**
- * @param {{ caption?: string, columns?: ColumnDef[], rows?: RowData[], widthStrategy?: 'auto' | 'proportional' | 'floor', narrowMode?: 'hide' | 'stack', stickyHeader?: boolean, scroll?: 'affordance' | 'plain' | 'off', breakpoints?: { narrow?: number, medium?: number }, emptyMessage?: string, rowKey?: string, clampLines?: number, rowClickable?: boolean, initialMode?: 'narrow' | 'medium' | 'wide' }} [props]
+ * @param {{ caption?: string, columns?: ColumnDef[], rows?: RowData[], widthStrategy?: 'auto' | 'proportional' | 'floor', narrowMode?: 'hide' | 'stack', stickyHeader?: boolean, scroll?: 'affordance' | 'plain' | 'off', breakpoints?: { narrow?: number, medium?: number }, emptyMessage?: string, rowKey?: string, clampLines?: number, rowClickable?: boolean, initialMode?: 'narrow' | 'medium' | 'wide', sort?: { key?: string, dir?: SortDir } | null }} [props]
  * @returns {{ node: HTMLDivElement, cleanup: () => void }}
  */
 export function render(props = {}) {
@@ -414,6 +479,39 @@ export function render(props = {}) {
   /** @type {'narrow' | 'medium' | 'wide'} */
   let mode = p.initialMode;
   let containerWidth = 0;
+
+  // Sort is internal state, seeded from the optional `sort` prop. A column is
+  // ordered ascending, then descending, then back to the original row order
+  // (key: null). Only one column sorts at a time. rebuild() reads this to drive
+  // the carets, aria-sort, and row order.
+  const initSort = p.sort && typeof p.sort === 'object' ? p.sort : null;
+  const initDir = initSort?.dir;
+  /** @type {SortState} */
+  let sortState = {
+    key: initSort?.key ?? null,
+    dir: initDir === 'asc' || initDir === 'desc' ? initDir : 'none',
+  };
+  if (!sortState.key) sortState = { key: null, dir: 'none' };
+
+  /**
+   * Rows in the current sort order. Stable: ties keep their original index, and
+   * direction is applied to the comparison so descending doesn't reverse ties.
+   * @returns {RowData[]}
+   */
+  const orderedRows = () => {
+    if (sortState.dir === 'none' || !sortState.key) return rows;
+    const column = columns.find((c) => c.key === sortState.key);
+    if (!column) return rows;
+    const cmp = comparatorFor(column);
+    const dir = sortState.dir === 'desc' ? -1 : 1;
+    return rows
+      .map((row, index) => ({ row, index }))
+      .sort((x, y) => {
+        const c = cmp(x.row, y.row) * dir;
+        return c !== 0 ? c : x.index - y.index;
+      })
+      .map((entry) => entry.row);
+  };
 
   const wrap = document.createElement('div');
   wrap.className = 'dk-table-wrap';
@@ -661,9 +759,38 @@ export function render(props = {}) {
     const headRow = document.createElement('tr');
     for (const c of cols) {
       const th = document.createElement('th');
-      th.textContent = c.label ?? c.key;
       th.className = `dk-table-th${alignClass(c.align)}`;
       if (c.nowrap) th.classList.add('dk-table-nowrap');
+      const label = c.label ?? c.key;
+      if (c.sortable) {
+        const dir = sortState.key === c.key ? sortState.dir : 'none';
+        th.classList.add('dk-table-th-sortable');
+        th.setAttribute(
+          'aria-sort',
+          dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : 'none',
+        );
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'dk-table-sort';
+        btn.dataset.sortKey = c.key;
+        btn.dataset.sortDir = dir;
+        btn.setAttribute('aria-label', `Sort by ${label}`);
+        btn.append(document.createTextNode(label));
+        const carets = document.createElement('span');
+        carets.className = 'dk-table-sort-carets';
+        carets.setAttribute('aria-hidden', 'true');
+        const up = document.createElement('span');
+        up.className = 'dk-table-sort-caret-up';
+        up.textContent = '▲';
+        const down = document.createElement('span');
+        down.className = 'dk-table-sort-caret-down';
+        down.textContent = '▼';
+        carets.append(up, down);
+        btn.append(carets);
+        th.append(btn);
+      } else {
+        th.textContent = label;
+      }
       headRow.append(th);
     }
     thead.append(headRow);
@@ -687,7 +814,8 @@ export function render(props = {}) {
       tr.append(td);
       tbody.append(tr);
     } else {
-      rows.forEach((row, index) => {
+      orderedRows().forEach((row) => {
+        const index = rows.indexOf(row);
         const tr = document.createElement('tr');
         if (p.rowClickable) {
           tr.classList.add('dk-table-clickable');
@@ -754,9 +882,37 @@ export function render(props = {}) {
     observer.observe(wrap);
   }
 
+  /**
+   * Cycle a sortable column's direction (none -> asc -> desc -> none), rebuild,
+   * keep keyboard focus on the header, and emit `responsive-table:sort`.
+   * @param {MouseEvent} e
+   * @returns {void}
+   */
+  const onSortClick = (e) => {
+    const target = /** @type {Element} */ (e.target);
+    const btn = /** @type {HTMLButtonElement | null} */ (target.closest('.dk-table-sort'));
+    if (!btn || !scrollHost.contains(btn)) return;
+    const key = btn.dataset.sortKey;
+    if (!key) return;
+    const cur = sortState.key === key ? sortState.dir : 'none';
+    /** @type {SortDir} */
+    const next = cur === 'none' ? 'asc' : cur === 'asc' ? 'desc' : 'none';
+    sortState = next === 'none' ? { key: null, dir: 'none' } : { key, dir: next };
+    rebuild();
+    const again = /** @type {HTMLButtonElement | null} */ (
+      scrollHost.querySelector(`.dk-table-sort[data-sort-key="${CSS.escape(key)}"]`)
+    );
+    again?.focus();
+    wrap.dispatchEvent(new CustomEvent('responsive-table:sort', {
+      bubbles: true,
+      detail: { key: sortState.key, dir: sortState.dir },
+    }));
+  };
+
   const onScroll = () => updateOverflowAffordances();
   scrollHost.addEventListener('scroll', onScroll, { passive: true });
   scrollHost.addEventListener('click', onScrollHostClick);
+  scrollHost.addEventListener('click', onSortClick);
   document.addEventListener('keydown', onDocKeydown);
 
   const cleanup = () => {
@@ -767,6 +923,7 @@ export function render(props = {}) {
     }
     scrollHost.removeEventListener('scroll', onScroll);
     scrollHost.removeEventListener('click', onScrollHostClick);
+    scrollHost.removeEventListener('click', onSortClick);
     document.removeEventListener('keydown', onDocKeydown);
   };
 
