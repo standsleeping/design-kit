@@ -362,6 +362,86 @@ async function main() {
     cleanup();
   });
 
+  // ---- Sortable columns: header cycle + row reorder ------------------------
+  await block('sortable columns', async () => {
+    const sortable = mod.variants.find((v) => v.name === 'sortable');
+    if (!sortable) { record('sortable variant present', false, 'variant not found'); return; }
+    const { node, cleanup } = await mount(mod, wideMount, sortable.props);
+
+    const thFor = (key) => [...node.querySelectorAll('thead th')]
+      .find((t) => t.querySelector(`.dk-table-sort[data-sort-key="${key}"]`));
+    const btnFor = (key) => node.querySelector(`.dk-table-sort[data-sort-key="${key}"]`);
+    const colIndexFor = (key) => [...node.querySelectorAll('thead th')].indexOf(thFor(key));
+    const nums = (key) => {
+      const ci = colIndexFor(key);
+      return [...node.querySelectorAll('tbody tr')]
+        .map((tr) => parseFloat(tr.children[ci].textContent.replace(/[^0-9.]/g, '')));
+    };
+    const dates = (key) => {
+      const ci = colIndexFor(key);
+      return [...node.querySelectorAll('tbody tr')].map((tr) => tr.children[ci].textContent.trim());
+    };
+    const asc = (a) => a.every((v, i) => i === 0 || a[i - 1] <= v);
+    const desc = (a) => a.every((v, i) => i === 0 || a[i - 1] >= v);
+
+    const nameTh = [...node.querySelectorAll('thead th')].find((t) => /name/i.test(t.textContent));
+    record(
+      'sortable: non-sortable column has no sort button',
+      !!nameTh && !nameTh.querySelector('.dk-table-sort'),
+      'name header unexpectedly has a sort button',
+    );
+
+    const original = nums('rps');
+    record(
+      'sortable: initial state is unsorted (aria-sort none)',
+      thFor('rps').getAttribute('aria-sort') === 'none' && btnFor('rps').dataset.sortDir === 'none',
+      `aria-sort=${thFor('rps').getAttribute('aria-sort')}, dir=${btnFor('rps').dataset.sortDir}`,
+    );
+
+    btnFor('rps').click();
+    record(
+      'sortable: first click sorts ascending (number)',
+      thFor('rps').getAttribute('aria-sort') === 'ascending'
+        && btnFor('rps').dataset.sortDir === 'asc'
+        && asc(nums('rps')),
+      `aria=${thFor('rps').getAttribute('aria-sort')}, values=${nums('rps')}`,
+    );
+
+    btnFor('rps').click();
+    record(
+      'sortable: second click sorts descending',
+      thFor('rps').getAttribute('aria-sort') === 'descending'
+        && btnFor('rps').dataset.sortDir === 'desc'
+        && desc(nums('rps')),
+      `aria=${thFor('rps').getAttribute('aria-sort')}, values=${nums('rps')}`,
+    );
+
+    btnFor('rps').click();
+    record(
+      'sortable: third click restores original order (aria-sort none)',
+      thFor('rps').getAttribute('aria-sort') === 'none'
+        && JSON.stringify(nums('rps')) === JSON.stringify(original),
+      `aria=${thFor('rps').getAttribute('aria-sort')}, values=${nums('rps')} vs ${original}`,
+    );
+
+    btnFor('added').click();
+    const d = dates('added');
+    record(
+      'sortable: date column sorts chronologically',
+      thFor('added').getAttribute('aria-sort') === 'ascending'
+        && JSON.stringify(d) === JSON.stringify([...d].sort()),
+      `dates=${d}`,
+    );
+
+    record(
+      'sortable: switching columns resets the previous column to unsorted',
+      thFor('rps').getAttribute('aria-sort') === 'none' && btnFor('rps').dataset.sortDir === 'none',
+      `rps aria-sort=${thFor('rps').getAttribute('aria-sort')}`,
+    );
+
+    cleanup();
+  });
+
   // ---- Default variant still has clickable rows (rowClickable=true default) -
   await block('default variant rowClickable', async () => {
     const defaults = mod.variants.find((v) => v.name === 'default');
