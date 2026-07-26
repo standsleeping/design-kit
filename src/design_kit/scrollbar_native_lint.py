@@ -1,12 +1,17 @@
 """Static scan of CSS for scrollbar overrides that fight the native bar.
 
 Static-analysis corollary of NATIVE_SCROLLBAR: scroll containers use
-``overflow: auto`` and nothing else. The platform paints its own bar,
-themed by ``color-scheme`` on the root. Overriding the bar — hiding it,
-tinting it, resizing it, or reserving a gutter for it — is what this lint
-forbids. On overlay-scrollbar platforms the native bar floats and reserves
-no space (flush layout and zero shift hold); on classic-scrollbar platforms
-it rides the column edge, the one place a bar does not break a flush seam.
+``overflow: auto``. The platform paints its own bar, themed by
+``color-scheme`` on the root. Overriding the bar — hiding it, tinting it,
+or resizing it — is what this lint forbids. On overlay-scrollbar platforms
+the native bar floats and reserves no space (flush layout and zero shift
+hold); on classic-scrollbar platforms it rides the column edge, the one
+place a bar does not break a flush seam.
+
+Reserving space is not overriding: ``scrollbar-gutter: stable`` sets aside
+the width of a bar the platform still paints, sizes, and themes, and leaves
+the user's OS scrollbar preference intact. It is permitted, and the lint
+guards its value rather than its property name.
 
 Violations the lint catches:
 
@@ -18,8 +23,9 @@ Violations the lint catches:
    nothing at all.
 3. ``scrollbar-color:`` anywhere: a tinted bar overrides the platform bar;
    theme via ``color-scheme`` instead.
-4. ``scrollbar-gutter:`` anywhere: reserving a gutter inserts an always-on
-   inset strip that breaks the flush, edge-to-edge seam.
+4. ``scrollbar-gutter:`` with any value other than ``stable``: notably
+   ``stable both-edges``, which reserves a strip on the side no bar can
+   occupy — reservation without a bar is decoration.
 5. ``::-webkit-scrollbar`` rules of any kind: track / thumb / display
    declarations all replace or suppress the native bar.
 
@@ -209,13 +215,24 @@ def _value_is_scroll(value: str) -> bool:
     return "scroll" in tokens
 
 
+def _value_is_permitted_gutter(value: str) -> bool:
+    """True iff the value reserves the classic bar's width and nothing more.
+
+    ``stable`` is the whole permitted set. ``both-edges`` reserves a strip on
+    the side no bar can occupy, and ``auto`` written out longhand is the
+    default stated as if it were a decision.
+    """
+    return value.strip().lower() == "stable"
+
+
 def _is_webkit_scrollbar_selector(selector: str) -> bool:
     return "::-webkit-scrollbar" in selector
 
 
 # Each forbidden scrollbar property maps to the violation kind it raises.
+# scrollbar-gutter is absent: it is guarded by value, not by name, because
+# `stable` is legitimate reservation while every other value is styling.
 _FORBIDDEN_PROPERTIES = (
-    (_GUTTER_RE, ViolationKind.SCROLLBAR_GUTTER),
     (_COLOR_RE, ViolationKind.SCROLLBAR_COLOR),
     (_WIDTH_RE, ViolationKind.SCROLLBAR_WIDTH),
 )
@@ -264,6 +281,20 @@ def _scan_file(path: Path) -> list[ScrollbarNativeViolation]:
                         line=decl.line,
                         selector=rule.selector,
                         kind=kind,
+                        snippet=snippet_at(decl.line),
+                    )
+                )
+
+        for decl in _parse_decls(rule, _GUTTER_RE):
+            if line_marked(decl.line):
+                continue
+            if not _value_is_permitted_gutter(decl.value):
+                violations.append(
+                    ScrollbarNativeViolation(
+                        file=str(path),
+                        line=decl.line,
+                        selector=rule.selector,
+                        kind=ViolationKind.SCROLLBAR_GUTTER,
                         snippet=snippet_at(decl.line),
                     )
                 )
