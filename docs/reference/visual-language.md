@@ -325,7 +325,7 @@ The trap generalizes beyond headings: any `ch` (or `em`) length applied across a
 
 ### Scroll containers
 
-Scroll containers use `overflow: auto` and nothing else. The platform paints its own scrollbar, themed by `color-scheme` on the root; the design system never hides, tints, resizes, or reserves a gutter for it. This is the contract codified in `NATIVE_SCROLLBAR`.
+Scroll containers use `overflow: auto`. The platform paints its own scrollbar, themed by `color-scheme` on the root; the design system never hides, tints, or resizes it. This is the contract codified in `NATIVE_SCROLLBAR`.
 
 ```css
 :root {
@@ -334,9 +334,17 @@ Scroll containers use `overflow: auto` and nothing else. The platform paints its
 .scroll-region {
   overflow-y: auto;            /* or overflow-x: auto for horizontal leaves */
 }
+.scroll-region-stable {
+  overflow-y: auto;
+  scrollbar-gutter: stable;    /* only where inline geometry must not move */
+}
 ```
 
-On overlay-scrollbar platforms (macOS default, touch) the native bar floats over the content and reserves no space, so flush edge-to-edge layout and zero layout shift hold for free. On classic-scrollbar platforms (Windows, most Linux, macOS set to always show scrollbars) the bar takes its width at the container's inline-end edge when content overflows; this is the accepted, platform-appropriate cost of keeping the native bar, which respects the user's OS scrollbar preference instead of overriding it. Setting nothing beyond `overflow` and `color-scheme` is also why this collapses the earlier three-mode taxonomy (invisible-gutter, boundary-rail, transient-thumb) into one recipe.
+On overlay-scrollbar platforms (macOS default, touch) the native bar floats over the content and reserves no space, so flush edge-to-edge layout and zero layout shift hold for free. On classic-scrollbar platforms (Windows, most Linux, macOS set to always show scrollbars) the bar takes its width at the container's inline-end edge when content overflows.
+
+`scrollbar-gutter: stable` is permitted for that second row, and only that row: a gutter exists only where a classic bar exists, so under overlay scrollbars the declaration reserves nothing and has no effect at all. Reserving is not styling. It sets aside space for a bar the platform still paints, sizes, and themes, and it leaves the user's OS scrollbar preference intact; hiding, tinting, and resizing remain forbidden, and `stable both-edges` remains forbidden because it reserves a strip where no bar can appear.
+
+Reach for the gutter where the container's inline geometry must not move as content grows past the fold: a column measured against a neighbour, a sticky rail beside an article. Leave it off everywhere else, since an unnecessary gutter is an unnecessary inset. Setting nothing beyond `overflow`, `color-scheme`, and this one scoped reservation is why the earlier three-mode taxonomy (invisible-gutter, boundary-rail, transient-thumb) collapses into one recipe.
 
 Skip overflow declarations entirely on regions guaranteed never to overflow.
 
